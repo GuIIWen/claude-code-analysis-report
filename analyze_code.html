@@ -1,0 +1,1728 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Claude Code Source 全量工程分析报告</title><style>:root{--bg:#f5f1e8;--panel:#fffdf8;--panel-strong:#fffaf0;--text:#1f2328;--muted:#5b6470;--line:#dfd7c8;--accent:#8a3d12;--accent-soft:#f2e5d4;--code-bg:#2b2118;--code-text:#f5efe6;--shadow:0 18px 50px rgba(61,37,19,.08);--max:1480px}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",Georgia,serif;color:var(--text);background:radial-gradient(circle at top left,rgba(138,61,18,.08),transparent 22%),radial-gradient(circle at top right,rgba(94,119,97,.08),transparent 18%),linear-gradient(180deg,#f7f3eb 0%,#f2ede3 100%);line-height:1.8}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.shell{max-width:var(--max);margin:0 auto;padding:28px 20px 56px}.hero{background:linear-gradient(135deg,rgba(138,61,18,.10),rgba(255,255,255,.78));border:1px solid rgba(138,61,18,.14);box-shadow:var(--shadow);border-radius:24px;padding:28px 30px;margin-bottom:24px;backdrop-filter:blur(8px)}.hero h1{margin:0 0 10px;font-size:clamp(28px,4vw,44px);line-height:1.15;letter-spacing:-.02em}.hero p{margin:0;color:var(--muted);font-size:15px}.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}.toc{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;background:rgba(255,253,248,.86);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:20px;padding:18px 16px 18px 18px;box-shadow:var(--shadow)}.toc-title{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.toc-item{display:block;padding:7px 10px;margin:2px 0;border-radius:10px;color:var(--text);font-size:14px;line-height:1.45}.toc-item:hover{background:var(--accent-soft);text-decoration:none}.toc-item.level-3{padding-left:20px;color:var(--muted)}.toc-item.level-4{padding-left:30px;color:var(--muted)}.content{background:rgba(255,253,248,.92);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:34px 40px 42px;overflow:hidden}.content h1,.content h2,.content h3,.content h4,.content h5,.content h6{scroll-margin-top:24px;line-height:1.25;letter-spacing:-.02em}.content h1{font-size:clamp(28px,3.6vw,42px);margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid var(--line)}.content h2{margin-top:42px;font-size:30px;border-top:1px solid rgba(223,215,200,.7);padding-top:24px}.content h3{margin-top:28px;font-size:22px;color:#4d2a16}.content h4{font-size:18px;margin-top:22px}.content p,.content li,.content blockquote{font-size:16px}.content p{margin:0 0 16px}.content ul,.content ol{margin:0 0 18px 1.4em;padding-left:1.1em}.content li{margin:.3em 0}.content li>ul,.content li>ol{margin-top:.45em}.content code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;background:rgba(138,61,18,.08);border:1px solid rgba(138,61,18,.10);border-radius:6px;padding:.14em .4em;font-size:.92em}.content pre{margin:18px 0 22px;padding:18px 20px;overflow:auto;background:linear-gradient(180deg,#31251a 0%,#241b14 100%);color:var(--code-text);border-radius:16px;border:1px solid rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.content pre code{background:transparent;border:none;padding:0;color:inherit;font-size:14px;line-height:1.65;white-space:pre}.content blockquote{margin:18px 0 22px;padding:14px 18px;border-left:4px solid var(--accent);background:var(--panel-strong);color:#4f4a43;border-radius:0 14px 14px 0}.content img{max-width:100%;border-radius:14px}@media (max-width:1080px){.layout{grid-template-columns:1fr}.toc{position:relative;top:auto;max-height:none}}@media (max-width:720px){.shell{padding:16px 12px 32px}.hero{padding:22px 20px;border-radius:18px}.content{padding:24px 18px 28px;border-radius:18px}.content h2{font-size:24px}.content h3{font-size:20px}.content p,.content li,.content blockquote{font-size:15px}.toc-item{font-size:13px}}</style></head><body><div class="shell"><section class="hero"><h1>Claude Code Source 全量工程分析报告</h1><p>由 <code>analyze_code.md</code> 生成的本地静态 HTML 版本，便于浏览器查看、目录跳转和代码块阅读。最近同步时间：<code>2026-04-02 19:58:11 +0800</code></p></section><div class="layout"><aside class="toc"><p class="toc-title">目录</p>
+<a class="toc-item level-2" href="#section-2">1. 执行摘要</a>
+<a class="toc-item level-2" href="#section-3">2. 仓库画像与可信边界</a>
+<a class="toc-item level-3" href="#section-4">2.1 基本画像</a>
+<a class="toc-item level-3" href="#section-5">2.2 这是“研究用源码视图”，不是官方原始仓</a>
+<a class="toc-item level-3" href="#section-6">2.3 构建链不是等价重建</a>
+<a class="toc-item level-3" href="#section-7">2.4 <code>prepare-src.mjs</code> 直接 patch <code>src/</code></a>
+<a class="toc-item level-2" href="#section-8">3. 总体架构判断</a>
+<a class="toc-item level-3" href="#section-9">3.1 真正的拓扑不是“CLI -&gt; API”</a>
+<a class="toc-item level-3" href="#section-10">3.2 可以把系统分成 8 个一级子系统</a>
+<a class="toc-item level-3" href="#section-11">3.3 几个“文件名低估职责”的例子</a>
+<a class="toc-item level-2" href="#section-12">4. 启动链路与运行面架构</a>
+<a class="toc-item level-2" href="#section-13">4.1 <code>src/entrypoints/cli.tsx</code>：轻量外层分发器</a>
+<a class="toc-item level-3" href="#section-14">4.2 <code>src/entrypoints/init.ts</code>：安全初始化层</a>
+<a class="toc-item level-3" href="#section-15">4.3 <code>src/main.tsx</code>：真正的系统编排根</a>
+<a class="toc-item level-3" href="#section-16">4.4 <code>--settings</code> 的 content-hash 路径是 cache 设计的一部分</a>
+<a class="toc-item level-2" href="#section-17">5. 多运行面：CLI、REPL、Headless、Bridge</a>
+<a class="toc-item level-3" href="#section-18">5.1 这套系统至少有 4 类运行面</a>
+<a class="toc-item level-3" href="#section-19">5.2 Interactive REPL 不是“聊天界面”</a>
+<a class="toc-item level-3" href="#section-20">5.3 Headless 不是降级模式</a>
+<a class="toc-item level-2" href="#section-21">6. 端到端请求生命周期</a>
+<a class="toc-item level-2" href="#section-22">7. Prompt / Context / Cache 架构</a>
+<a class="toc-item level-2" href="#section-23">7.1 <code>prompts.ts</code> 的真实定位</a>
+<a class="toc-item level-3" href="#section-24">7.2 <code>getSystemPrompt()</code> 的结构是“静态 prefix + 动态 section registry”</a>
+<a class="toc-item level-3" href="#section-25">7.3 <code>systemPrompt</code> 不是唯一来源，<code>userContext</code>/<code>systemContext</code> 也是 cache prefix 一部分</a>
+<a class="toc-item level-3" href="#section-26">7.4 <code>getSystemContext()</code> 的 git status 是会话快照，不是实时观察</a>
+<a class="toc-item level-3" href="#section-27">7.5 effective system prompt 还有多级优先级</a>
+<a class="toc-item level-3" href="#section-28">7.6 API 层会再次把 system prompt 转成 cache-control block</a>
+<a class="toc-item level-3" href="#section-29">7.7 组合后的 prompt 模板</a>
+<a class="toc-item level-4" href="#section-30">7.7.1 按阅读视角看到的 system prompt 主体模板</a>
+<a class="toc-item level-4" href="#section-31">7.7.2 按 API 传输层看到的最终结果</a>
+<a class="toc-item level-3" href="#section-32">7.8 本模块的几个明确结论</a>
+<a class="toc-item level-2" href="#section-33">8. Query 内核：真正的 agent runtime</a>
+<a class="toc-item level-2" href="#section-34">8.1 <code>query.ts</code> 是最核心的执行文件之一</a>
+<a class="toc-item level-3" href="#section-35">8.2 <code>QueryConfig</code> 的意义是快照 runtime gates</a>
+<a class="toc-item level-3" href="#section-36">8.3 上下文治理流水线不是互斥关系，而是层叠关系</a>
+<a class="toc-item level-3" href="#section-37">8.4 <code>stop_reason === 'tool_use'</code> 被作者明确判定为不可靠</a>
+<a class="toc-item level-3" href="#section-38">8.5 <code>dumpPromptsFetch</code> 是一个典型的内存防御优化</a>
+<a class="toc-item level-3" href="#section-39">8.6 <code>QueryEngine</code> 是 headless 会话宿主，不是另一套 loop</a>
+<a class="toc-item level-2" href="#section-40">9. Tool 协议与工具执行架构</a>
+<a class="toc-item level-2" href="#section-41">9.1 <code>ToolUseContext</code> 很重，这不是普通函数调用</a>
+<a class="toc-item level-3" href="#section-42">9.2 <code>src/tools.ts</code> 是模型可见工具面的总装厂</a>
+<a class="toc-item level-3" href="#section-43">9.3 工具池的排序是有意为之</a>
+<a class="toc-item level-3" href="#section-44">9.4 并发不是“所有只读一起跑”，而是“连续 safe block 才一起跑”</a>
+<a class="toc-item level-3" href="#section-45">9.5 <code>StreamingToolExecutor</code> 的错误传播是非对称的</a>
+<a class="toc-item level-3" href="#section-46">9.6 streaming concurrent tools 目前不支持完整 context modifier</a>
+<a class="toc-item level-2" href="#section-47">10. Agent / Subagent / Fork / Skill 架构</a>
+<a class="toc-item level-2" href="#section-48">10.1 Agent 不是 prompt 片段，而是二级 runtime</a>
+<a class="toc-item level-3" href="#section-49">10.2 agent 覆盖优先级是显式的</a>
+<a class="toc-item level-3" href="#section-50">10.3 <code>allowedTools</code> 并不等于完全切断父权限</a>
+<a class="toc-item level-3" href="#section-51">10.4 fork child 和普通 subagent 不是一回事</a>
+<a class="toc-item level-3" href="#section-52">10.5 Skill 也不是本地 prompt 宏</a>
+<a class="toc-item level-2" href="#section-53">11. 权限与沙箱：真正的安全边界</a>
+<a class="toc-item level-2" href="#section-54">11.1 权限不是一层，而是多层决策叠加</a>
+<a class="toc-item level-3" href="#section-55">11.2 auto mode 会主动识别危险规则</a>
+<a class="toc-item level-3" href="#section-56">11.3 无本地 UI 的权限交互会走分流路径</a>
+<a class="toc-item level-3" href="#section-57">11.4 sandbox 的路径语义和 permission rule 的路径语义并不相同</a>
+<a class="toc-item level-3" href="#section-58">11.5 sandbox 会对 settings / skills 路径做定向写保护</a>
+<a class="toc-item level-2" href="#section-59">12. MCP：一等外部能力子系统</a>
+<a class="toc-item level-2" href="#section-60">12.1 MCP 不是插件边角，而是一整层平台</a>
+<a class="toc-item level-3" href="#section-61">12.2 plugin / connector 的 MCP 去重采用 <code>command/url</code> 身份签名</a>
+<a class="toc-item level-3" href="#section-62">12.3 plugin / connector 都可能被手工配置压制</a>
+<a class="toc-item level-3" href="#section-63">12.4 Bridge / Remote Control 的 gate 不是单纯 feature flag</a>
+<a class="toc-item level-2" href="#section-64">13. Session / Transcript / Memory / Compaction</a>
+<a class="toc-item level-2" href="#section-65">13.1 transcript 不是“所有消息都存”</a>
+<a class="toc-item level-3" href="#section-66">13.2 session memory 是节流触发的，不是每回合都跑</a>
+<a class="toc-item level-3" href="#section-67">13.3 compact 不是简单摘要</a>
+<a class="toc-item level-2" href="#section-68">14. 配置、远程托管设置、策略限制、遥测</a>
+<a class="toc-item level-2" href="#section-69">14.1 这是一个强运行时配置驱动系统</a>
+<a class="toc-item level-2" href="#section-70">14.2 analytics 采用 queue-first 设计</a>
+<a class="toc-item level-3" href="#section-71">14.3 GrowthBook 是高频运行时 gate/config 平面之一</a>
+<a class="toc-item level-2" href="#section-72">15. 关键设计模式与优点</a>
+<a class="toc-item level-3" href="#section-73">15.1 以 cache 稳定性为中心的跨层设计</a>
+<a class="toc-item level-3" href="#section-74">15.2 多运行面共享同一 query 内核</a>
+<a class="toc-item level-3" href="#section-75">15.3 权限安全链设计较成熟</a>
+<a class="toc-item level-3" href="#section-76">15.4 MCP 与 Agent 已平台化</a>
+<a class="toc-item level-2" href="#section-77">16. 风险、隐式耦合与技术债</a>
+<a class="toc-item level-2" href="#section-78">16.1 超级枢纽文件</a>
+<a class="toc-item level-3" href="#section-79">16.2 关键隐式契约过多</a>
+<a class="toc-item level-3" href="#section-80">16.3 反编译/研究仓边界问题</a>
+<a class="toc-item level-3" href="#section-81">16.4 一处显眼的静态可疑点</a>
+<a class="toc-item level-2" href="#section-82">17. 哪些机制最值得继续深挖</a>
+<a class="toc-item level-3" href="#section-83">17.1 Prompt cache 全链路隐式契约表</a>
+<a class="toc-item level-3" href="#section-84">17.2 Agent 权限边界图</a>
+<a class="toc-item level-3" href="#section-85">17.3 Session restore correctness</a>
+<a class="toc-item level-3" href="#section-86">17.4 MCP 多实例假设</a>
+<a class="toc-item level-3" href="#section-87">17.5 <code>main.tsx</code> / <code>REPL.tsx</code> 的拆层机会</a>
+<a class="toc-item level-2" href="#section-88">18. 附录：高信号源码摘录</a>
+<a class="toc-item level-3" href="#section-89">A. 系统 prompt 动静边界</a>
+<a class="toc-item level-3" href="#section-90">B. settings hash path 避免 cache 爆炸</a>
+<a class="toc-item level-3" href="#section-91">C. Query runtime gate 快照</a>
+<a class="toc-item level-3" href="#section-92">D. ToolUseContext 体现工具执行不是普通函数调用</a>
+<a class="toc-item level-3" href="#section-93">E. tool 并发批次规则</a>
+<a class="toc-item level-3" href="#section-94">F. Bash error 会中止 sibling 并发工具</a>
+<a class="toc-item level-3" href="#section-95">G. Agent 保留 SDK <code>cliArg</code> 级授权</a>
+<a class="toc-item level-3" href="#section-96">H. sandbox 主动保护 <code>.claude/skills</code></a>
+<a class="toc-item level-3" href="#section-97">I. MCP server 内容签名去重</a>
+<a class="toc-item level-3" href="#section-98">J. analytics queue-first</a>
+<a class="toc-item level-3" href="#section-99">K. session memory 的双阈值触发</a>
+<a class="toc-item level-2" href="#section-100">19. 最终结论</a>
+<a class="toc-item level-2" href="#section-101">附录：名词解释</a></aside><main class="content"><h1 id="section-1">Claude Code Source 全量工程分析报告</h1>
+<p>生成时间：2026-04-02<br />
+最近同步时间：2026-04-02 19:58:11 +0800<br />
+分析范围：<code>/root/claude-code-source-code</code><br />
+分析方式：主线程通读关键源码 + 2 个 <code>gpt-5.4</code> 子分析线程交叉审阅<br />
+约束说明：本轮只做静态分析与文档沉淀，不修改业务代码，不做 debug/修复</p>
+<h2 id="section-2">1. 执行摘要</h2>
+<p>这不是一个“普通 CLI 工具源码仓”，而是一个把 CLI/TUI、headless SDK、Prompt 编排、Tool 执行、权限治理、沙箱、MCP 生态、Subagent/Team、上下文压缩、远程控制、遥测与远程策略全部装进同一运行时内核的 agent 平台。</p>
+<p>从工程结构看，真正的系统控制面主要有六条：</p>
+<ol>
+<li><code>feature()</code> / <code>MACRO.*</code> / Bun 编译期裁剪。</li>
+<li><code>main.tsx</code> + <code>entrypoints/*</code> 的启动分流与模式装配。</li>
+<li><code>query.ts</code> + <code>QueryEngine.ts</code> 的统一会话执行内核。</li>
+<li><code>prompts.ts</code> + <code>context.ts</code> + <code>utils/api.ts</code> 的 prompt/cache 前缀构建。</li>
+<li><code>Tool.ts</code> + <code>tools.ts</code> + <code>services/tools/*</code> 的工具协议与调度。</li>
+<li><code>permissions/*</code> + <code>sandbox/*</code> + <code>services/mcp/*</code> 的安全边界与外部能力接入。</li>
+</ol>
+<p>这套工程最强的地方不是“功能多”，而是已经形成了比较明确的平台级设计意图：</p>
+<ul>
+<li>Prompt cache 被当成一级性能指标来设计，不是 API 附带优化。</li>
+<li>Subagent 不是 prompt 模板，而是二级 runtime。</li>
+<li>MCP 不是插件边角，而是一等外部能力接入层。</li>
+<li>权限不是单层 allow/deny，而是规则、classifier、hook、沙箱、运行模式叠加的决策链。</li>
+<li>headless/SDK 不是简化版，而是和 REPL 并列的一等运行面。</li>
+</ul>
+<p>同时，它的主要风险也很明确：</p>
+<ul>
+<li><code>src/main.tsx</code>、<code>src/screens/REPL.tsx</code>、<code>src/query.ts</code>、<code>src/tools/AgentTool/*</code>、<code>src/services/mcp/*</code> 已经出现超级枢纽化。</li>
+<li>许多“行为正确性”依赖跨文件的隐式契约，尤其是 prompt cache、fork subagent、权限路径语义、MCP 去重、session restore。</li>
+<li>这是一个“用于研究的反编译/解包源码视图”，不是官方原始研发仓；构建与运行行为不能无条件等同于 Anthropic 内部真实构建链。</li>
+</ul>
+<h2 id="section-3">2. 仓库画像与可信边界</h2>
+<h3 id="section-4">2.1 基本画像</h3>
+<ul>
+<li>包名：<code>@anthropic-ai/claude-code-source</code></li>
+<li>版本：<code>2.1.88</code></li>
+<li><code>src</code> 文件数：约 <code>1902</code></li>
+<li>主要子目录文件数：
+<ul>
+<li><code>utils</code>: 564</li>
+<li><code>components</code>: 389</li>
+<li><code>commands</code>: 207</li>
+<li><code>tools</code>: 184</li>
+<li><code>services</code>: 130</li>
+</ul>
+</li>
+<li>关键超大文件：
+<ul>
+<li><code>src/cli/print.ts</code>: 5594 LOC</li>
+<li><code>src/main.tsx</code>: 4683 LOC</li>
+<li><code>src/services/mcp/auth.ts</code>: 2465 LOC</li>
+<li><code>src/query.ts</code>: 1729 LOC</li>
+<li><code>src/QueryEngine.ts</code>: 1295 LOC</li>
+<li><code>src/constants/prompts.ts</code>: 914 LOC</li>
+<li><code>src/Tool.ts</code>: 792 LOC</li>
+</ul>
+</li>
+</ul>
+<h3 id="section-5">2.2 这是“研究用源码视图”，不是官方原始仓</h3>
+<p><code>package.json</code> 直接把自己定义为研究用途的反编译源码：</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;@anthropic-ai/claude-code-source&quot;,
+  &quot;version&quot;: &quot;2.1.88&quot;,
+  &quot;description&quot;: &quot;Claude Code v2.1.88 — decompiled source for research&quot;
+}
+</code></pre>
+<p>文件：<code>package.json</code></p>
+<p><code>README.md</code> 与 <code>QUICKSTART.md</code> 也明确说明：</p>
+<ul>
+<li>npm 发布物原本是单一 bunded <code>cli.js</code></li>
+<li>当前 <code>src/</code> 是“从 npm 包中提取/解包的 TypeScript 源码”</li>
+<li>完整重建依赖 Bun 的编译期 intrinsic，如 <code>feature()</code>、<code>MACRO.*</code>、<code>bun:bundle</code></li>
+</ul>
+<h3 id="section-6">2.3 构建链不是等价重建</h3>
+<p><code>scripts/build.mjs</code> 说得非常直白：这是 best-effort build，不是官方原生构建。</p>
+<pre><code class="language-js">/**
+ * ⚠️ IMPORTANT: A complete rebuild requires the Bun runtime's compile-time
+ * intrinsics (feature(), MACRO, bun:bundle). This script provides a
+ * best-effort build using esbuild.
+ */
+</code></pre>
+<p>更关键的是，它会直接把 <code>feature('X')</code> 替换为 <code>false</code>，并自动补 stub：</p>
+<pre><code class="language-js">// 2a. feature('X') → false
+if (/\bfeature\s*\(\s*['&quot;][A-Z_]+['&quot;]\s*\)/.test(src)) {
+  src = src.replace(/\bfeature\s*\(\s*['&quot;][A-Z_]+['&quot;]\s*\)/g, 'false')
+  changed = true
+}
+</code></pre>
+<p>文件：<code>scripts/build.mjs</code></p>
+<p>这意味着：</p>
+<ul>
+<li>外部分析仓中看到的功能树，和 Anthropic 内部真实 build 里保留下来的功能树不一定一致。</li>
+<li>很多 <code>feature()</code> 分支对应的模块根本不在发布包里，而是发布时已经 DCE 掉了。</li>
+<li>不能把“这个仓库里缺少某个实现”直接理解为产品没有这个能力。</li>
+</ul>
+<h3 id="section-7">2.4 <code>prepare-src.mjs</code> 直接 patch <code>src/</code></h3>
+<p>这是一个很容易被忽略的点。</p>
+<p><code>scripts/prepare-src.mjs</code> 不是在副本上变换，而是直接遍历并 patch <code>src/</code>：</p>
+<pre><code class="language-js">const ROOT = path.resolve(__dirname, '..')
+const SRC = path.join(ROOT, 'src')
+...
+for (const file of files) {
+  if (patchFile(file)) {
+    patched++
+  }
+}
+</code></pre>
+<p>文件：<code>scripts/prepare-src.mjs</code></p>
+<p>这至少带来两个结论：</p>
+<ul>
+<li>如果执行过 <code>prepare-src.mjs</code>，当前仓库中的 <code>src/</code> 就可能偏离“最初解包出的原始快照”。</li>
+<li>本节已经可以确认的，不是“它现在一定改过”，而是“这个仓库具备直接原地改写 <code>src/</code> 的机制”；因此它同时承载“分析视图”和“重建试验视图”，边界并不绝对干净。</li>
+</ul>
+<h2 id="section-8">3. 总体架构判断</h2>
+<h3 id="section-9">3.1 真正的拓扑不是“CLI -&gt; API”</h3>
+<p>更准确的描述应该是：</p>
+<p><code>入口分流 -&gt; 初始化/策略装配 -&gt; prompt/cache 前缀构建 -&gt; query 内核 -&gt; tool/permission/sandbox -&gt; MCP/agent/skills -&gt; transcript/memory/compaction -&gt; 输出面(REPL/headless/bridge)</code></p>
+<p>这里不是作者主观喜欢把一条链写长，而是源码里这些节点确实各自形成了一层“一级边界”：</p>
+<ul>
+<li><code>prompt/cache 前缀构建</code> 要单列，因为它在进入 <code>query()</code> 之前就已经影响 system blocks、tool schema 和 cache-safe 字节前缀。</li>
+<li><code>query 内核</code> 要单列，因为上下文治理、流式采样、tool loop、follow-up query 都在这里统一发生。</li>
+<li><code>tool/permission/sandbox</code> 要单列，因为模型一旦发出 <code>tool_use</code>，执行路径立刻进入另一套策略与安全栈，已经不是“继续跑 prompt”。</li>
+<li><code>输出面</code> 要单列，因为 REPL、headless、bridge 共享 query 内核，但宿主协议、UI 能力、恢复/交互方式并不相同。</li>
+</ul>
+<p>所以更短地说：这套系统当然可以被压扁成“CLI 调 API”，但那样会把真正决定 cache、权限、工具和运行面差异的结构全部压没。</p>
+<h3 id="section-10">3.2 可以把系统分成 8 个一级子系统</h3>
+<p>这里的 8 层更适合作为“分析框架”来理解，而不是把它误读成仓库内部明示的一张官方架构图。源码里的边界并不完全干净，尤其 <code>Query / Tool / Permission / Agent</code> 之间存在明显交叠。</p>
+<ol>
+<li>启动与运行面分流</li>
+<li>Prompt / Context / API 前缀构建</li>
+<li>Query 执行内核</li>
+<li>Tool 协议与工具调度</li>
+<li>Agent / Skill / Fork / Team</li>
+<li>Permission / Classifier / Sandbox</li>
+<li>MCP 配置、连接、鉴权与模型暴露面</li>
+<li>Persistence / Session / Memory / Telemetry / Remote policy</li>
+</ol>
+<h3 id="section-11">3.3 几个“文件名低估职责”的例子</h3>
+<ul>
+<li><code>src/constants/prompts.ts</code> 不只是常量文件；它同时承载 <code>SYSTEM_PROMPT_DYNAMIC_BOUNDARY</code>、prompt section registry 和 system prompt 主体组装。</li>
+<li><code>src/screens/REPL.tsx</code> 不只是 UI 文件；它同时承载 permission 交互、session restore、MCP/tool 面增量管理等交互式 runtime 外壳职责。</li>
+<li><code>src/QueryEngine.ts</code> 不只是“另一个引擎”；它主要是 headless 会话宿主，用来把程序化调用形态接到共享 query 内核上。</li>
+<li><code>src/tools.ts</code> 不只是工具列表；它负责 built-in 工具全集、session 裁剪、MCP 合并、稳定排序和最终模型可见工具池装配。</li>
+<li><code>src/utils/config.ts</code> 不只是 config parser；它同时负责多层设置读写、来源追踪、优先级合并和一部分全局状态持久化。</li>
+</ul>
+<h2 id="section-12">4. 启动链路与运行面架构</h2>
+<h2 id="section-13">4.1 <code>src/entrypoints/cli.tsx</code>：轻量外层分发器</h2>
+<p><code>cli.tsx</code> 的职责很克制：它优先处理极少数 fast path，尽量减少冷启动模块加载。</p>
+<p>典型例子是 <code>--version</code>：</p>
+<pre><code class="language-ts">if (args.length === 1 &amp;&amp; (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')) {
+  console.log(`${MACRO.VERSION} (Claude Code)`);
+  return;
+}
+</code></pre>
+<p>文件：<code>src/entrypoints/cli.tsx</code></p>
+<p>但这个文件并不只是轻量路由，它还承担了一个非常关键的编译期职责：有些环境变量必须在 import 前决定，因为下游模块会在模块初始化时捕获它们。</p>
+<pre><code class="language-ts">// Harness-science L0 ablation baseline. Inlined here (not init.ts) because
+// BashTool/AgentTool/PowerShellTool capture DISABLE_BACKGROUND_TASKS into
+// module-level consts at import time — init() runs too late.
+</code></pre>
+<p>文件：<code>src/entrypoints/cli.tsx</code></p>
+<p>这说明它不是普通的 <code>main()</code>，而是一个“带编译期/模块初始化约束的启动入口”。</p>
+<h3 id="section-14">4.2 <code>src/entrypoints/init.ts</code>：安全初始化层</h3>
+<p><code>init.ts</code> 的作用不是起业务，而是先把“可以安全做、必须尽早做”的事情完成：</p>
+<ul>
+<li><code>enableConfigs()</code></li>
+<li><code>applySafeConfigEnvironmentVariables()</code></li>
+<li>CA cert / mTLS / proxy</li>
+<li>remote managed settings / policy promise 初始化</li>
+<li>graceful shutdown</li>
+<li>OAuth account info 预热</li>
+<li>JetBrains / Git 仓库检测</li>
+<li>upstream proxy（CCR 场景）</li>
+<li>scratchpad 目录初始化</li>
+</ul>
+<p>关键片段：</p>
+<pre><code class="language-ts">applySafeConfigEnvironmentVariables()
+applyExtraCACertsFromConfig()
+setupGracefulShutdown()
+...
+if (isEligibleForRemoteManagedSettings()) {
+  initializeRemoteManagedSettingsLoadingPromise()
+}
+if (isPolicyLimitsEligible()) {
+  initializePolicyLimitsLoadingPromise()
+}
+</code></pre>
+<p>文件：<code>src/entrypoints/init.ts</code></p>
+<p>这里体现的是“信任建立前后的分层初始化”。</p>
+<h3 id="section-15">4.3 <code>src/main.tsx</code>：真正的系统编排根</h3>
+<p><code>main.tsx</code> 才是整套系统的实控中心。它要做的事包括：</p>
+<ul>
+<li>argv 改写与模式识别</li>
+<li>interactive / non-interactive 分流</li>
+<li>commander 命令树构建</li>
+<li><code>preAction</code> 统一初始化</li>
+<li>migration</li>
+<li>inline plugin 目录绑定</li>
+<li>remote managed settings / policy limits 热加载</li>
+<li>默认 action 对 REPL 或 headless 的跳转</li>
+</ul>
+<p><code>preAction</code> 是这个文件里最关键的隐藏节点：</p>
+<pre><code class="language-ts">program.hook('preAction', async thisCommand =&gt; {
+  await Promise.all([ensureMdmSettingsLoaded(), ensureKeychainPrefetchCompleted()]);
+  await init();
+  ...
+  const { initSinks } = await import('./utils/sinks.js');
+  initSinks();
+  ...
+  runMigrations();
+  void loadRemoteManagedSettings();
+  void loadPolicyLimits();
+})
+</code></pre>
+<p>文件：<code>src/main.tsx</code></p>
+<p>这一层的设计意图很明确：避免子命令绕开关键初始化。</p>
+<h3 id="section-16">4.4 <code>--settings</code> 的 content-hash 路径是 cache 设计的一部分</h3>
+<p>这是一个特别典型的“跨模块隐式契约”。</p>
+<pre><code class="language-ts">// Use a content-hash-based path instead of random UUID to avoid
+// busting the Anthropic API prompt cache.
+settingsPath = generateTempFilePath('claude-settings', '.json', {
+  contentHash: trimmedSettings
+});
+</code></pre>
+<p>文件：<code>src/main.tsx</code></p>
+<p>原因不是“文件路径美观”，而是：</p>
+<ul>
+<li>settings 路径会进入 Bash sandbox deny list</li>
+<li>deny list 又会进入 tool description</li>
+<li>tool description 会被送进 API prompt 前缀</li>
+<li>如果路径每次都随机，prompt cache prefix 就会被持续打爆</li>
+</ul>
+<p>这里的 <code>content hash</code> 不是维护一张映射表，而是做了一个确定性函数映射。<code>src/utils/tempfile.ts</code> 的实现是：</p>
+<pre><code class="language-ts">const id = options?.contentHash
+  ? createHash('sha256')
+      .update(options.contentHash)
+      .digest('hex')
+      .slice(0, 16)
+  : randomUUID()
+return join(tmpdir(), `${prefix}-${id}${extension}`)
+</code></pre>
+<p>文件：<code>src/utils/tempfile.ts</code></p>
+<p>这意味着：</p>
+<ul>
+<li>输入是 <code>trimmedSettings</code> 这段 settings 原文</li>
+<li>系统会对它做 <code>SHA-256</code></li>
+<li>取十六进制结果前 <code>16</code> 位作为稳定标识</li>
+<li>最终路径形态类似：<code>/tmp/claude-settings-&lt;16位hash&gt;.json</code></li>
+</ul>
+<p>相同内容永远映射到相同路径，不同内容才会映射到不同路径。这个路径不是为了“可读性”，而是为了“模型可见字节稳定性”。</p>
+<p>这条链路在源码里是闭环的：</p>
+<ol>
+<li><code>main.tsx</code> 把 <code>--settings</code> 的 JSON 内容写到 content-hash 命名的临时文件。</li>
+<li>sandbox 配置会把相关路径带进 Bash 的文件系统限制描述。</li>
+<li><code>src/tools/BashTool/prompt.ts</code> 会把 <code>denyWithinAllow</code> 等限制序列化进 BashTool 的 prompt 文本。</li>
+<li><code>src/utils/api.ts</code> 在生成 API tool schema 时，使用的是 <code>await tool.prompt(...)</code> 的结果，而不是短说明。</li>
+<li>于是 BashTool prompt 的字节变化，会直接影响送给模型的 tool description，进而影响 API prompt cache 前缀。</li>
+</ol>
+<p>其中第 3、4 步的关键代码分别在：</p>
+<pre><code class="language-ts">const filesystemConfig = {
+  read: {
+    denyOnly: dedup(fsReadConfig.denyOnly),
+    ...(fsReadConfig.allowWithinDeny &amp;&amp; {
+      allowWithinDeny: dedup(fsReadConfig.allowWithinDeny),
+    }),
+  },
+  write: {
+    allowOnly: normalizeAllowOnly(fsWriteConfig.allowOnly),
+    denyWithinAllow: dedup(fsWriteConfig.denyWithinAllow),
+  },
+}
+</code></pre>
+<p>文件：<code>src/tools/BashTool/prompt.ts</code></p>
+<pre><code class="language-ts">base = {
+  name: tool.name,
+  description: await tool.prompt({
+    getToolPermissionContext: options.getToolPermissionContext,
+    tools: options.tools,
+    agents: options.agents,
+    allowedAgentTypes: options.allowedAgentTypes,
+  }),
+  input_schema,
+}
+</code></pre>
+<p>文件：<code>src/utils/api.ts</code></p>
+<p>为什么说这件事最体现“工程味道”：</p>
+<ul>
+<li>它优化的不是本地代码写法，而是最终 API 成本和 cache 命中率这个系统级指标。</li>
+<li>它定位的是“真正进入模型前缀的那一层字节”，不是停留在 CLI 参数处理表面。</li>
+<li>它考虑的是跨进程稳定性。注释已经写明，SDK 的每次 <code>query()</code> 可能都会起新进程，所以随机 UUID 会让完全相同的 settings 在每次调用里都变成不同 prompt 前缀。</li>
+<li>它没有为了性能破坏现有安全/功能路径，而是在保留“真实临时文件 + 现有 sandbox 机制”的前提下，把随机名改成稳定名，属于低侵入但高收益的修正。</li>
+</ul>
+<p>记忆锚点可以压缩成一句话：</p>
+<blockquote>
+<p>这里优化的不是“临时文件名”，而是“模型看到的工具描述字节稳定性”；真正被保护的是 prompt cache，而不是文件系统美观。</p>
+</blockquote>
+<h2 id="section-17">5. 多运行面：CLI、REPL、Headless、Bridge</h2>
+<h3 id="section-18">5.1 这套系统至少有 4 类运行面</h3>
+<ol>
+<li>CLI fast path</li>
+<li>Interactive REPL / Ink TUI</li>
+<li>Headless / SDK / structured IO</li>
+<li>Bridge / Remote Control / background / daemon 类运行面</li>
+</ol>
+<h3 id="section-19">5.2 Interactive REPL 不是“聊天界面”</h3>
+<p><code>src/screens/REPL.tsx</code> 虽然名字叫 screen，但实际承担了大量 runtime orchestration：</p>
+<ul>
+<li>AppState 与消息流</li>
+<li>权限弹窗</li>
+<li>MCP 连接与增量工具面</li>
+<li>slash command</li>
+<li>IDE 集成</li>
+<li>background tasks</li>
+<li>session restore</li>
+<li>notifications</li>
+<li>input/output flow</li>
+</ul>
+<p>因此它本质上更像“交互 runtime shell”，不是纯展示组件。</p>
+<h3 id="section-20">5.3 Headless 不是降级模式</h3>
+<p><code>src/QueryEngine.ts</code> 不是另一套模型引擎，而是 headless host。</p>
+<p>它负责：</p>
+<ul>
+<li>会话级 mutable messages</li>
+<li>permission denial 跟踪</li>
+<li>systemPrompt/userContext/systemContext 构建</li>
+<li>structured output tool 跟踪</li>
+<li>transcript persistence</li>
+<li>replay 与 SDK 输出标准化</li>
+</ul>
+<p>核心关系是：</p>
+<ul>
+<li>REPL 路径与 headless 路径共享底层 <code>query()</code></li>
+<li>区别主要在宿主层状态管理、交互能力与输出协议</li>
+</ul>
+<h2 id="section-21">6. 端到端请求生命周期</h2>
+<p>从“用户输入一句话”到“系统返回结果”，主链路可以概括为：</p>
+<ol>
+<li>用户从 REPL 或 headless 入口提交 prompt。</li>
+<li>入口层装配 <code>ToolUseContext</code>、tools、commands、MCP state、settings。</li>
+<li><code>fetchSystemPromptParts()</code> 取 <code>defaultSystemPrompt + userContext + systemContext</code>。</li>
+<li><code>buildEffectiveSystemPrompt()</code> 决定最终使用默认 prompt、custom prompt、agent prompt 还是 coordinator prompt。</li>
+<li>进入 <code>query()</code> 主循环。</li>
+<li>query 对历史消息做 <code>tool result budget -&gt; snip -&gt; microcompact -&gt; context collapse -&gt; autocompact</code>。</li>
+<li>调用模型流式采样。</li>
+<li>流式收集 assistant message 和 <code>tool_use</code> blocks。</li>
+<li>通过 <code>StreamingToolExecutor</code> 或 <code>toolOrchestration.runTools()</code> 执行工具。</li>
+<li>工具执行通常先进入统一执行壳；其中输入校验、pre-tool hooks、permission resolution 是主干，classifier / sandbox 则按工具类型和 mode 命中子路径。</li>
+<li>工具结果被归并回消息链，必要时继续 follow-up query。</li>
+<li>transcript、session memory、compact state、usage、notifications 分别落地。</li>
+<li>按 REPL/headless/bridge 各自协议输出。</li>
+</ol>
+<p>这条链路的关键是：它不是“请求一次模型，跑一下工具”。它是一个持续治理上下文、权限、缓存、持久化和执行反馈的 agent loop。</p>
+<h2 id="section-22">7. Prompt / Context / Cache 架构</h2>
+<h2 id="section-23">7.1 <code>prompts.ts</code> 的真实定位</h2>
+<p><code>src/constants/prompts.ts</code> 最大的误导是名字。它不是 prompt 常量表，而是 prompt 编排器。</p>
+<p>最关键常量：</p>
+<pre><code class="language-ts">export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
+  '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__'
+</code></pre>
+<p>文件：<code>src/constants/prompts.ts</code></p>
+<p>它后面跟着明确警告：</p>
+<ul>
+<li>不要移动或删除这个 marker</li>
+<li><code>src/utils/api.ts</code></li>
+<li><code>src/services/api/claude.ts</code></li>
+</ul>
+<p>都依赖它来切分缓存边界</p>
+<h3 id="section-24">7.2 <code>getSystemPrompt()</code> 的结构是“静态 prefix + 动态 section registry”</h3>
+<p>主 prompt 的构造模式：</p>
+<pre><code class="language-ts">return [
+  getSimpleIntroSection(outputStyleConfig),
+  getSimpleSystemSection(),
+  ...,
+  ...(shouldUseGlobalCacheScope() ? [SYSTEM_PROMPT_DYNAMIC_BOUNDARY] : []),
+  ...resolvedDynamicSections,
+].filter(s =&gt; s !== null)
+</code></pre>
+<p>文件：<code>src/constants/prompts.ts</code></p>
+<p>这里的架构意义非常强：</p>
+<ul>
+<li>静态部分用于跨用户/跨会话缓存</li>
+<li>动态部分包含 session-specific 内容，避免污染全局 cache prefix</li>
+</ul>
+<h3 id="section-25">7.3 <code>systemPrompt</code> 不是唯一来源，<code>userContext</code>/<code>systemContext</code> 也是 cache prefix 一部分</h3>
+<p><code>src/utils/queryContext.ts</code> 写得非常明确：</p>
+<pre><code class="language-ts">/**
+ * Shared helpers for building the API cache-key prefix
+ * (systemPrompt, userContext, systemContext) for query() calls.
+ */
+</code></pre>
+<p>文件：<code>src/utils/queryContext.ts</code></p>
+<p>这意味着：分析 prompt 不能只看 <code>prompts.ts</code>，还必须看：</p>
+<ul>
+<li><code>src/context.ts</code></li>
+<li><code>src/utils/queryContext.ts</code></li>
+<li><code>src/utils/systemPrompt.ts</code></li>
+</ul>
+<h3 id="section-26">7.4 <code>getSystemContext()</code> 的 git status 是会话快照，不是实时观察</h3>
+<p><code>context.ts</code> 明写：</p>
+<pre><code class="language-ts">return [
+  `This is the git status at the start of the conversation. Note that this status is a snapshot in time, and will not update during the conversation.`,
+  ...
+].join('\n\n')
+</code></pre>
+<p>文件：<code>src/context.ts</code></p>
+<p>这点非常关键。很多人会误以为 Claude 始终看到最新 git 状态，但这里明确只是会话启动时的快照。</p>
+<h3 id="section-27">7.5 effective system prompt 还有多级优先级</h3>
+<p><code>src/utils/systemPrompt.ts</code> 定义了真正的 prompt 选择逻辑：</p>
+<p>源码注释里的优先级可以直接读成：</p>
+<ol>
+<li><code>overrideSystemPrompt</code>：最高优先级，直接替换全部其他 prompt。</li>
+<li><code>Coordinator system prompt</code>：协调器模式开启且主线程没有 agent 时生效。</li>
+<li><code>Agent system prompt</code>：如果主线程绑定了 agent，则优先使用 agent prompt。</li>
+<li><code>customSystemPrompt</code>：用户显式传入的自定义 prompt。</li>
+<li><code>defaultSystemPrompt</code>：默认 Claude Code system prompt。</li>
+</ol>
+<p>这里真正重要的不是“有 5 档优先级”，而是它说明 effective system prompt 并不是简单在 <code>prompts.ts</code> 里一次拼完，而是会在运行时根据 coordinator / agent / custom / override 等状态再做一次选择。</p>
+<p>而且 proactive 模式下 agent prompt 是 append，不是 replace：</p>
+<pre><code class="language-ts">if (agentSystemPrompt &amp;&amp; ... isProactiveActive_SAFE_TO_CALL_ANYWHERE()) {
+  return asSystemPrompt([
+    ...defaultSystemPrompt,
+    `\n# Custom Agent Instructions\n${agentSystemPrompt}`,
+    ...(appendSystemPrompt ? [appendSystemPrompt] : []),
+  ])
+}
+</code></pre>
+<p>文件：<code>src/utils/systemPrompt.ts</code></p>
+<p>记忆锚点：</p>
+<blockquote>
+<p><code>prompts.ts</code> 负责“生产默认 prompt”，<code>systemPrompt.ts</code> 负责“决定这次最终到底用哪份 prompt”。</p>
+</blockquote>
+<h3 id="section-28">7.6 API 层会再次把 system prompt 转成 cache-control block</h3>
+<p><code>src/utils/api.ts</code> 的 <code>splitSysPromptPrefix()</code> 再次把 prompt 拆成不同 cache scope：</p>
+<pre><code class="language-ts">if (staticJoined)
+  result.push({ text: staticJoined, cacheScope: 'global' })
+if (dynamicJoined)
+  result.push({ text: dynamicJoined, cacheScope: null })
+</code></pre>
+<p>文件：<code>src/utils/api.ts</code></p>
+<p><code>src/services/api/claude.ts</code> 则最终转成 API block：</p>
+<pre><code class="language-ts">return splitSysPromptPrefix(systemPrompt, {
+  skipGlobalCacheForSystemPrompt: options?.skipGlobalCacheForSystemPrompt,
+}).map(block =&gt; {
+  return {
+    type: 'text' as const,
+    text: block.text,
+    ...(enablePromptCaching &amp;&amp;
+      block.cacheScope !== null &amp;&amp; {
+        cache_control: getCacheControl({
+          scope: block.cacheScope,
+          querySource: options?.querySource,
+        }),
+      }),
+  }
+})
+</code></pre>
+<p>文件：<code>src/services/api/claude.ts</code></p>
+<p>这进一步证明：Prompt 架构和 API cache 架构是一套东西，不是两个独立子系统。</p>
+<h3 id="section-29">7.7 组合后的 prompt 模板</h3>
+<p>把 <code>prompts.ts</code>、<code>systemPrompt.ts</code>、<code>queryContext.ts</code>、<code>context.ts</code> 和 API 层拼在一起，可以把一次请求实际经历的 prompt 组合过程理解成下面这个模板：</p>
+<pre><code class="language-text">[第 1 层：默认 prompt 生产层]
+defaultSystemPrompt =
+  静态前缀：
+    Intro
+    System
+    Doing tasks
+    Actions
+    Using your tools
+    Tone and style
+    Output efficiency
+  + （可选）SYSTEM_PROMPT_DYNAMIC_BOUNDARY
+  + 动态后缀：
+    session_guidance
+    memory
+    ant_model_override
+    env_info
+    language
+    output_style
+    mcp_instructions
+    scratchpad
+    frc
+    summarize_tool_results
+    ...
+
+[第 2 层：effective prompt 选择层]
+effectiveSystemPrompt =
+  overrideSystemPrompt
+  or coordinatorSystemPrompt
+  or agentSystemPrompt
+  or customSystemPrompt
+  or defaultSystemPrompt
+  + appendSystemPrompt
+
+[第 3 层：cache-key prefix 组合层]
+queryPrefix =
+  effectiveSystemPrompt
+  + userContext
+  + systemContext
+
+[第 4 层：API block 转换层]
+apiSystemBlocks =
+  attribution header
+  + CLI system prompt prefix
+  + static blocks (global/org cache)
+  + dynamic blocks (uncached)
+</code></pre>
+<p>如果再压缩成一句更好记的话：</p>
+<ul>
+<li><code>prompts.ts</code> 负责“生产默认 prompt 原料”</li>
+<li><code>systemPrompt.ts</code> 负责“决定这次最终采用哪份 prompt”</li>
+<li><code>queryContext.ts</code> / <code>context.ts</code> 负责“把 user/system context 一起拼进 cache-key prefix”</li>
+<li><code>utils/api.ts</code> / <code>services/api/claude.ts</code> 负责“把这份 prefix 再切成 API 可缓存的 block”</li>
+</ul>
+<p>这个模板的意义是：以后再看 prompt 相关问题时，不要只盯着 <code>prompts.ts</code>。真正决定模型最终看到什么，要至少沿着这 4 层一起看。</p>
+<p>再给一个“组合完成后的示意结果”，帮助把抽象模板落地。下面不是仓库里的真实 prompt 全文，而是一个结构上等价、便于记忆的示意例子：</p>
+<pre><code class="language-text">场景假设：
+- 当前是 proactive 模式
+- 主线程绑定了一个 agent
+- 用户额外传了 appendSystemPrompt
+- userContext 里有 CLAUDE.md 摘要
+- systemContext 里有 gitStatus 快照
+
+[A. 默认 prompt 原料：来自 prompts.ts]
+defaultSystemPrompt = [
+  &quot;# Intro ...&quot;,
+  &quot;# System ...&quot;,
+  &quot;# Doing tasks ...&quot;,
+  &quot;# Actions ...&quot;,
+  &quot;# Using your tools ...&quot;,
+  &quot;# Tone and style ...&quot;,
+  &quot;# Output efficiency ...&quot;,
+  &quot;__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__&quot;,
+  &quot;# Session-specific guidance ...&quot;,
+  &quot;# Memory ...&quot;,
+  &quot;# Environment info ...&quot;,
+  &quot;# MCP Server Instructions ...&quot;,
+]
+
+[B. effective prompt：来自 systemPrompt.ts]
+effectiveSystemPrompt = [
+  ...defaultSystemPrompt,
+  &quot;# Custom Agent Instructions\nYou are the review agent for ...&quot;,
+  &quot;Please keep the final answer under 200 words unless I ask for more.&quot;,
+]
+
+[C. 进入 query() 之后的最终请求骨架]
+systemPromptForModel = [
+  ...effectiveSystemPrompt,
+  &quot;gitStatus: This is the git status at the start of the conversation ...&quot;,
+]
+
+messagesForModel = [
+  user(meta):
+    &lt;system-reminder&gt;
+    As you answer the user's questions, you can use the following context:
+    # claudeMd
+    ...
+    IMPORTANT: this context may or may not be relevant ...
+    &lt;/system-reminder&gt;,
+  user(actual): &quot;请帮我分析这个模块&quot;,
+  assistant/history/tool_result ...
+]
+
+[D. API 层真正发送的 system blocks：来自 utils/api.ts + services/api/claude.ts]
+apiSystemBlocks = [
+  { text: &quot;x-anthropic-billing-header: ...&quot;, cacheScope: null },
+  { text: &quot;CLI system prompt prefix&quot;, cacheScope: null 或 org },
+  { text: &quot;静态前缀合并块&quot;, cacheScope: global 或 org },
+  { text: &quot;动态后缀 + systemContext&quot;, cacheScope: null 或 org },
+]
+</code></pre>
+<p>这个例子里最容易记错的点有两个：</p>
+<ol>
+<li><code>userContext</code> 不是 append 到 system prompt 尾部，而是作为一个额外的 meta user message 插进 messages 最前面。</li>
+<li><code>systemContext</code> 才是 append 到 system prompt 尾部的那部分，会和 prompt 本体一起进入 system blocks 的切分流程。</li>
+</ol>
+<h4 id="section-30">7.7.1 按阅读视角看到的 system prompt 主体模板</h4>
+<pre><code class="language-text"># 简介
+你是一个交互式代理，旨在协助用户处理软件工程任务。请使用下述指令及可用工具为用户提供帮助。你必须永远不要为用户生成或猜测 URL，除非你确信这些 URL 是为了帮助用户进行编程。
+
+# 系统规则
+交互方式：你在工具调用之外输出的所有文本都会显示给用户。你可以使用 GitHub 风格的 Markdown 进行格式化。
+
+权限模式：工具在用户选择的权限模式下执行。如果用户拒绝了某个工具调用，请不要尝试重复完全相同的调用，而应思考原因并调整方法。
+
+自动压缩：系统会在对话接近上下文限制时自动压缩之前的消息。这意味着对话不受单一上下文窗口的限制。
+
+# 执行任务规范
+拒绝过度开发：不要添加未要求的特性、重构代码或进行“改进”。简单功能的实现不需要额外的可配置性。
+
+注释准则：不要为你没有更改的代码添加文档字符串、注释或类型注解。仅在逻辑不直观时添加注释。
+
+复杂度控制：不要为不可能发生的场景创建助手、工具函数或抽象。三行相似的代码好过一个不成熟的抽象。
+
+安全第一：注意不要引入命令注入、XSS、SQL 注入等安全漏洞。如果你发现编写了不安全的代码，请立即修复。
+
+忠实报告：诚实地报告结果。如果测试失败，请结合相关输出说明情况；如果你没有运行验证步骤，请如实告知，而非暗示其已成功。
+
+# 操作风险控制
+在执行操作前，请仔细考虑其可逆性和影响范围。对于难以逆转、影响本地环境之外的共享系统或具有破坏性的操作（如 rm -rf、强制推送、删除分支、修改 CI/CD 管道等），必须先征得用户确认。
+
+# 工具使用规范
+专用工具优先：严禁在有专用工具的情况下使用 bash 运行命令。
+
+使用 read_file 代替 cat 或 sed。
+
+使用 edit_file 代替 sed 或 awk。
+
+使用 write_file 代替 echo 重定向。
+
+并行调用：尽可能并行调用互不依赖的工具以提高效率。如果存在依赖关系，则必须按顺序调用。
+
+# 语气与风格
+禁止表情：除非用户明确要求，否则不要在所有沟通过程中使用表情符号。
+
+代码引用：引用特定函数或代码片段时，请包含 file_path:line_number 模式，以便用户导航。
+
+简洁明了：不要在工具调用前使用冒号。例如，应使用“让我读取文件。”而非“让我读取文件：”。
+
+# 输出效率
+直奔主题。尝试用最简单的方法，不要绕圈子。文本输出应保持简短直接，优先提供答案或行动，而非推理过程。如果你能用一句话说明，就不要用三句。
+
+__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__
+
+# 环境信息
+你已被调用至以下环境：
+
+当前工作目录: /home/user/project
+
+Git 仓库状态: 是
+
+平台: Linux
+
+Shell: bash
+
+操作系统版本: Linux 6.6.4
+
+模型信息: 你由 Claude Opus 4.6 模型驱动。该模型的 ID 为 claude-opus-4-6。
+
+知识截止日期: 2025 年 5 月。
+
+# 语言设置
+始终使用 中文 (Chinese) 进行回复。对所有解释、注释和与用户的沟通使用中文，但技术术语和代码标识符应保持其原始形式。
+</code></pre>
+<p>注意：这一段仍然只对应“最终请求里的 system prompt 主体”。真正发给模型的完整输入，还会像 <code>7.7</code> 开头那样继续叠加 <code>systemContext</code>，并把 <code>userContext</code> 作为一个额外的 meta user message 插到 messages 最前面。</p>
+<h4 id="section-31">7.7.2 按 API 传输层看到的最终结果</h4>
+<p>如果继续往下一层，看 Anthropic API 真正收到的“线上的请求形态”，它又不会是上面那种单一长字符串，而会近似变成：</p>
+<pre><code class="language-text">system blocks:
+1. attribution / billing header
+2. CLI 固定 system 前缀
+3. 可缓存静态 system 块
+   = defaultSystemPrompt + agent/custom/append 等稳定部分
+4. 动态 system 块
+   = systemContext，例如 gitStatus
+
+messages:
+1. meta user message
+   = userContext，例如 CLAUDE.md 摘要
+2. actual user message
+   = &quot;请帮我分析这个模块&quot;
+3. assistant/history/tool_result ...
+</code></pre>
+<p>所以，为什么你“新看到的还是这样”？</p>
+<ul>
+<li>因为这个系统客观上就同时存在“语义组合形态”和“API 传输形态”两种最终结果。</li>
+<li>我之前只把“分层过程”写出来了，没有把“人眼可读的最终摊平版”单独拎出来。</li>
+<li>你现在看到的 A/B/C/D 结构并不是错，而是它仍然停留在“内部装配视角”，不是“最终阅读视角”。</li>
+</ul>
+<p>这里最值得记住的一句话是：</p>
+<blockquote>
+<p>从阅读角度看，最终是一个摊平后的组合输入；从 API 角度看，最终又一定还是 <code>system blocks + messages</code> 的二段结构。</p>
+</blockquote>
+<h3 id="section-32">7.8 本模块的几个明确结论</h3>
+<ul>
+<li><code>prompts.ts</code> 不能按“文案常量”理解。</li>
+<li>prompt cache 是全仓一条贯穿主线。</li>
+<li>subagent、MCP、settings path、tool ordering 都在影响 cache key。</li>
+<li>这是整仓最值得单独深挖的主题之一。</li>
+</ul>
+<h2 id="section-33">8. Query 内核：真正的 agent runtime</h2>
+<h2 id="section-34">8.1 <code>query.ts</code> 是最核心的执行文件之一</h2>
+<p><code>query.ts</code> 不是“发请求给模型”的函数，而是整套 agent runtime 的主循环。</p>
+<p>它维护的不是单次调用，而是连续状态：</p>
+<ul>
+<li>messages</li>
+<li>toolUseContext</li>
+<li>compact / recovery 状态</li>
+<li>task budget</li>
+<li>tool use summary</li>
+<li>transition reason</li>
+</ul>
+<h3 id="section-35">8.2 <code>QueryConfig</code> 的意义是快照 runtime gates</h3>
+<p><code>src/query/config.ts</code>：</p>
+<pre><code class="language-ts">// Immutable values snapshotted once at query() entry.
+// Intentionally excludes feature() gates
+export function buildQueryConfig(): QueryConfig {
+  return {
+    sessionId: getSessionId(),
+    gates: {
+      streamingToolExecution: checkStatsigFeatureGate_CACHED_MAY_BE_STALE(...),
+      emitToolUseSummaries: isEnvTruthy(...),
+      isAnt: process.env.USER_TYPE === 'ant',
+      fastModeEnabled: !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_FAST_MODE),
+    },
+  }
+}
+</code></pre>
+<p>文件：<code>src/query/config.ts</code></p>
+<p>这里的 <code>runtime gates</code>，可以理解成“这次 query 期间要不要走某条运行时分支”的开关集合。所谓“快照化”，指的是在 <code>query()</code> 入口先把这一小组会影响行为的值读出来、锁进 <code>QueryConfig</code>，然后整轮 query 都按这份快照执行，避免中途重新读全局状态导致行为漂移。</p>
+<ul>
+<li>会被快照的，主要是 immutable env / statsig / session state，例如 <code>streamingToolExecution</code>、<code>emitToolUseSummaries</code>、<code>fastModeEnabled</code>。</li>
+<li>不在这里快照的，是 <code>feature()</code> 树上的另一类 gates；源码注释已经明确写了 <code>Intentionally excludes feature() gates</code>。</li>
+</ul>
+<p>所以更准确地说，<code>query()</code> 不是“冻结所有运行时开关”，而是冻结“这一轮必须保持稳定”的那一小组 gates。</p>
+<h3 id="section-36">8.3 上下文治理流水线不是互斥关系，而是层叠关系</h3>
+<p>在主循环里，执行顺序是：</p>
+<ol>
+<li><code>applyToolResultBudget</code></li>
+<li><code>snipCompactIfNeeded</code></li>
+<li><code>microcompact</code></li>
+<li><code>contextCollapse.applyCollapsesIfNeeded</code></li>
+<li><code>autocompact</code></li>
+</ol>
+<p>这几个机制不是替代关系，而是处理对象不同、触发层级不同的层叠关系：</p>
+<ol>
+<li><code>applyToolResultBudget</code> 先限制工具结果体积，处理对象是最新回注回来的高噪声 <code>tool_result</code>。</li>
+<li><code>snipCompactIfNeeded</code> 再裁历史，目标是先用较轻的结构性裁剪把 transcript 拉回预算内。</li>
+<li><code>microcompact</code> 继续压缩局部高体积块，尽量保留更多细粒度上下文，而不是立刻做整段摘要。</li>
+<li><code>contextCollapse.applyCollapsesIfNeeded</code> 是 read-time projection，先看能否通过折叠前文把当前 query 拉回阈值。</li>
+<li><code>autocompact</code> 才是更重的兜底手段；前面几层若已经把上下文压回安全范围，它就可以不触发。</li>
+</ol>
+<p>源码注释明确强调了顺序原因，例如 collapse 必须在 autocompact 前：</p>
+<pre><code class="language-ts">// Runs BEFORE autocompact so that if collapse gets us under the
+// autocompact threshold, autocompact is a no-op and we keep granular
+// context instead of a single summary.
+</code></pre>
+<p>文件：<code>src/query.ts</code></p>
+<p>所以这里真正该记住的不是“有五步”，而是“每一层都在处理不同对象，前一层不能简单替代后一层”。</p>
+<h3 id="section-37">8.4 <code>stop_reason === 'tool_use'</code> 被作者明确判定为不可靠</h3>
+<pre><code class="language-ts">// Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+</code></pre>
+<p>文件：<code>src/query.ts</code></p>
+<p>这类注释很重要，因为它揭示了系统行为不是照着 API 文档“理想路径”写的，而是经过线上经验修正。</p>
+<h3 id="section-38">8.5 <code>dumpPromptsFetch</code> 是一个典型的内存防御优化</h3>
+<pre><code class="language-ts">// Creating it once means only the latest request body is retained (~700KB),
+// instead of all request bodies from the session (~500MB for long sessions).
+</code></pre>
+<p>文件：<code>src/query.ts</code></p>
+<p>这是另一个高信号细节：这个团队不是只关注 correctness，也在做长会话下的 memory retention 工程。</p>
+<h3 id="section-39">8.6 <code>QueryEngine</code> 是 headless 会话宿主，不是另一套 loop</h3>
+<p><code>QueryEngine.submitMessage()</code> 主要负责：</p>
+<ul>
+<li>构造 prompt parts</li>
+<li>叠加 user/system context</li>
+<li>初始化 thinking config / model</li>
+<li>维护 mutable message store</li>
+<li>记录 transcript</li>
+<li>将输出标准化为 SDK 事件</li>
+<li>最终还是进入 <code>query()</code></li>
+</ul>
+<p>这一点很重要：REPL 与 headless 共享同一 agent 内核，只是宿主层不同。</p>
+<h2 id="section-40">9. Tool 协议与工具执行架构</h2>
+<h2 id="section-41">9.1 <code>ToolUseContext</code> 很重，这不是普通函数调用</h2>
+<p><code>src/Tool.ts</code> 里的 <code>ToolUseContext</code> 已经足以说明整个系统设计：</p>
+<pre><code class="language-ts">export type ToolUseContext = {
+  options: {
+    commands: Command[]
+    debug: boolean
+    mainLoopModel: string
+    tools: Tools
+    verbose: boolean
+    thinkingConfig: ThinkingConfig
+    mcpClients: MCPServerConnection[]
+    mcpResources: Record&lt;string, ServerResource[]&gt;
+    isNonInteractiveSession: boolean
+    agentDefinitions: AgentDefinitionsResult
+    ...
+  }
+  abortController: AbortController
+  readFileState: FileStateCache
+  getAppState(): AppState
+  setAppState(...)
+  addNotification?: ...
+  ...
+  renderedSystemPrompt?: SystemPrompt
+}
+</code></pre>
+<p>文件：<code>src/Tool.ts</code></p>
+<p>也就是说，Tool 执行不是“拿到入参，返回结果”，而是运行在一整个 session runtime 上下文里。</p>
+<p>更准确地说，<code>ToolUseContext</code> 把几类原本很容易被误以为“外围配套”的状态，全部拉进了工具执行核心：</p>
+<ul>
+<li>当前可见工具池</li>
+<li>thinking config / mainLoopModel</li>
+<li>MCP client 与资源视图</li>
+<li>整个消息历史 <code>messages</code></li>
+<li><code>getAppState()</code> / <code>setAppState()</code> 这种全局状态读写能力</li>
+<li><code>setInProgressToolUseIDs</code> / <code>setHasInterruptibleToolInProgress</code> 这种 UI 与执行器联动状态</li>
+<li><code>renderedSystemPrompt</code> 这种直接影响 fork cache 共享的 prompt 字节快照</li>
+</ul>
+<p>所以这里体现出的不是“工具函数参数很多”，而是一个更强的判断：</p>
+<ul>
+<li>Tool call 在这个系统里更像“进入 runtime 内核执行一个受控动作”</li>
+<li>而不是“普通业务函数调用”</li>
+</ul>
+<p>这套设计的优点是，工具可以天然参与：</p>
+<ul>
+<li>session 状态推进</li>
+<li>权限判断</li>
+<li>UI 反馈</li>
+<li>transcript 记录</li>
+<li>subagent / fork cache 共享</li>
+</ul>
+<p>代价也很明确：</p>
+<ul>
+<li><code>ToolUseContext</code> 一旦继续膨胀，工具和 runtime 的耦合面会越来越大</li>
+<li>fork / resume / background agent 之类场景，都会更依赖这份 context 的正确克隆与冻结</li>
+</ul>
+<h3 id="section-42">9.2 <code>src/tools.ts</code> 是模型可见工具面的总装厂</h3>
+<p>这个文件最关键的一句话是：</p>
+<pre><code class="language-ts">/**
+ * NOTE: This MUST stay in sync with ... claude_code_global_system_caching,
+ * in order to cache the system prompt across users.
+ */
+</code></pre>
+<p>文件：<code>src/tools.ts</code></p>
+<p>这说明工具列表和全局 system prompt cache 之间有直接耦合。</p>
+<p><code>getAllBaseTools()</code> 是内建工具真源；<code>getTools()</code> 再叠加：</p>
+<ul>
+<li>mode / env gating</li>
+<li>deny rules</li>
+<li>MCP 动态工具</li>
+<li>REPL/agent/headless 上下文</li>
+</ul>
+<p>如果把职责拆开看，这里其实有三层：</p>
+<ol>
+<li><code>getAllBaseTools()</code> 定义“这次构建里理论上可能存在的内建工具全集”</li>
+<li><code>getTools()</code> 按当前 session 的 mode / deny rules / REPL 状态，把内建工具裁成“当前主线程能看到的 built-in tool 集”</li>
+<li><code>assembleToolPool()</code> 再把 built-in tools 与 MCP tools 合并、排序、去重，形成真正送去模型的完整工具池</li>
+</ol>
+<p>这就是为什么这里不是“工具注册表”，而是“模型可见工具面的总装厂”：</p>
+<ul>
+<li>REPL、主线程、worker agent 并不是各自随手拼工具</li>
+<li>它们都尽量复用同一套装配函数，避免“显示给模型的工具面”和“实际执行的工具面”发生分叉</li>
+</ul>
+<p>这件事的工程收益有两层：</p>
+<ul>
+<li>行为一致性：不同运行面尽量看到同一套工具定义与权限过滤结果</li>
+<li>cache 一致性：工具池本身就是 cache-safe 参数的一部分，装配路径一旦分叉，就很容易把 prompt cache 打散</li>
+</ul>
+<h3 id="section-43">9.3 工具池的排序是有意为之</h3>
+<pre><code class="language-ts">const byName = (a: Tool, b: Tool) =&gt; a.name.localeCompare(b.name)
+return uniqBy(
+  [...builtInTools].sort(byName).concat(allowedMcpTools.sort(byName)),
+  'name',
+)
+</code></pre>
+<p>文件：<code>src/tools.ts</code></p>
+<p>这不是“排序美观”，而是为了稳定 prompt 字节序，提升 cache 命中。</p>
+<p>这一句如果不展开，读者其实很难知道“为什么排序会影响 cache”。真正的机制链是：</p>
+<ol>
+<li>这个系统发给模型的不只有 system prompt 文本，还有 tool schema 列表。</li>
+<li><code>src/utils/api.ts</code> 明确把 <code>serialized tool array bytes</code> 当成需要稳定保护的对象，而 <code>toolToAPISchema()</code> 会把工具池真正转换成发送给模型的 tool schema。</li>
+<li>多处 fork / compact / summary 路径又反复强调：要想复用 prompt cache，<code>system、tools、model、messages prefix、thinking config</code> 必须保持 cache-safe 参数一致。</li>
+<li>所以，一旦工具列表顺序变化，哪怕工具集合没怎么变，最终序列化出来的 tool schema 字节序也会变化，cache key 就会跟着变化。</li>
+</ol>
+<p>这里要再区分一下“主证据”和“旁证”：</p>
+<ul>
+<li>主证据是 <code>src/tools.ts</code> 和 <code>src/utils/api.ts</code> 自己都在显式保护 tool schema 的序列化字节稳定性。</li>
+<li><code>recordPromptState(system + toolSchemas + model)</code> 这类逻辑更适合当旁证：它证明系统把这组字段视为 cache break 的观测对象，但不该直接等同于服务端真实 cache key 定义。</li>
+</ul>
+<p><code>assembleToolPool()</code> 这里真正高明的点不是“排序”，而是“分区排序”：</p>
+<ul>
+<li>built-in tools 先按名字排序</li>
+<li>MCP tools 再按名字排序</li>
+<li>然后不是混排，而是 <code>built-in prefix + MCP tail</code></li>
+</ul>
+<p>源码注释已经把理由讲得很直白了：</p>
+<ul>
+<li>服务端的 <code>claude_code_system_cache_policy</code> 会把“最后一个前缀命中的 built-in tool”之后当成 cache breakpoint</li>
+<li>如果做 flat sort，让 MCP tool 插进 built-in 中间，那么只要某个 MCP tool 名字排进了这个中段，就会把它后面的 built-in 序列整体往后推</li>
+<li>结果就是：原本全局可共享的 built-in 前缀不再字节一致，后续整段 cache key 都会失效</li>
+</ul>
+<p>也就是说，它提升 cache 命中的方式不是“让整个工具列表永远不变”，而是：</p>
+<ul>
+<li>把最稳定、最值得全局共享的 built-in tools 固定成一个连续前缀</li>
+<li>把最容易按用户环境变化的 MCP tools 收敛到动态尾部</li>
+<li>这样即使 MCP server 增删、重连、工具变化，也优先只污染尾部，而不是把整段 built-in 前缀都打碎</li>
+</ul>
+<p><code>uniqBy(...)</code> 这里也不是细枝末节。它保留插入顺序，所以：</p>
+<ul>
+<li>built-in tools 先进入数组，天然拥有优先级</li>
+<li>如果 MCP tool 与 built-in tool 同名，最终保留下来的仍然是 built-in 版本</li>
+<li>这进一步保证了“稳定前缀”不会被动态工具覆盖</li>
+</ul>
+<p>所以更准确的总结应该是：</p>
+<blockquote>
+<p><code>9.3</code> 的重点不是“排序让输出更整齐”，而是“通过 built-in 前缀稳定化，把 cache 失效面从整段工具面收缩到 MCP 动态尾部”。</p>
+</blockquote>
+<h3 id="section-44">9.4 并发不是“所有只读一起跑”，而是“连续 safe block 才一起跑”</h3>
+<p><code>src/services/tools/toolOrchestration.ts</code>：</p>
+<pre><code class="language-ts">function partitionToolCalls(...) {
+  ...
+  if (isConcurrencySafe &amp;&amp; acc[acc.length - 1]?.isConcurrencySafe) {
+    acc[acc.length - 1]!.blocks.push(toolUse)
+  } else {
+    acc.push({ isConcurrencySafe, blocks: [toolUse] })
+  }
+}
+</code></pre>
+<p>文件：<code>src/services/tools/toolOrchestration.ts</code></p>
+<p>这意味着：</p>
+<ul>
+<li>并发度受模型输出顺序影响</li>
+<li>不是所有 safe tool 自动组成一个大批次</li>
+<li>只会合并相邻 safe blocks</li>
+</ul>
+<p>这里的 <code>safe</code> 不是工具类型常量，而是对“这次具体 tool input”做出的运行时判断。源码调用的是 <code>tool.isConcurrencySafe(parsedInput.data)</code>，所以同一个工具在不同输入下，也可能落入不同批次策略。</p>
+<p>但这还没把“为什么这样设计”讲透。</p>
+<p>这里真正保住的是“工具调用的顺序语义”。</p>
+<p><code>partitionToolCalls()</code> 不是先把所有 concurrency-safe tools 抽出来再统一并发，而是严格按模型输出顺序线性扫一遍：</p>
+<ul>
+<li>遇到 safe tool，就尝试并入当前 safe batch</li>
+<li>遇到非 safe tool，就立刻切断 batch</li>
+<li>后面的 safe tool 只能重新开一个新 batch，不能回头和前面的 safe batch 合并</li>
+</ul>
+<p>这样做的直接结果是：</p>
+<ul>
+<li>模型输出顺序本身就成了并发边界的一部分</li>
+<li>一个 non-safe tool 只要夹在中间，就会把前后 safe tools 分成两段</li>
+</ul>
+<p>为什么这不是“保守过头”，而是合理设计？</p>
+<p>因为工具执行不仅有 message 输出，还有 context 语义。</p>
+<p>在 <code>runTools()</code> 里，并发 batch 的 <code>contextModifier</code> 不是边跑边乱写，而是：</p>
+<ul>
+<li>先按 <code>toolUseID</code> 暂存</li>
+<li>等这一整个 safe block 跑完后</li>
+<li>再按原始 block 顺序回放到 <code>currentContext</code></li>
+</ul>
+<p>这说明系统宁可少吃一点并发，也要守住两件事：</p>
+<ul>
+<li>transcript / tool_result 的顺序语义</li>
+<li>context 更新的确定性</li>
+</ul>
+<p>所以这节更准确的解释应该是：</p>
+<ul>
+<li>这套并发模型不是“全局收集所有只读工具一起跑”</li>
+<li>而是“在不打乱模型原始动作顺序的前提下，尽量把相邻 safe 工具并发化”</li>
+</ul>
+<p>它的副作用也很有意思：</p>
+<ul>
+<li>并发上限不只取决于工具本身是否 safe</li>
+<li>还取决于模型会不会把 safe 调用连续吐出来</li>
+</ul>
+<p>换句话说，模型输出质量本身也在影响 runtime 并发度。</p>
+<h3 id="section-45">9.5 <code>StreamingToolExecutor</code> 的错误传播是非对称的</h3>
+<pre><code class="language-ts">// Only Bash errors cancel siblings.
+// Read/WebFetch/etc are independent — one failure shouldn't nuke the rest.
+if (tool.block.name === BASH_TOOL_NAME) {
+  this.hasErrored = true
+  this.siblingAbortController.abort('sibling_error')
+}
+</code></pre>
+<p>文件：<code>src/services/tools/StreamingToolExecutor.ts</code></p>
+<p>这很重要，因为它直接影响 agent loop 对并发工具失败的恢复语义。</p>
+<p>这里讨论的是 <code>StreamingToolExecutor</code> 这条流式执行路径里的 sibling cancellation 语义，不应直接外推为所有工具执行器的统一规则。</p>
+<p>如果只写到这里，读者还是不知道“为什么要故意非对称”。</p>
+<p>真正的设计意图是：</p>
+<ul>
+<li>并发读工具之间，失败通常彼此独立</li>
+<li>Bash 工具失败则经常带有隐式依赖链和状态含义</li>
+</ul>
+<p>比如：</p>
+<ul>
+<li><code>Read</code> 读某个文件失败，不代表另一个 <code>Read</code>、<code>WebFetch</code>、<code>Grep</code> 就没意义</li>
+<li>但 <code>Bash</code> 里的失败，往往意味着工作目录、前置命令、生成物、shell 状态已经不符合预期</li>
+</ul>
+<p>所以这里不是“Bash 更危险”这么简单，而是：</p>
+<ul>
+<li>Bash 更像在执行一段命令式过程</li>
+<li>一旦这段过程中的某个关键步骤报错，继续让 sibling 并发工具跑完，很多时候只是在制造更多噪音结果</li>
+</ul>
+<p><code>StreamingToolExecutor</code> 的处理是：</p>
+<ul>
+<li>当前 Bash tool 产出 error result 时，标记 <code>hasErrored = true</code></li>
+<li>设置 <code>erroredToolDescription</code></li>
+<li>直接对 sibling controller 发 <code>abort('sibling_error')</code></li>
+<li>其他并发工具再收到 abort 时，会被合成为 synthetic error message</li>
+</ul>
+<p>这带来的优点是：</p>
+<ul>
+<li>对 shell 类失败快速止损</li>
+<li>对 read/web 类失败保持独立性</li>
+<li>agent loop 后续看到的失败语义更贴近“哪种错误意味着整批动作应该停”</li>
+</ul>
+<p>所以这里的“非对称”不是补丁式例外，而是把工具语义分层了：</p>
+<ul>
+<li>Bash 失败 = 可能破坏整批命令执行前提</li>
+<li>非 Bash 失败 = 默认局部失败，不默认波及兄弟任务</li>
+</ul>
+<h3 id="section-46">9.6 streaming concurrent tools 目前不支持完整 context modifier</h3>
+<pre><code class="language-ts">// NOTE: we currently don't support context modifiers for concurrent tools.
+</code></pre>
+<p>文件：<code>src/services/tools/StreamingToolExecutor.ts</code></p>
+<p>这里最容易被写虚。真正要讲清楚的是“不支持的到底是哪种组合”。</p>
+<p>答案是：</p>
+<ul>
+<li>在 streaming execution 路径里</li>
+<li>如果某个工具既想被标记为 concurrency-safe</li>
+<li>又想通过 <code>contextModifier</code> 去修改 <code>ToolUseContext</code></li>
+<li>这一组合目前并没有被完整支持</li>
+</ul>
+<p>源码里已经把行为写死了：</p>
+<ul>
+<li><code>contextModifiers</code> 会被收集</li>
+<li>但真正应用时，只对 <code>!tool.isConcurrencySafe</code> 的工具执行</li>
+<li>也就是说，concurrent tool 的 context modifier 现在基本只被“记住”，不会像串行工具那样真正推进 live context</li>
+</ul>
+<p>这一点为什么重要？</p>
+<p>因为它决定了未来工具演进的边界：</p>
+<ul>
+<li>一个工具如果只是“只读 + 出文本结果”，它可以很自然地做成 concurrent-safe</li>
+<li>但一个工具如果将来既想并发执行，又想顺手改 session state、file history、budget、UI state 或别的 runtime context，就会撞到这里</li>
+</ul>
+<p>更关键的一层是：这不是整个工具系统都不支持，而是<strong>streaming concurrent path</strong> 不支持完整语义。</p>
+<p>在非 streaming 的 <code>runTools()</code> 路径里，并发 block 的 modifier 还能被收集后按顺序回放；但 <code>StreamingToolExecutor</code> 这里为了边流式边执行，把这层能力收缩掉了。</p>
+<p>所以这一节真正应该让读者记住的是：</p>
+<blockquote>
+<p>这不是“有个小 TODO 没做完”，而是“当前 runtime 明确不支持『并发执行 + 上下文变更』同时成立”，这是未来扩展工具类型时必须先补的约束点。</p>
+</blockquote>
+<h2 id="section-47">10. Agent / Subagent / Fork / Skill 架构</h2>
+<h2 id="section-48">10.1 Agent 不是 prompt 片段，而是二级 runtime</h2>
+<p><code>AgentTool</code> + <code>runAgent</code> 实际解决的是：</p>
+<ul>
+<li>agent type 选择</li>
+<li>sync vs async</li>
+<li>fork vs specialized subagent</li>
+<li>worktree / remote / background</li>
+<li>agent-specific MCP</li>
+<li>transcript sidechain</li>
+<li>permission mode 缩域</li>
+<li>tool pool 定制</li>
+<li>thinking config 控制</li>
+</ul>
+<p>这里的“二级 runtime”不是修辞，而是指主线程内部再启动一个拥有独立 <code>ToolUseContext</code>、消息链和 <code>query()</code> 循环的次级执行宿主。也正因为如此，agent 才不是简单的 prompt 片段展开。</p>
+<h3 id="section-49">10.2 agent 覆盖优先级是显式的</h3>
+<p><code>src/tools/AgentTool/loadAgentsDir.ts</code>：</p>
+<pre><code class="language-ts">const agentGroups = [
+  builtInAgents,
+  pluginAgents,
+  userAgents,
+  projectAgents,
+  flagAgents,
+  managedAgents,
+]
+</code></pre>
+<p>更精确地说，这是构建 <code>activeAgents</code> 时，同名 <code>agentType</code> 冲突下的覆盖顺序；<code>allAgents</code> 仍然保留所有定义。其最短因果链就是：先按 source 分组，再通过 <code>Map.set(agentType, agent)</code> 用后者覆盖前者。</p>
+<p>这意味着优先级是：</p>
+<p><code>built-in &lt; plugin &lt; userSettings &lt; projectSettings &lt; flagSettings &lt; policySettings</code></p>
+<h3 id="section-50">10.3 <code>allowedTools</code> 并不等于完全切断父权限</h3>
+<p><code>runAgent.ts</code> 明确保留 SDK <code>cliArg</code> 级别授权：</p>
+<pre><code class="language-ts">if (allowedTools !== undefined) {
+  toolPermissionContext = {
+    ...toolPermissionContext,
+    alwaysAllowRules: {
+      cliArg: state.toolPermissionContext.alwaysAllowRules.cliArg,
+      session: [...allowedTools],
+    },
+  }
+}
+</code></pre>
+<p>文件：<code>src/tools/AgentTool/runAgent.ts</code></p>
+<p>这属于非常容易误判的边界。更准确地说：</p>
+<ul>
+<li><code>allowedTools</code> 会重写子 agent 的 session allow。</li>
+<li><code>cliArg</code> 级 allow 会被保留，因为它被视为更高信任来源的“调用方显式授权”。</li>
+<li>但这不等于“父权限整体泄漏”；deny rules、permission prompt 行为和其他 permission context 仍按子上下文继续生效。</li>
+</ul>
+<h3 id="section-51">10.4 fork child 和普通 subagent 不是一回事</h3>
+<p><code>runAgent.ts</code> 里，fork child 为了 prompt cache 要继承 exact tools 与 thinking config：</p>
+<pre><code class="language-ts">thinkingConfig: useExactTools
+  ? toolUseContext.options.thinkingConfig
+  : { type: 'disabled' as const },
+...
+// Fork children ... need querySource on context.options
+...(useExactTools &amp;&amp; { querySource }),
+</code></pre>
+<p>文件：<code>src/tools/AgentTool/runAgent.ts</code></p>
+<p>这说明 fork 的设计目标之一不是“整个请求与父请求完全一致”，而是继承 cache-critical 参数，并构造尽可能长的共享前缀来提高 cache 命中。这里的 <code>querySource</code> 则另有职责，它主要服务于递归 fork 防护，不应和 cache 机制混为一谈。</p>
+<h3 id="section-52">10.5 Skill 也不是本地 prompt 宏</h3>
+<p>这里也要写得条件化一些。更准确的说法是：Skill 是统一的 prompt-command / skill 分发层；默认路径更接近 prompt 展开与 command materialization，而 <code>context: fork</code> 的 skill 才会借 subagent runtime 执行。所以它不能被简单理解成“纯文本本地 prompt 宏”，但也不能反过来把所有 skill 都当成 agent runtime。</p>
+<h2 id="section-53">11. 权限与沙箱：真正的安全边界</h2>
+<h2 id="section-54">11.1 权限不是一层，而是多层决策叠加</h2>
+<p>更准确地说，它不是“所有请求都会完整经过的线性七层栈”，而是“核心判定层 + 场景分支层”：</p>
+<ol>
+<li>静态 allow/deny rules 与工具级规则检查</li>
+<li>mode-specific restrictions 与 coordinator/swarm/worker 特判</li>
+<li>classifier / permission hooks / user prompt 等分支化判定</li>
+<li>OS sandbox 作为部分路径上的运行时兜底</li>
+</ol>
+<p>不同场景再走不同分流：</p>
+<ul>
+<li>interactive 路径里，hooks、classifier 和本地确认对话框并不是全局固定顺序。</li>
+<li>coordinator / swarm 路径里，会先等自动检查结果，再决定是否落到 dialog。</li>
+<li>async / forked 路径里，则更强调“无法本地弹 UI 时如何交给 hooks 或 auto-deny”。</li>
+</ul>
+<h3 id="section-55">11.2 auto mode 会主动识别危险规则</h3>
+<p><code>permissionSetup.ts</code>：</p>
+<pre><code class="language-ts">// Dangerous patterns:
+// 1. Tool-level allow (Bash with no ruleContent)
+// 2. Prefix rules for script interpreters (python:*, node:*, etc.)
+// 3. Wildcard rules matching interpreters (python*, node*, etc.)
+</code></pre>
+<p>文件：<code>src/utils/permissions/permissionSetup.ts</code></p>
+<p>这里也要把结论收窄。更准确地说：进入 auto / plan-auto 相关路径时，系统会主动剥离那些可能绕过 classifier 的危险 allow 规则；退出这些路径时，再把配置恢复回来。它保护的重点不是“识别”本身，而是既不让危险规则绕过 classifier，又不永久改坏用户配置。风险面也不只 Bash，还包括 PowerShell、Agent，部分环境下还会覆盖 Tmux。</p>
+<h3 id="section-56">11.3 无本地 UI 的权限交互会走分流路径</h3>
+<p><code>permissions.ts</code>：</p>
+<pre><code class="language-ts">if (appState.toolPermissionContext.shouldAvoidPermissionPrompts) {
+  ...
+  return {
+    behavior: 'deny',
+    decisionReason: {
+      type: 'asyncAgent',
+      reason: 'Permission prompts are not available in this context'
+    },
+  }
+}
+</code></pre>
+<p>文件：<code>src/utils/permissions/permissions.ts</code></p>
+<p>这里也不能把 <code>headless</code> 和“无 UI async agent”混成一类。更准确的说法是：</p>
+<ul>
+<li>无 UI async / forked agent 路径里，系统会先跑 hooks；如果当前宿主确实无法弹 permission prompt，再 fallback 到 auto-deny。</li>
+<li>headless SDK / print 这类路径，并不等于“没有 prompt”，而更接近把审批委托给 <code>structuredIO</code> 或外部 <code>permissionPromptTool</code> 消费者。</li>
+</ul>
+<p>所以这条逻辑真正定义的是：不同宿主在“谁来承接权限交互”这件事上，边界并不一样。</p>
+<h3 id="section-57">11.4 sandbox 的路径语义和 permission rule 的路径语义并不相同</h3>
+<p>这是整个系统里最容易误读的点之一。</p>
+<p><code>sandbox-adapter.ts</code> 不只是“解释 sandbox settings”，还会把 <code>permissions.allow/deny</code> 里的 WebFetch / Edit / Read 规则折叠进 sandbox runtime config。但它自己的路径语义并不完全等同于 permission rules。</p>
+<p>最短的可操作心智模型是：</p>
+<ul>
+<li>permission rule 里的 <code>/path</code> 更接近 settings-relative 规则。</li>
+<li><code>sandbox.filesystem.*</code> 里的 <code>/path</code> 则更接近 absolute path；<code>//path</code> 还承担兼容旧语义的 escape 角色。</li>
+<li>例如同样写 <code>/tmp/demo.txt</code>，放在 permission rule 里和放在 sandbox filesystem 配置里，解释基准并不相同。</li>
+</ul>
+<p>如果不把这个差别说出来，读者很容易把“规则层允许/禁止的路径”和“OS sandbox 真实看到的路径”误以为是一回事。</p>
+<h3 id="section-58">11.5 sandbox 会对 settings / skills 路径做定向写保护</h3>
+<pre><code class="language-ts">denyWrite.push(...settingsPaths)
+denyWrite.push(getManagedSettingsDropInDir())
+...
+denyWrite.push(resolve(originalCwd, '.claude', 'skills'))
+</code></pre>
+<p>文件：<code>src/utils/sandbox/sandbox-adapter.ts</code></p>
+<p>这不是“全局文件系统级 deny 同名路径”，而是一个有明确作用域的自保护策略：</p>
+<ul>
+<li>已知 settings source 对应路径会被加入 deny。</li>
+<li><code>originalCwd/current cwd</code> 下额外的 <code>.claude/settings.json</code>、<code>.claude/settings.local.json</code>、<code>.claude/skills</code> 也会被加入 deny。</li>
+</ul>
+<p>这不是通用 shell sandbox 默认会做的事，而是 Claude Code 特有的自保护策略：防止模型通过改 settings / skills 来实现持久化提权，同时补齐 <code>.claude/commands</code> / <code>.claude/agents</code> 之外的同等级特权面。</p>
+<h2 id="section-59">12. MCP：一等外部能力子系统</h2>
+<h2 id="section-60">12.1 MCP 不是插件边角，而是一整层平台</h2>
+<p>这里先把三个来源名词说清楚：</p>
+<ul>
+<li><code>manual server</code>：用户或项目显式写进 Claude Code 配置里的 MCP server。</li>
+<li><code>plugin</code>：插件包带进来的 MCP server 定义。</li>
+<li><code>connector</code>：来自 claude.ai / 外部平台接入面的 MCP server。</li>
+</ul>
+<p>之所以说它是一整层平台，而不是“插件边角”，不是因为事情多，而是因为源码里已经能看到完整的平台链路：</p>
+<ul>
+<li><code>config.ts</code> 负责多源配置加载、合并、去重和优先级策略。</li>
+<li><code>auth.ts</code> 负责 server 级 OAuth、token refresh、session expiry 与持久化状态。</li>
+<li><code>useManageMCPConnections.ts</code> / <code>client.ts</code> 负责 transport 建立、连接状态管理，以及 tool / command / resource 暴露。</li>
+</ul>
+<p>MCP 子系统至少覆盖：</p>
+<ul>
+<li>多源配置加载与合并</li>
+<li>connector / plugin / manual server 去重</li>
+<li>auth / token refresh / session expiry</li>
+<li>transport 建立</li>
+<li>tool / command / resource 暴露</li>
+<li>认证/发现状态持久化与相关缓存失效</li>
+<li>UI 管理与动态接入</li>
+</ul>
+<h3 id="section-61">12.2 plugin / connector 的 MCP 去重采用 <code>command/url</code> 身份签名</h3>
+<p><code>src/services/mcp/config.ts</code>：</p>
+<pre><code class="language-ts">/**
+ * Ignores env ... and headers (same URL = same server regardless of auth).
+ */
+export function getMcpServerSignature(config: McpServerConfig): string | null {
+  const cmd = getServerCommandArray(config)
+  if (cmd) return `stdio:${jsonStringify(cmd)}`
+  const url = getServerUrl(config)
+  if (url) return `url:${unwrapCcrProxyUrl(url)}`
+  return null
+}
+</code></pre>
+<p>文件：<code>src/services/mcp/config.ts</code></p>
+<p>这里需要把结论收窄一些。更准确的说法是：</p>
+<ul>
+<li>plugin / claude.ai connector 这两条自动来源的去重，采用的是 <code>command array / url</code> 身份签名，而不是名字级比较。</li>
+<li><code>env</code> 和 <code>headers</code> 明确不参与这一路签名；<code>sdk</code> 类型也不会进入这套签名去重。</li>
+<li>manual ↔ manual 的合并并不是“统一按内容签名折叠”，它仍然受 key、来源和作用域优先级控制。</li>
+</ul>
+<p>这不一定是 bug，但一定是值得在架构报告中标记的设计假设。</p>
+<h3 id="section-62">12.3 plugin / connector 都可能被手工配置压制</h3>
+<p><code>dedupPluginMcpServers()</code> 与 <code>dedupClaudeAiMcpServers()</code> 都体现出“手工配置优先于自动来源”的原则，但这个判断也不能写成无条件绝对规则。</p>
+<p>更准确地说：</p>
+<ul>
+<li>只有 enabled 且 policy-allowed 的 Claude Code 配置，才会真正压制 plugin / connector 自动来源。</li>
+<li>plugin 路径里还存在 <code>first-loaded wins</code> 的内部优先级；被禁用的 plugin server 也不是简单消失，而是会影响 <code>/mcp</code> 等可见状态。</li>
+</ul>
+<p>这说明 MCP 配置层表达的是一个更细的产品优先级：用户显式声明 &gt; 平台自动接入，但前提是这份显式声明本身真的处于可连接、可生效状态。</p>
+<h3 id="section-63">12.4 Bridge / Remote Control 的 gate 不是单纯 feature flag</h3>
+<p><code>bridgeEnabled.ts</code> 表明 Remote Control 不是单纯 feature flag：</p>
+<pre><code class="language-ts">return feature('BRIDGE_MODE')
+  ? isClaudeAISubscriber() &amp;&amp;
+      getFeatureValue_CACHED_MAY_BE_STALE('tengu_ccr_bridge', false)
+  : false
+</code></pre>
+<p>同时，阻塞检查和缓存检查是分开的：</p>
+<pre><code class="language-ts">export async function isBridgeEnabledBlocking(): Promise&lt;boolean&gt; {
+  return feature('BRIDGE_MODE')
+    ? isClaudeAISubscriber() &amp;&amp;
+        (await checkGate_CACHED_OR_BLOCKING('tengu_ccr_bridge'))
+    : false
+}
+</code></pre>
+<p>文件：<code>src/bridge/bridgeEnabled.ts</code></p>
+<p>单靠这段代码，还不足以直接推出“它在 MCP 之外”，但已经足以说明两件事：</p>
+<ul>
+<li>UI 可见性判断可以用 cached 语义。</li>
+<li>真正进入 bridge 控制路径时，需要更强的 blocking 检查，而不是只看一个前端可见性 flag。</li>
+</ul>
+<p>如果把源码链路继续接上去，它更像一套独立远程控制 runtime：有自己的命令入口、<code>initReplBridge()</code> 初始化、OAuth / policy / version 检查，以及 bridge session/handle 生命周期。因此更稳妥的结论是：Remote Control 至少不是“挂在 MCP 配置层上的一个小开关”。</p>
+<h2 id="section-64">13. Session / Transcript / Memory / Compaction</h2>
+<h2 id="section-65">13.1 transcript 不是“所有消息都存”</h2>
+<p><code>sessionStorage.ts</code> 明确说 progress 不应进入 transcript chain：</p>
+<pre><code class="language-ts">/**
+ * Progress messages are NOT transcript messages.
+ * They are ephemeral UI state and must not be persisted ...
+ */
+export function isTranscriptMessage(entry: Entry): entry is TranscriptMessage {
+  return (
+    entry.type === 'user' ||
+    entry.type === 'assistant' ||
+    entry.type === 'attachment' ||
+    entry.type === 'system'
+  )
+}
+</code></pre>
+<p>文件：<code>src/utils/sessionStorage.ts</code></p>
+<p>这是 session restore correctness 的核心约束之一。</p>
+<h3 id="section-66">13.2 session memory 是节流触发的，不是每回合都跑</h3>
+<p><code>SessionMemory</code> 的触发条件设计得很克制：</p>
+<pre><code class="language-ts">const shouldExtract =
+  (hasMetTokenThreshold &amp;&amp; hasMetToolCallThreshold) ||
+  (hasMetTokenThreshold &amp;&amp; !hasToolCallsInLastTurn)
+</code></pre>
+<p>文件：<code>src/services/SessionMemory/sessionMemory.ts</code></p>
+<p>它强调的是“自然停顿点”和“足够上下文增量”。</p>
+<h3 id="section-67">13.3 compact 不是简单摘要</h3>
+<p>更准确地说，compact 在这个仓库里不是单一机制，而是一组共同服务于上下文治理的路径：</p>
+<ul>
+<li><code>session memory compaction</code>：从长对话里提炼长期记忆，减少后续 query 的重复上下文负担。</li>
+<li><code>reactive compact</code>：遇到 <code>prompt too long</code> 等即时压力时做自救裁剪，目标是先把执行拉回可继续的范围。</li>
+<li><code>microcompact + traditional compact</code>：压缩 transcript 中高体积、高噪声块，必要时结合 cached microcompact / cache edit。</li>
+<li>attachment/image/document 处理：图像/文档剥离、attachment 再注入去重，避免大对象长期污染主上下文。</li>
+</ul>
+<p>因此“压缩”在这里更像上下文治理，而不是一个单一 summarization 功能。也不是每次 compact 都会同时走完上述所有路径；某些路径还会被 reactive compact 或 context collapse 的结果抑制，避免过度压缩。</p>
+<h2 id="section-68">14. 配置、远程托管设置、策略限制、遥测</h2>
+<h2 id="section-69">14.1 这是一个强运行时配置驱动系统</h2>
+<p>运行时行为确实受很多层共同影响，但它们不是“平权并列开关”，而是一套带 precedence 和观察时点差异的配置系统：</p>
+<ul>
+<li>settings.json</li>
+<li>project settings</li>
+<li>policy settings</li>
+<li>managed drop-in settings</li>
+<li>CLI flags</li>
+<li>env vars</li>
+<li>GrowthBook gates/configs</li>
+<li>policy limits</li>
+</ul>
+<p>更应该记住的是下面几条：</p>
+<ul>
+<li>managed settings 内部本身也有顺序：<code>managed-settings.json -&gt; managed-settings.d/*.json</code>。</li>
+<li>policy source 还存在更高一层优先级：<code>remote &gt; plist/hklm &gt; file &gt; hkcu</code>。</li>
+<li><code>getSettingsWithSources()</code> 和 <code>getSettingsWithErrors()</code> 又分别代表 fresh-read 视角与 session-cache 视角，排查问题时不能混着看。</li>
+<li>CLI flags、env vars、GrowthBook、policy limits 常常不是“替代 settings”，而是在更靠后的位置追加 runtime gating 或硬上限。</li>
+</ul>
+<p>这使系统高度灵活，但也意味着排查时必须回答一个更精确的问题：某个行为究竟是“被哪层打开的”、还是“被更高层覆盖/封顶的”。</p>
+<h2 id="section-70">14.2 analytics 采用 queue-first 设计</h2>
+<p><code>services/analytics/index.ts</code> 非常值得注意，因为它刻意做成“无依赖入口 API”：</p>
+<pre><code class="language-ts">if (sink === null) {
+  eventQueue.push({ eventName, metadata, async: false })
+  return
+}
+sink.logEvent(eventName, metadata)
+</code></pre>
+<p>文件：<code>src/services/analytics/index.ts</code></p>
+<p>这保证了：</p>
+<ul>
+<li>启动早期事件不会因为 sink 还没挂上而丢失</li>
+<li>analytics API 不会引入 import cycle</li>
+</ul>
+<h3 id="section-71">14.3 GrowthBook 是高频运行时 gate/config 平面之一</h3>
+<p>把 GrowthBook 写成“运行时行为基底”会有点过满。更准确的说法是：它是这套系统里高频出现的一层 gate/config 平面，很多核心行为会被它 gated、tuned 或 latched，但并不是所有行为都由它单点决定。</p>
+<p>最典型的三个例子是：</p>
+<ul>
+<li>dynamic config 在实现上就是 feature object，不只是外围实验开关。</li>
+<li>某些 <code>1h TTL</code> eligibility 会被 session latch，避免 mid-request / mid-session 漂移。</li>
+<li>bridge poll interval、fast mode 等行为也可以被它做 fleet-wide 调参。</li>
+</ul>
+<p>所以在这个仓库里，feature gate / dynamic config 不是“小优化开关”，而是系统的一部分。</p>
+<h2 id="section-72">15. 关键设计模式与优点</h2>
+<h3 id="section-73">15.1 以 cache 稳定性为中心的跨层设计</h3>
+<p>这是全仓最强的一条主线。更准确地说，这些例子共享的是同一个工程目标：稳定 prompt / tool / schema / TTL 相关字节，冻结会话期高波动 gating，把动态污染尽量推到尾部或延后注入，从而扩大 prompt cache 的可复用范围。</p>
+<p>典型点包括：</p>
+<ul>
+<li><code>SYSTEM_PROMPT_DYNAMIC_BOUNDARY</code></li>
+<li>tools 排序与 Statsig 配置同步</li>
+<li>settings JSON content-hash path</li>
+<li>fork child 继承 rendered prompt / exact tools</li>
+<li>MCP instruction delta</li>
+<li>tool schema cache</li>
+<li>1h TTL eligibility/session latching</li>
+</ul>
+<p>如果把这些点映射到策略层，会更容易记住：</p>
+<ul>
+<li><code>dynamic boundary</code>、tools 排序、settings hash path：在做“前缀稳定化”。</li>
+<li>MCP instruction delta：在做“动态尾部污染隔离”。</li>
+<li>fork child 继承 rendered prompt / exact tools：在做“继承已渲染结果，避免重建字节前缀”。</li>
+<li><code>1h TTL eligibility/session latching</code>：在做“把高波动 eligibility 锁定到 session/query 边界内”。</li>
+</ul>
+<h3 id="section-74">15.2 多运行面共享同一 query 内核</h3>
+<p>这让系统：</p>
+<ul>
+<li>不至于在 REPL/headless/agent 各写一套模型循环</li>
+<li>但也让宿主层与内核层的边界变得很重要</li>
+</ul>
+<h3 id="section-75">15.3 权限安全链设计较成熟</h3>
+<p>这个系统已经不是“用户点 Yes/No”的权限模型了，但它也不是每次调用都完整经过同一条线性流水线。更准确地说，它是一套分支化的安全栈：</p>
+<ul>
+<li>先看静态规则、mode、工作区/路径限制。</li>
+<li>再看这次调用是否会命中 classifier。</li>
+<li>然后进入 permission hooks、interactive prompt 或 async auto-deny。</li>
+<li>最后在需要的路径上，再由 sandbox 形成 OS 级兜底。</li>
+</ul>
+<p>因此它成熟的点，不是“层数多”，而是把不同风险面拆开了。以 <code>Edit/Bash</code> 这类调用为例，真正决定结果的往往是“规则/模式 -&gt; 是否命中 classifier -&gt; 当前场景能否弹 permission -&gt; sandbox 是否仍然兜底”的组合，而不是所有层都等权参与。</p>
+<h3 id="section-76">15.4 MCP 与 Agent 已平台化</h3>
+<p>很多工程做到一定规模才会把“工具扩展”和“子代理”当平台能力，这个仓库已经走到了这一步。更落地地看，至少有三个可观察信号：</p>
+<ul>
+<li>有独立的 MCP 管理 UI 和命令面，而不是把外部 server 接入当成零散配置。</li>
+<li>MCP skills / commands 可以进入 model-invocable command 面，不只是外围配套。</li>
+<li>Agent runtime 已经支持 background、worktree、remote、agent-specific MCP 等差异化执行形态。</li>
+</ul>
+<h2 id="section-77">16. 风险、隐式耦合与技术债</h2>
+<h2 id="section-78">16.1 超级枢纽文件</h2>
+<p>风险最高的几个文件：</p>
+<ul>
+<li><code>src/main.tsx</code></li>
+<li><code>src/screens/REPL.tsx</code></li>
+<li><code>src/query.ts</code></li>
+<li><code>src/tools/AgentTool/AgentTool.tsx</code></li>
+<li><code>src/tools/AgentTool/runAgent.ts</code></li>
+<li><code>src/services/mcp/client.ts</code></li>
+</ul>
+<p>问题不是“它们很大”，而是它们同时承载：</p>
+<ul>
+<li>编排</li>
+<li>策略</li>
+<li>状态</li>
+<li>feature gate</li>
+<li>性能优化</li>
+<li>正确性约束</li>
+</ul>
+<h3 id="section-79">16.2 关键隐式契约过多</h3>
+<p>更适合按“违反后会坏成什么样”来分组理解：</p>
+<ul>
+<li>cache 稳定性契约：<br />
+<code>prompt dynamic boundary</code> 必须和 API split 逻辑一致；tool 列表与全局 system cache 配置必须同步；fork child 必须继承 exact tools / rendered prompt。<br />
+违反后的直接后果，是 prompt cache 命中骤降，fork/summary 继承失效，原本可共享的前缀被打散。</li>
+<li>递归与恢复契约：<br />
+<code>querySource</code> 必须在线程间保留；progress message 不能进入 transcript chain。<br />
+违反后的直接后果，是 autocompact / restore 对调用来源和消息主链判断失真，进而出现递归保护错判或 resume 漂移。</li>
+<li>MCP 身份契约：<br />
+MCP dedup 会忽略 <code>env/headers</code>。<br />
+违反预期时的直接后果，是合法多实例可能被折叠，或连接身份被过度共享。</li>
+<li>权限语义契约：<br />
+sandbox 路径语义与 permission rule 路径语义并不完全一致。<br />
+违反后的直接后果，是“规则上看似允许/禁止”和“OS 级实际行为”出现偏差，调试和审计都会变难。</li>
+</ul>
+<p>这些都不是单文件能看懂的约束。</p>
+<h3 id="section-80">16.3 反编译/研究仓边界问题</h3>
+<ul>
+<li>不能简单把“当前仓库文本”当成官方权威实现</li>
+<li><code>prepare-src.mjs</code> 会改 <code>src/</code></li>
+<li>build 链是 best-effort</li>
+<li>feature-gated 模块不完整</li>
+</ul>
+<h3 id="section-81">16.4 一处显眼的静态可疑点</h3>
+<p>以当前仓库文本看，<code>src/constants/prompts.ts</code> 中 <code>getAntModelOverrideSection()</code> 调用了 <code>getAntModelOverrideConfig()</code>，但顶部导入区未见对应导入。<br />
+这类问题有两种可能：</p>
+<ol>
+<li>反编译/预处理导致文本不完整。</li>
+<li>这里确实存在构建层面依赖某种额外注入/变换。</li>
+</ol>
+<p>因为本轮不做 debug，不把它定性成 bug，但它值得在后续专项核对时优先检查。</p>
+<h2 id="section-82">17. 哪些机制最值得继续深挖</h2>
+<h3 id="section-83">17.1 Prompt cache 全链路隐式契约表</h3>
+<p>这一节值得单独拉专题，不是因为名词多，而是这些点共同决定三件事：</p>
+<ul>
+<li>prompt 前缀字节是否稳定</li>
+<li>请求是否仍具备 cache eligibility</li>
+<li>复用范围能停在 built-in 前缀，还是被动态尾部污染打断</li>
+</ul>
+<p>建议单独拉一个专题，串起这些点：</p>
+<ul>
+<li><code>SYSTEM_PROMPT_DYNAMIC_BOUNDARY</code></li>
+<li><code>splitSysPromptPrefix</code></li>
+<li><code>buildSystemPromptBlocks</code></li>
+<li>tool 排序</li>
+<li>settings hash path</li>
+<li>MCP instruction delta</li>
+<li>fork exact-tools / rendered prompt</li>
+<li>cache_control / 1h TTL latching</li>
+</ul>
+<p>一个很好记的反例是：如果 settings 路径每次随机、fork child 又不继承 rendered prompt，那么语义没变也会让字节前缀漂移，prompt cache 前缀就会被持续打爆。</p>
+<h3 id="section-84">17.2 Agent 权限边界图</h3>
+<p>建议专门拆，而且要按“决策输入 / 中间 gate / 最终表现”来画：</p>
+<ul>
+<li>权限继承来源：<code>sync vs async agent</code>、<code>allowedTools</code>、inherited <code>cliArg</code> rules。</li>
+<li>是否可弹确认：<code>bubble mode</code>、<code>canShowPermissionPrompts</code>（当前宿主是否具备权限确认 UI 承接能力）、background/async agent 在什么场景下直接避免 permission prompt。</li>
+<li>最终执行表现：background agent 自动检查/等待、哪些路径会直接 deny、哪些路径会把决策冒泡回父线程。</li>
+<li>能力作用域：<code>agent-specific MCP</code> 如何与父线程已有能力叠加或缩域。</li>
+</ul>
+<h3 id="section-85">17.3 Session restore correctness</h3>
+<p>所谓 restore correctness，不是“历史能读回来”这么简单，而是恢复后的 query 还必须保持与中断前同样的消息主链、compact 边界和 sidechain 关联，不产生行为漂移。</p>
+<p>建议继续串：</p>
+<ul>
+<li><code>transcript chain</code>：主消息链顺序不能断，否则 restore 后继续 query 读到的历史就变了。</li>
+<li><code>progress exclusion</code>：非 transcript 进度事件必须排除在主链外，否则 replay 会引入重复噪音。</li>
+<li><code>tombstone rewrite</code>：被删除/被替换过的内容要保留稳定 tombstone 标记，否则 ID 和引用关系会漂移。</li>
+<li><code>sidechain transcript</code>：subagent / fork / background 的侧链 transcript 必须能重新挂回主链上下文。</li>
+<li><code>compact boundary</code>：restore 后必须知道 compacted prefix 从哪里开始，否则会双重 compact 或丢失细节。</li>
+<li><code>context collapse replay</code>：被 collapse 过的区段要能确定性重放，否则恢复后的可见上下文会和中断前不同。</li>
+</ul>
+<h3 id="section-86">17.4 MCP 多实例假设</h3>
+<p>重点核实：</p>
+<ul>
+<li>忽略 env/headers 的 dedup 是否会压掉合法多实例</li>
+<li>manual &gt; plugin &gt; connector 的优先级是否在所有 UI/agent/headless 路径都一致</li>
+</ul>
+<h3 id="section-87">17.5 <code>main.tsx</code> / <code>REPL.tsx</code> 的拆层机会</h3>
+<p>这是未来维护性的最大杠杆之一。</p>
+<h2 id="section-88">18. 附录：高信号源码摘录</h2>
+<h3 id="section-89">A. 系统 prompt 动静边界</h3>
+<pre><code class="language-ts">export const SYSTEM_PROMPT_DYNAMIC_BOUNDARY =
+  '__SYSTEM_PROMPT_DYNAMIC_BOUNDARY__'
+</code></pre>
+<p>文件：<code>src/constants/prompts.ts</code></p>
+<p>信号点：这里存在显式的 prompt 动静边界 marker。边界：它证明“边界被一等对待”，但单看这一段还不能直接推出 API 层具体如何切块。</p>
+<h3 id="section-90">B. settings hash path 避免 cache 爆炸</h3>
+<pre><code class="language-ts">settingsPath = generateTempFilePath('claude-settings', '.json', {
+  contentHash: trimmedSettings
+});
+</code></pre>
+<p>文件：<code>src/main.tsx</code></p>
+<p>信号点：这里证明 settings 临时路径是按内容 hash 稳定映射，而不是为了“路径好看”。边界：它能证明稳定前缀设计意图，但不能单独推出真实 cache 命中率数字。</p>
+<h3 id="section-91">C. Query runtime gate 快照</h3>
+<pre><code class="language-ts">export function buildQueryConfig(): QueryConfig {
+  return {
+    sessionId: getSessionId(),
+    gates: {
+      streamingToolExecution: checkStatsigFeatureGate_CACHED_MAY_BE_STALE(...),
+      emitToolUseSummaries: isEnvTruthy(...),
+      isAnt: process.env.USER_TYPE === 'ant',
+      fastModeEnabled: !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_FAST_MODE),
+    },
+  }
+}
+</code></pre>
+<p>文件：<code>src/query/config.ts</code></p>
+<p>信号点：这里证明 <code>query()</code> 会在入口快照一部分 runtime gates。边界：源码同时明确写了 <code>feature()</code> gates 不在这份快照里。</p>
+<h3 id="section-92">D. ToolUseContext 体现工具执行不是普通函数调用</h3>
+<pre><code class="language-ts">export type ToolUseContext = {
+  options: {
+    tools: Tools
+    thinkingConfig: ThinkingConfig
+    mcpClients: MCPServerConnection[]
+    isNonInteractiveSession: boolean
+    agentDefinitions: AgentDefinitionsResult
+    ...
+  }
+  abortController: AbortController
+  getAppState(): AppState
+  setAppState(...)
+  addNotification?: ...
+  renderedSystemPrompt?: SystemPrompt
+}
+</code></pre>
+<p>文件：<code>src/Tool.ts</code></p>
+<p>信号点：这里证明工具执行发生在完整 runtime context 上，而不是普通函数调用。边界：它能说明耦合面很大，但不能单靠类型定义推断每个字段每次都会被用到。</p>
+<h3 id="section-93">E. tool 并发批次规则</h3>
+<pre><code class="language-ts">if (isConcurrencySafe &amp;&amp; acc[acc.length - 1]?.isConcurrencySafe) {
+  acc[acc.length - 1]!.blocks.push(toolUse)
+} else {
+  acc.push({ isConcurrencySafe, blocks: [toolUse] })
+}
+</code></pre>
+<p>文件：<code>src/services/tools/toolOrchestration.ts</code></p>
+<p>信号点：这里证明并发批次只会合并连续 safe block。边界：它证明的是批次边界规则，不等于“所有 safe 工具都会被全局并发”。</p>
+<h3 id="section-94">F. Bash error 会中止 sibling 并发工具</h3>
+<pre><code class="language-ts">if (tool.block.name === BASH_TOOL_NAME) {
+  this.hasErrored = true
+  this.siblingAbortController.abort('sibling_error')
+}
+</code></pre>
+<p>文件：<code>src/services/tools/StreamingToolExecutor.ts</code></p>
+<p>信号点：这里证明 Bash error 会在 streaming 路径中止 sibling。边界：它描述的是这条执行器路径的语义，不应直接外推为所有工具执行器的统一规则。</p>
+<h3 id="section-95">G. Agent 保留 SDK <code>cliArg</code> 级授权</h3>
+<pre><code class="language-ts">alwaysAllowRules: {
+  cliArg: state.toolPermissionContext.alwaysAllowRules.cliArg,
+  session: [...allowedTools],
+},
+</code></pre>
+<p>文件：<code>src/tools/AgentTool/runAgent.ts</code></p>
+<p>信号点：这里证明 agent 即使收窄到 <code>allowedTools</code>，也仍会保留父线程的 <code>cliArg</code> 级授权。边界：这说明边界复杂，不等于 agent 完全继承父权限。</p>
+<h3 id="section-96">H. sandbox 主动保护 <code>.claude/skills</code></h3>
+<pre><code class="language-ts">denyWrite.push(resolve(originalCwd, '.claude', 'skills'))
+</code></pre>
+<p>文件：<code>src/utils/sandbox/sandbox-adapter.ts</code></p>
+<p>信号点：这里证明 sandbox 会主动保护 <code>.claude/skills</code> 等敏感路径。边界：这是 Claude Code 自己加的自保护策略，不是 OS sandbox 的默认常识。</p>
+<h3 id="section-97">I. MCP server 内容签名去重</h3>
+<pre><code class="language-ts">export function getMcpServerSignature(config: McpServerConfig): string | null {
+  const cmd = getServerCommandArray(config)
+  if (cmd) return `stdio:${jsonStringify(cmd)}`
+  const url = getServerUrl(config)
+  if (url) return `url:${unwrapCcrProxyUrl(url)}`
+  return null
+}
+</code></pre>
+<p>文件：<code>src/services/mcp/config.ts</code></p>
+<p>信号点：这里证明 plugin / connector 自动来源的 server dedup 采用 <code>command/url</code> 身份签名。边界：它不会把 <code>env/headers</code> 算进签名，<code>sdk</code> 也不走这一路。</p>
+<h3 id="section-98">J. analytics queue-first</h3>
+<pre><code class="language-ts">if (sink === null) {
+  eventQueue.push({ eventName, metadata, async: false })
+  return
+}
+sink.logEvent(eventName, metadata)
+</code></pre>
+<p>文件：<code>src/services/analytics/index.ts</code></p>
+<p>信号点：这里证明 analytics 入口是 queue-first。边界：它能证明启动早期不丢本地事件队列，但不能单靠这一段推断远端 sink 一定成功送达。</p>
+<h3 id="section-99">K. session memory 的双阈值触发</h3>
+<pre><code class="language-ts">const shouldExtract =
+  (hasMetTokenThreshold &amp;&amp; hasMetToolCallThreshold) ||
+  (hasMetTokenThreshold &amp;&amp; !hasToolCallsInLastTurn)
+</code></pre>
+<p>文件：<code>src/services/SessionMemory/sessionMemory.ts</code></p>
+<p>信号点：这里证明 session memory 提取不是每回合都跑，而是受双阈值控制。边界：它说明触发条件，并不能单独推出提取质量。</p>
+<h2 id="section-100">19. 最终结论</h2>
+<p>如果只给一句判断：</p>
+<p>从本轮源码证据看，这个仓库更像一个以 prompt cache 稳定性、权限安全链、MCP 平台化、subagent 生命周期管理为核心的 agent 平台；CLI 更接近它最外层的交互壳，而不是系统本体。</p>
+<p>这个判断主要由三条证据链支撑：</p>
+<ul>
+<li><code>prompt / tools / settings path / fork inheritance</code> 多处都在保护 cache-safe 前缀，而不是把 prompt 当成一次性文本。</li>
+<li><code>permissions + classifier + hooks + sandbox</code> 形成的是分支化安全链，而不是单层弹窗模型。</li>
+<li><code>MCP + Agent + Query runtime</code> 共同构成平台层；REPL / headless / bridge 更像宿主壳和运行面。</li>
+</ul>
+<p>如果从工程管理角度给结论：</p>
+<ul>
+<li>当前最需要保护的不是“某个单功能模块”，而是跨层隐式契约。</li>
+<li>当前最值得投入的不是“再加一个功能”，而是把超级枢纽周边的边界画清楚。</li>
+<li>当前最该深入研究的技术主线，是 <code>Prompt cache / Query runtime / Agent permission / MCP dedup &amp; lifecycle / Session restore correctness</code>。</li>
+</ul>
+<h2 id="section-101">附录：名词解释</h2>
+<p>这一节按“第一次接触 agent 系统”的阅读门槛来写，只解释最常见、最容易混淆的词。</p>
+<ul>
+<li><code>Agent</code>：可以理解为一个“会读指令、会决定下一步、必要时会调用工具”的智能执行体。</li>
+<li><code>主线程 / Main agent</code>：直接和用户对话、维护全局上下文、负责最终交付结果的那个 agent。</li>
+<li><code>Subagent</code>：被主线程派出去处理子任务的 agent。它通常只负责一小块工作，做完后把结果回传。</li>
+<li><code>Coordinator</code>：偏调度和拆解的角色，重点是分配任务、安排顺序、汇总结果，不一定亲自做具体实现。</li>
+<li><code>Prompt</code>：喂给模型的指令文本。可以把它理解成“模型当前这次工作的任务说明书”。</li>
+<li><code>System prompt</code>：优先级最高的一层 prompt，用来规定身份、边界、行为规则和输出风格。</li>
+<li><code>User prompt</code>：用户这一轮真正提出的问题或要求。</li>
+<li><code>Context</code>：模型当前能看到的背景信息，比如历史消息、文件内容、仓库状态、<code>CLAUDE.md</code> 摘要。</li>
+<li><code>Context window</code>：模型一次最多能读进去多少文本。超出以后，就必须裁剪、压缩或做摘要。</li>
+<li><code>Tool</code>：模型自己不能直接完成、必须借助外部能力做的动作，比如读文件、执行命令、联网、起子 agent。</li>
+<li><code>Tool call</code>：agent 决定调用某个工具的那一次具体执行。</li>
+<li><code>MCP</code>：<code>Model Context Protocol</code>。它的作用是把外部工具、服务、数据源，用统一协议接进 agent 系统。</li>
+<li><code>Sandbox</code>：受限制的执行环境。它决定 agent 能读哪些文件、能写哪些路径、能不能联网、能不能做危险操作。</li>
+<li><code>Permission</code>：权限规则。它决定某个工具调用是不是允许执行，以及是否需要用户确认。</li>
+<li><code>Prompt cache</code>：把稳定不变的 prompt 前缀缓存起来，减少重复请求成本和延迟。这个仓库非常重视这一点。</li>
+<li><code>Query</code>：一次完整的 agent 执行过程，不只是一次模型 API 调用，还包括消息组装、工具循环、状态推进和结果返回。</li>
+<li><code>Tool result</code>：工具执行结束后回注给模型的结果消息。模型下一步怎么判断，很大程度取决于这些结果有没有被正确组织回 transcript。</li>
+<li><code>Tool schema</code>：发给模型的工具定义，通常包含工具名、描述、输入参数 schema。它不是工具实现本体，而是模型看到的工具接口描述。</li>
+<li><code>User context</code>：额外注入给模型的用户侧背景信息。这个仓库里它通常以一个 meta user message 的形式出现在正式用户问题前面。</li>
+<li><code>System context</code>：额外拼进 system 侧的运行时背景信息，比如 git 状态、环境快照等。它和 system prompt 本体一起影响 cache-safe 前缀。</li>
+<li><code>System reminder</code>：系统自动附加的提醒性上下文，通常包在 <code>&lt;system-reminder&gt;</code> 标签里。它不是用户原话，但模型必须把它当成高优先级辅助信息。</li>
+<li><code>Tool pool</code>：某一轮 query 真正对模型可见、且实际允许执行的工具集合。它不是“仓库里所有工具”，而是 built-in、MCP、权限、mode、env 共同裁出来的结果。</li>
+<li><code>Cache key / Cache-safe params</code>：为了复用 prompt cache，必须保持字节一致的那组请求参数。这个仓库里常见的关键项包括 <code>system</code>、<code>tools</code>、<code>model</code>、消息前缀和 thinking config。</li>
+<li><code>Cache breakpoint</code>：服务端在 prompt 前缀里切分缓存边界的位置。边界前后是否稳定，直接影响到底能复用多少 cache。</li>
+<li><code>Fork</code>：从主线程派生出一个继承现有上下文的子执行分支。它的核心目标之一是尽量复用父线程已有的 prompt cache，而不是从零开始重新建上下文。</li>
+<li><code>Worktree</code>：Git 提供的隔离工作目录。并行 agent 可以各自在自己的 worktree 改代码，减少互相覆盖文件的风险。</li>
+<li><code>Headless</code>：没有 REPL/TUI 交互壳的运行形态，只保留 agent 内核和程序化接口，常见于 SDK、后台任务或自动化执行路径。</li>
+<li><code>Compaction</code>：当对话太长时，不是硬截断，而是把长历史压缩成更短、还能继续工作的表示形式，让 query 能在上下文预算内继续跑下去。</li>
+<li><code>Resume / Restore</code>：把之前保存过的会话状态重新还原出来继续执行。难点不只是“把消息读回来”，而是要把 transcript、工具状态、上下文边界一起恢复正确。</li>
+<li><code>Context modifier</code>：某个工具执行后，对 <code>ToolUseContext</code> 施加的内部状态修改。它和普通 <code>tool_result</code> 不同，后者是给模型看的，前者是给 runtime 自己用的。</li>
+<li><code>Concurrency-safe</code>：某次具体工具调用是否允许与其他调用并发执行的判定结果。它关注的是这次输入和副作用，不只是工具名字。</li>
+<li><code>Interrupt behavior</code>：某个工具在运行时，遇到用户打断时应该被取消，还是必须阻塞到完成的策略。</li>
+<li><code>Transcript</code>：一次 query 到当前为止的完整对话记录，通常包含 user、assistant、tool result 等消息。它是模型继续往下工作的直接输入。</li>
+<li><code>Collapse / Transcript collapse</code>：当 transcript 太长、快超出上下文上限时，系统把前面内容压缩成摘要的过程。目的不是“删除历史”，而是“用更短的形式保住关键信息”。</li>
+<li><code>Task budget</code>：这次任务允许消耗的资源上限，可以理解成给 agent 设的“油量表”。常见约束包括轮数、token、工具调用次数或执行时间。</li>
+<li><code>Proactive</code>：一种更主动的工作模式。agent 不只是等用户一步一步下指令，而会围绕当前目标自己继续拆解、推进，并补上它判断为必要的步骤。</li>
+<li><code>Turn</code>：对话中的一轮发言。一次用户发言算一轮，一次 assistant 回复也算一轮。</li>
+<li><code>Runtime</code>：运行时系统。它负责把 prompt、工具、权限、状态、模型请求这些东西真正组织起来跑。</li>
+<li><code>Session memory</code>：从长对话里提炼出来的长期记忆，用来减少“对话一长就忘前文”的问题。</li>
+<li><code>GrowthBook</code>：远程 feature gate / dynamic config 平面。它负责把一部分运行时开关和调参值下发给客户端。</li>
+<li><code>TTL</code>：<code>time to live</code>，缓存或资格判断的有效期窗口。过了这个时间，系统就需要重新判定或刷新。</li>
+<li><code>Latching / latch</code>：在一次 session 或 query 边界把某个值锁住，不让它在执行中途漂移。</li>
+<li><code>querySource</code>：标记这次 query 从哪个调用来源或递归路径发起。它会影响 autocompact、restore 和递归保护这类判断。</li>
+<li><code>async auto-deny</code>：在当前场景无法弹出 permission prompt 时，runtime 自动拒绝本次高风险调用，并返回原因。</li>
+<li><code>cache_control</code>：请求/服务端使用的缓存策略标记，用来决定哪些 prompt 段可被复用、TTL 怎么算、cache breakpoint 在哪里。</li>
+<li><code>Bubble mode</code>：一种权限处理策略。当前 agent 自己不直接拍板，而是把决策“冒泡”回父线程或上层宿主处理。</li>
+<li><code>allowedTools</code>：显式给某个 agent/session 开的一组工具白名单。它会收窄这次会话能用的工具面，但不一定抹掉更高信任来源的授权。</li>
+<li><code>cliArg</code>：来自 CLI 显式参数的授权来源。系统通常把它视为一类更高信任的“用户明确声明”权限。</li>
+<li><code>Transcript chain</code>：会话恢复时必须重建正确的那条主消息链。顺序一旦错位，后续 query 看到的历史就会变。</li>
+<li><code>Tombstone</code>：给已删除、已替换或已折叠内容保留的占位标记，用来维持引用关系和重放结构。</li>
+<li><code>Sidechain transcript</code>：subagent / fork / background 路径使用的侧链 transcript。它不是主链，但必须能和主链重新挂接。</li>
+</ul>
+</main></div></div></body></html>
