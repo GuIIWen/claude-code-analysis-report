@@ -1,7 +1,7 @@
 # Claude Code Source 全量工程分析报告
 
 生成时间：2026-04-02  
-最近同步时间：2026-04-02 19:58:11 +0800  
+最近同步时间：2026-04-03 16:49:54 +0800  
 分析范围：`/root/claude-code-source-code`  
 分析方式：主线程通读关键源码 + 2 个 `gpt-5.4` 子分析线程交叉审阅  
 约束说明：本轮只做静态分析与文档沉淀，不修改业务代码，不做 debug/修复
@@ -149,6 +149,37 @@ for (const file of files) {
 ### 3.2 可以把系统分成 8 个一级子系统
 
 这里的 8 层更适合作为“分析框架”来理解，而不是把它误读成仓库内部明示的一张官方架构图。源码里的边界并不完全干净，尤其 `Query / Tool / Permission / Agent` 之间存在明显交叠。
+
+先把最容易误导读者的三点钉死：
+
+- REPL 与 `QueryEngine` 是并列宿主，二者都把请求送进共享 `query()` 内核；不能把主链画成 `REPL -> QueryEngine`。
+- Prompt / Context / Cache 前缀发生在 `query()` 之前，不是进入模型 API 时才临时拼出来的附属细节。
+- Tool 安全链、MCP、Bridge / Remote Control、Session / Memory / Compaction 是相邻边界，不是一层“大杂烩运行时”。
+
+```mermaid
+flowchart TD
+    A[CLI / REPL 宿主] --> D[宿主装配 / Session 恢复]
+    B[Headless 宿主 / QueryEngine] --> D
+    D --> E[Prompt / Context / Cache Prefix]
+    E --> F[query() 内核]
+    F --> G[Tool 调度 / Agent Loop]
+    G --> H[Permission / pre-tool hooks]
+    H --> I[Classifier / Sandbox / 本地执行]
+    G -.可见工具池来自.-> J[MCP 配置 / 连接 / tool/resource 暴露]
+    F --> K[Transcript 链 / Session 持久化]
+    K --> L[Memory / Collapse / Compaction]
+    F --> M[REPL / Headless / Bridge 输出协议]
+    N[Bridge / Remote Control 运行面] -.接续 / 控制本地会话.-> M
+```
+
+这张图表达的是“一级边界和主信息流”，不是源码里一条严格单向的调用栈；但它至少把后文最关键的宿主并列关系和安全边界关系画对了。
+
+和后文章节的对应关系可以直接这样读：
+
+- 第 `6/7` 章主要展开 `宿主装配 -> Prompt / Context / Cache -> query()`
+- 第 `8/9/10/11` 章主要展开 `query() -> Tool 调度 -> Permission / Sandbox / Agent`
+- 第 `12` 章主要展开 `MCP` 与 `Bridge / Remote Control` 的外部边界
+- 第 `13` 章主要展开 `Transcript / Session / Memory / Compaction`
 
 1. 启动与运行面分流
 2. Prompt / Context / API 前缀构建
@@ -406,18 +437,71 @@ base = {
 
 从“用户输入一句话”到“系统返回结果”，主链路可以概括为：
 
-1. 用户从 REPL 或 headless 入口提交 prompt。
-2. 入口层装配 `ToolUseContext`、tools、commands、MCP state、settings。
+这一节只保留“实际主链”。如果旧图把它简化成 `REPL -> QueryEngine -> query()`，那种画法最多只能表达“交互宿主与 headless 宿主共享一部分运行时逻辑”，不能当作真实执行链。
+
+```mermaid
+sequenceDiagram
+    participant U as 用户 / 调用方
+    participant H as 宿主(REPL 或 QueryEngine)
+    participant P as Prompt / Context / Cache
+    participant Q as query() 内核
+    participant M as 模型 API
+    participant T as Tool 调度
+    participant S as Permission / Classifier / Sandbox
+    participant L as 本地 built-in / agent tool
+    participant C as MCP client / server
+    participant R as Session / Transcript / Memory / Compaction
+    participant O as REPL / Headless / Bridge 输出
+
+    U->>H: 提交 prompt
+    alt interactive
+        Note over H: REPL 承接交互、resume、UI 状态
+    else programmatic
+        Note over H: QueryEngine 承接 headless 会话
+    end
+    H->>H: 装配 ToolUseContext / tools / settings / session state
+    H->>P: fetchSystemPromptParts() + buildEffectiveSystemPrompt()
+    P-->>H: effective prompt + userContext + systemContext + cache-safe prefix
+    H->>Q: 调用共享 query() 内核
+    loop Query loop
+        Q->>Q: budget -> snip -> microcompact -> collapse -> autocompact
+        Q->>M: 流式采样
+        M-->>Q: assistant / tool_use
+        alt 需要执行工具
+            Q->>T: StreamingToolExecutor / runTools
+            T->>S: 输入校验 + hooks + permission resolution
+            alt 本地 built-in / agent tool
+                S->>L: classifier / sandbox / local exec
+                L-->>T: tool_result + context updates
+            else MCP tool
+                T->>C: MCP call / external capability
+                C-->>T: tool_result / resource delta
+            end
+            T-->>Q: tool_result blocks
+        end
+    end
+    Q->>R: transcript append + session state + memory hooks + compaction state
+    Q->>O: 输出协议分流
+    O-->>U: 最终结果
+```
+
+这张图有两个故意保留的边界：
+
+- `Prompt / Context / Cache` 是进入 `query()` 之前的主线，不再缺席。
+- `Permission / Classifier / Sandbox` 与 `MCP` 分开画，因为二者分别对应本地安全链和外部能力接入层；`Bridge` 只在输出/会话控制面出现，不属于 tool 执行层。
+
+1. 用户从 REPL 宿主或 headless 宿主（通常由 `QueryEngine` 承接）提交 prompt。
+2. 宿主层先恢复或装配 `ToolUseContext`、tool pool、commands、MCP state、settings、session state。
 3. `fetchSystemPromptParts()` 取 `defaultSystemPrompt + userContext + systemContext`。
-4. `buildEffectiveSystemPrompt()` 决定最终使用默认 prompt、custom prompt、agent prompt 还是 coordinator prompt。
-5. 进入 `query()` 主循环。
+4. `buildEffectiveSystemPrompt()` 决定最终使用默认 prompt、custom prompt、agent prompt 还是 coordinator prompt，并形成 cache-safe 前缀。
+5. 宿主层调用共享 `query()` 主循环。
 6. query 对历史消息做 `tool result budget -> snip -> microcompact -> context collapse -> autocompact`。
 7. 调用模型流式采样。
 8. 流式收集 assistant message 和 `tool_use` blocks。
 9. 通过 `StreamingToolExecutor` 或 `toolOrchestration.runTools()` 执行工具。
-10. 工具执行通常先进入统一执行壳；其中输入校验、pre-tool hooks、permission resolution 是主干，classifier / sandbox 则按工具类型和 mode 命中子路径。
+10. 工具执行通常先进入统一执行壳；其中输入校验、pre-tool hooks、permission resolution 是主干；本地工具才继续命中 classifier / sandbox，MCP 工具则走独立外部能力链路。
 11. 工具结果被归并回消息链，必要时继续 follow-up query。
-12. transcript、session memory、compact state、usage、notifications 分别落地。
+12. transcript、session state、session memory、compact state、usage、notifications 分别落地。
 13. 按 REPL/headless/bridge 各自协议输出。
 
 这条链路的关键是：它不是“请求一次模型，跑一下工具”。它是一个持续治理上下文、权限、缓存、持久化和执行反馈的 agent loop。
@@ -1473,6 +1557,25 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 
 `bridgeEnabled.ts` 这段 gate 最容易被误读成普通 feature flag，但先要把名词说清楚。本文里的 `bridge` 如无特别说明，多指 `REPL bridge / Remote Control bridge`：它把本地 CLI / REPL 会话和 claude.ai 上的 Remote Control 会话连起来，形成一条双向运行面，让远端可以查看当前本地会话，并在满足条件时继续把控制操作发回本地执行。这里说的不是泛指所有 bridge 概念，也不是 transport bridge、MCP bridge 或某个 helper 名称。
 
+如果把第 `9/10/11/12` 章放在一张边界图里，更准确的关系应该是：
+
+```mermaid
+flowchart TD
+    H[REPL / Session Host] --> A[query() 产出的 tool_use]
+    A --> B[Tool 调度 / 可见工具池]
+    B --> C[Permission / pre-tool hooks]
+    C --> D[Classifier / Sandbox]
+    D --> E[本地 built-in / agent tool 执行]
+    B --> F[MCP client / server]
+    G[Bridge / Remote Control gate / OAuth / session handle] -.接入宿主而非工具层.-> H
+```
+
+这张图故意把三件事拆开：
+
+- `Permission / Sandbox` 是本地执行安全链。
+- `MCP client / server` 是外部能力接入层，不该和本地安全链画成同一层。
+- `Bridge / Remote Control` 接的是宿主与 session 控制面，不是 MCP tool 的别名。
+
 从实现看，这套能力先受 `feature('BRIDGE_MODE')` 和 Claude AI 订阅资格约束，然后再读 `tengu_ccr_bridge` 这个 gate：
 
 ```ts
@@ -1502,6 +1605,31 @@ export async function isBridgeEnabledBlocking(): Promise<boolean> {
 ## 13. Session / Transcript / Memory / Compaction
 
 这一章更适合按“持久化边界 -> 可重放消息链 -> 恢复正确性 -> 长会话治理”来读，而不是把 session / transcript / memory / compact 当成四个互不相关的名词。源码直接证明的是：这里真正被设计出来的，是一套可恢复、可压缩、可持续运行的长会话宿主。更稳妥的工程归纳则是：这些机制共同在解决上下文预算、恢复正确性、缓存命中率和状态漂移。
+
+如果要把这一章画成流程图，应该更接近下面这条“恢复与治理闭环”，而不是一句轻飘飘的 `load/save history`：
+
+```mermaid
+flowchart TD
+    A[Session file / session state] --> B[loadTranscriptFile()]
+    A --> C[restoreSessionStateFromLog()]
+    B --> D[Transcript chain rebuild]
+    C --> E[worktree / metadata / agent / read-file state 恢复]
+    D --> F[恢复后的 query 运行面]
+    E --> F
+    F --> G[SessionMemory 提炼]
+    G --> H[Memory file]
+    F --> I[snip / microcompact / collapse / autocompact]
+    H --> I
+    I --> J[compact boundary / preserved segment / collapse snapshot]
+    J --> A
+```
+
+这里至少要避免四种误读：
+
+- `Session` 是持久化运行单元，不只是一个 `sessionId`。
+- `Transcript` 是恢复后还能继续喂给 `query()` 的消息链，不等于整个 session file。
+- `SessionMemory` 是后台节流提炼出的长期事实资产，不是每回合顺手做一份摘要。
+- `Compaction` 是上下文治理闭环的一部分，会反过来影响后续 session 恢复与 cache 命中。
 
 ### 13.1 Session 在这里是“可恢复运行单元”，不只是一个 sessionId
 
@@ -1683,90 +1811,220 @@ const { compactionResult } = await deps.autocompact(messagesForQuery, ...)
 
 ## 14. 配置、远程托管设置、策略限制、遥测
 
-## 14.1 这是一个强运行时配置驱动系统
+## 14.1 控制面与时间语义：这不是一层 settings，而是五种不同“控制平面”
 
-运行时行为确实受很多层共同影响，但它们不是“平权并列开关”，而是一套带 precedence 和观察时点差异的配置系统：
+这一章最容易被误写成“Claude Code 有很多配置源”。源码更准确的结论是：这里至少有五种不同控制平面，它们的数据来源、优先级、读取时点和传播方式都不同；把它们混成一个“配置系统”会直接误判行为。
 
-- settings.json
-- project settings
-- policy settings
-- managed drop-in settings
-- CLI flags
-- env vars
-- GrowthBook gates/configs
-- policy limits
+| 控制平面 | 主要锚点 | 决策语义 | 典型读取时点 | 工程含义 |
+| --- | --- | --- | --- | --- |
+| `settings` 合并层 | `src/utils/settings/settings.ts` | 多源 merge；插件基底最底，文件层和 flag/inline 叠加 | `getInitialSettings()`、`getSettingsWithErrors()`、`getSettingsWithSources()` | 这是“用户/项目/本机会话配置”的有效值层，不等于策略层 |
+| `policySettings` 策略层 | `src/utils/settings/settings.ts`、`loadManagedFileSettings()` | 不是 merge-all，而是 `first source wins` | 初始化、watcher 触发后 fresh read、部分同步检查 | 企业/管理员策略源内部先决出赢家，再整体压到 settings 链上 |
+| `policy limits` 远端限制层 | `src/services/policyLimits/index.ts` | 独立 API restrictions；键不存在就允许，少数 essential-only 场景 miss 时 fail-closed | fast-path 命令、bridge、remote session gating | 它不进入 settings merge；它是“额外硬上限” |
+| `GrowthBook` 运行时 gate/config 层 | `src/services/analytics/growthbook.ts` | remote-eval + 磁盘缓存 + refresh listener + 部分 session latch | render body、query 构造、长期会话 refresh | 它既做 entitlement，也做 runtime tuning，但不是企业策略替代品 |
+| hot reload / fan-out 层 | `src/utils/settings/changeDetector.ts`、`src/utils/settings/applySettingsChange.ts`、`src/cli/print.ts` | 不决定值，只决定“值变了以后当前进程怎样重接线” | 文件变更、SDK `notifyChange()`、MDM poll | 它解决传播问题，不解决优先级问题 |
 
-更应该记住的是下面几条：
+把几层拆开后，`settings.ts` 里的时间语义就很清楚了。
 
-- managed settings 内部本身也有顺序：`managed-settings.json -> managed-settings.d/*.json`。
-- policy source 还存在更高一层优先级：`remote > plist/hklm > file > hkcu`。
-- `getSettingsWithSources()` 和 `getSettingsWithErrors()` 又分别代表 fresh-read 视角与 session-cache 视角，排查问题时不能混着看。
-- CLI flags、env vars、GrowthBook、policy limits 常常不是“替代 settings”，而是在更靠后的位置追加 runtime gating 或硬上限。
+- `getSettingsForSource('policySettings')` 明确走 `remote -> MDM(plist/hklm) -> managed file/drop-ins -> hkcu`，而且是第一命中即返回，不继续 merge；这说明 `policySettings` 的职责是“选择策略源赢家”，不是做普通 deep merge。
+- `loadManagedFileSettings()` 内部又有另一层顺序：`managed-settings.json` 先打底，再按字母序叠加 `managed-settings.d/*.json`；这说明 file-based managed settings 自己内部还有“base + drop-in”机制。
+- `getSettingsWithErrors()` 用 session cache，`getSettingsWithSources()` 则先 `resetSettingsCache()` 再 fresh read；因此前者回答“当前进程正在用什么”，后者回答“此刻磁盘/策略源上真实长什么样”。排障时如果不区分这两个视角，很容易把“缓存未失效”误读成“优先级不对”。
+- `applySafeConfigEnvironmentVariables()` 又把时间轴切成两段：先应用可信源 env，再计算 remote managed settings eligibility，再应用 `policySettings.env`，最后只把 merged settings 中 allowlist 的 safe env 注回 `process.env`。源码注释直接写出了这个依赖链：`non-policy env -> eligibility -> policy env`。
 
-这使系统高度灵活，但也意味着排查时必须回答一个更精确的问题：某个行为究竟是“被哪层打开的”、还是“被更高层覆盖/封顶的”。
+所以更稳妥的总括不是“它有很多配置源”，而是：
 
-## 14.2 analytics 采用 queue-first 设计
+1. `settings` 负责形成运行时有效配置快照。
+2. `policySettings` 负责把企业策略源收束成一个赢家。
+3. `policy limits` 负责给少数功能再加一层 API 侧硬限制。
+4. `GrowthBook` 负责 rollout、entitlement 和动态调参。
+5. hot reload 负责把变化传播到当前 REPL/headless/bridge 运行面。
 
-`services/analytics/index.ts` 非常值得注意，因为它刻意做成“无依赖入口 API”：
+这五层的“时间语义”也不同：
 
-```ts
-if (sink === null) {
-  eventQueue.push({ eventName, metadata, async: false })
-  return
-}
-sink.logEvent(eventName, metadata)
-```
+- 有的是 import-time / init-time 决定，例如 `entrypoints/cli.tsx` 对某些环境量必须在 import 前确定。
+- 有的是 session snapshot，例如 `getSettingsWithErrors()`、`tool schema cache`、一部分 GrowthBook latch。
+- 有的是 blocking freshness check，例如 `checkGate_CACHED_OR_BLOCKING()`、`getBridgeDisabledReason()`。
+- 有的是长期会话 refresh，例如 `onGrowthBookRefresh()`、`settingsChangeDetector`、`policyLimits` 的 background polling。
 
-文件：`src/services/analytics/index.ts`
+因此第 14 章真正要强调的不是“配置多”，而是“同一个行为往往同时受多条控制链影响，而且这些链读值的时刻并不一致”。
 
-这保证了：
+## 14.2 hot reload 不是附属功能，而是控制面传播链
 
-- 启动早期事件不会因为 sink 还没挂上而丢失
-- analytics API 不会引入 import cycle
+如果只看 `settings.ts`，会以为配置变化要靠“重启进程”才能生效；但 `changeDetector.ts`、`applySettingsChange.ts`、`print.ts` 和主线程状态同步代码说明，系统明确在支持“进程内重新接线”。
 
-### 14.3 GrowthBook 是高频运行时 gate/config 平面之一
+`src/utils/settings/changeDetector.ts` 不是简单文件 watcher，而是一条有稳定性防抖、删除宽限期和 hook 拦截的传播链：
 
-把 GrowthBook 写成“运行时行为基底”会有点过满。更准确的说法是：它是这套系统里高频出现的一层 gate/config 平面，很多核心行为会被它 gated、tuned 或 latched，但并不是所有行为都由它单点决定。
+- `awaitWriteFinish` 用 `FILE_STABILITY_THRESHOLD_MS` + `FILE_STABILITY_POLL_INTERVAL_MS` 防止读到半写文件。
+- 删除不是立即生效，而是先经过 `DELETION_GRACE_MS`，吸收 delete-and-recreate 模式。
+- 变更不会直接 fan-out，而是先跑 `executeConfigChangeHooks()`；如果 hook 给出 blocking 结果，就跳过当前 session 内应用。
+- MDM/plist/HKLM 这种非文件源不能靠文件事件监听，所以又单独有 `startMdmPoll()` 的 30 分钟轮询。
 
-最典型的三个例子是：
+最终真正把变化推进当前运行时的是 `fanOut(source)`，而不是 watcher 本身。`fanOut()` 会先清 settings cache，再通知订阅者；这就是为什么 `applySettingsChange()` 可以安全依赖 `getInitialSettings()` 读到 fresh state，而不需要自己重复 reset cache。
 
-- dynamic config 在实现上就是 feature object，不只是外围实验开关。
-- 某些 `1h TTL` eligibility 会被 session latch，避免 mid-request / mid-session 漂移。
-- bridge poll interval、fast mode 等行为也可以被它做 fleet-wide 调参。
+headless 路径尤其说明 hot reload 是一等能力。`src/cli/print.ts` 里直接写了：headless 没有 React tree，`useSettingsChange` 不会运行，所以要显式订阅 `settingsChangeDetector.subscribe()`，并在回调里：
 
-所以在这个仓库里，feature gate / dynamic config 不是“小优化开关”，而是系统的一部分。
+- 调 `applySettingsChange()` 更新 `AppState.settings` 和 permission context；
+- 重新同步 denormalized 的 `fastMode`；
+- 在插件/MCP 路径上通过 `refreshPluginState()` 和 `applyPluginMcpDiff()` 清 cache、重建 commands/agents、重新 diff MCP 连接。
+
+这使 hot reload 和 GrowthBook refresh 形成鲜明对比：
+
+- settings/policy 变化是“值来自磁盘/策略源，靠 watcher/poll + fan-out 推入状态树”；
+- GrowthBook 变化是“值来自 remote eval / cached payload，靠 per-call read 或 refresh listener 影响长期对象”；
+- `policy limits` 变化则又是第三种：定时拉 restrictions，更新 session/file cache，但不会走 settings merge。
+
+所以“配置变了以后会怎样”本身就是一条独立机制链，而不是 `settings.ts` 的附录。
+
+## 14.3 analytics 不是只有 queue-first，而是一整层事件基础设施
+
+`src/services/analytics/index.ts` 的 queue-first 设计当然重要，但它只是入口层。把 analytics 放到基础设施视角看，至少能拆出六层。
+
+第一层是无依赖事件 API。`logEvent()` / `logEventAsync()` 只接受无字符串或经标记验证过的 metadata；`sink === null` 时先写内存队列，`attachAnalyticsSink()` 后再 drain。这个 API 明确为“避免 import cycle”和“启动早期事件不丢”而设计。
+
+第二层是 sink fanout。`src/services/analytics/sink.ts` 把入口事件分发到 Datadog 和 1P event logging：
+
+- Datadog 走 `trackDatadogEvent()`，并在 fanout 前通过 `stripProtoFields()` 去掉 `_PROTO_*`，避免 PII-tagged 字段泄到 general-access backend。
+- 1P event logging 则保留完整 payload，让 exporter 把 `_PROTO_*` 提升到受控 proto 列。
+- 两条 sink 都受 `sinkKillswitch.ts` 里的 GrowthBook JSON config 控制，可按 sink 粒度停掉。
+
+第三层是采样和准入。`firstPartyEventLogger.ts` 的 `shouldSampleEvent()` 读取 `tengu_event_sampling_config`；Datadog 还有自己的 allowlist、provider 过滤和字段降基数逻辑。这说明 analytics 并不是“事件产生了就直接发”，而是有独立的流量控制层。
+
+第四层是具体后端实现。
+
+- Datadog 路径在 `datadog.ts` 里做 batching、flush timer、字段规范化、模型名降 cardinality 和 shutdown flush。
+- 1P 路径在 `firstPartyEventLogger.ts` 里单独建 `LoggerProvider` + `BatchLogRecordProcessor`，并把 batch 参数也放到 GrowthBook dynamic config 里。
+
+第五层是 refresh/rebuild 机制。`entrypoints/init.ts` 在启动时同时 lazy import `firstPartyEventLogger` 和 `growthbook`，然后注册 `onGrowthBookRefresh()`；一旦 `tengu_1p_event_batch_config` 变化，就触发 `reinitialize1PEventLoggingIfConfigChanged()` 重建 provider。这里的核心不是“配置可以改”，而是“长期对象可以在会话中途重建而不丢整个 analytics 面”。
+
+第六层才是更广义的 telemetry。`initializeTelemetryAfterTrust()` 不是 1P analytics 的一部分，而是 customer OTLP telemetry 的初始化链；它会在 remote managed settings eligible 时先等待 remote settings，再重新应用 env，最后 lazy import instrumentation。也就是说，这个仓库里“analytics”和“telemetry”虽然都在观测面，但并非一条实现链：
+
+- analytics 偏内部事件、sink fanout、采样和 1P/Datadog 路径；
+- telemetry 偏 OTel metrics/logs/traces、trust 后初始化和 remote settings 依赖。
+
+因此如果只记住“analytics 采用 queue-first”，会漏掉三个关键工程事实：
+
+- 它实际上有完整的 sink、sampling、killswitch、shutdown、provider rebuild 机制。
+- 它和 GrowthBook 深度耦合，不只是读几个实验开关。
+- 它和 customer telemetry 共享部分基础设施，但初始化时序和目标后端并不相同。
+
+## 14.4 3 个能落地的 GrowthBook / runtime gate 案例
+
+前文说 GrowthBook 是高频 gate/config 平面，这里用 3 条真正落在主链上的例子把它钉实。
+
+### 14.4.1 Remote Control：编译期开关、认证、GrowthBook、policy limits 四层串联
+
+`src/entrypoints/cli.tsx` 对 `claude remote-control` 的 fast path 很典型：
+
+1. 先经过 `feature('BRIDGE_MODE')`，这是 build-time 是否保留代码。
+2. 再检查 OAuth token；源码注释明确写了“auth check must come before the GrowthBook gate check”，否则 GrowthBook 没有 user context，只会返回 stale/default false。
+3. 然后用 `getBridgeDisabledReason()` / `checkGate_CACHED_OR_BLOCKING('tengu_ccr_bridge')` 做 runtime entitlement。
+4. 最后还要 `waitForPolicyLimitsToLoad()`，并检查 `isPolicyAllowed('allow_remote_control')`。
+
+这条链精确说明了四件事：
+
+- GrowthBook 不是最上层，它前面还有编译期和认证前置条件。
+- `policy limits` 也不是 settings 的同义词，而是 feature 已可见之后的最终硬限制。
+- 同一功能同时受 compile-time、auth-time、blocking fresh gate、org policy 四种时间语义支配。
+- 如果排障时只盯 `settings.json` 或只盯 GrowthBook，都一定会漏层。
+
+### 14.4.2 Prompt cache 1h TTL：GrowthBook 配置存在，但真正发给 API 的值被锁存在 session
+
+`src/services/api/claude.ts` 的 `should1hCacheTTL()` 明说：
+
+- `tengu_prompt_cache_1h_config` 只提供 allowlist；
+- 用户是否有资格使用 1h TTL，要结合订阅与 overage 状态；
+- 这两个值都会被写入 bootstrap state latch，避免 mid-session / mid-request 漂移。
+
+也就是说，这里不是“每次请求都 live read GrowthBook 决定 TTL”，而是：
+
+`GrowthBook allowlist + 用户资格判定 -> 首次求值 -> latch 到 state -> 后续 query 复用 -> cache_control 稳定`
+
+这正是第 14 章里“控制面”和“时间语义”必须一起讲的原因。配置值来自 GrowthBook，但真正进入 API cache key 的值并不是 live reader，而是 session-stable latch。
+
+### 14.4.3 长会话 runtime tuning：有些 gate 必须 live，有些必须 rebuild，有些必须每轮重读
+
+第三类案例是“不是所有 gate 都该锁住”。
+
+- `firstPartyEventLogger.ts` 的 batch config 通过 `onGrowthBookRefresh()` 触发 provider rebuild；这里如果做 session latch，长会话就永远吃不到新批量参数。
+- `bridge/remoteIO.ts` 和 `bridge/pollConfig.ts` 对 `tengu_bridge_poll_interval_config` 的使用则偏 live tuning，keepalive/poll 行为可以跟随 fleet 配置变化调整。
+- `keybindings/loadUserBindings.ts` 的 `tengu_keybinding_customization_release` 又是更偏产品开关的 gate，决定某条运行面是否允许读用户配置文件。
+
+因此同样是 GrowthBook/runtime gate，工程上至少有三种消费方式：
+
+- live read：适合节流参数、轮询区间、kill switch。
+- refresh listener + rebuild：适合把 gate 烘焙进长期对象的系统。
+- first-read latch：适合任何会进入 prompt cache key 或协议字节前缀的值。
+
+这一点如果不写透，第 15 章后面讲 cache-stability 模式时就会显得像“作者偏好”；其实这是明确的时间语义分层。
 
 ## 15. 关键设计模式与优点
 
-### 15.1 以 cache 稳定性为中心的跨层设计
+### 15.1 cache-stability 不是几个零散技巧，而是一套总模式
 
-这是全仓最强的一条主线。更准确地说，这些例子共享的是同一个工程目标：稳定 prompt / tool / schema / TTL 相关字节，冻结会话期高波动 gating，把动态污染尽量推到尾部或延后注入，从而扩大 prompt cache 的可复用范围。
+前文已经多次提到 prompt cache，但到这里可以把它收束成一条统一模式：系统持续把“会进入 Anthropic API cache key 的字节面”拆成稳定前缀与动态尾部，并且在会话边界内锁住高波动值；一旦实在无法保证不漂移，就再用 break detection 明确告诉开发者究竟是哪一段发生了 break。
 
-典型点包括：
+这条总模式至少包含五个稳定可复用的子策略。
 
-- `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`
-- tools 排序与 Statsig 配置同步
-- settings JSON content-hash path
-- fork child 继承 rendered prompt / exact tools
-- MCP instruction delta
-- tool schema cache
-- 1h TTL eligibility/session latching
+| 模式 | 主要锚点 | 在解决什么问题 |
+| --- | --- | --- |
+| 稳定前缀 | `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`、`splitSysPromptPrefix()`、tools 排序、`--settings` content-hash path、`toolSchemaCache` | 把大块且高成本的 system/tool 前缀固定下来 |
+| 动态尾部 | advisor tool append、`mcpInstructionsDelta`、部分 deferred tool / MCP 连接增量 | 把高波动内容尽量压到后缀，避免污染整个前缀 |
+| 会话内锁存 | `should1hCacheTTL()`、beta header latches、tool schema session cache | 把 mid-session 会抖动但不值得抖动的值冻结住 |
+| exact inheritance | fork child 继承 `renderedSystemPrompt`、exact tools、placeholder tool_results | 子 agent 不重渲染前缀，直接继承父级已稳定字节 |
+| break detection | `promptCacheBreakDetection.ts` | 当以上约束被破坏时，定位是哪种字节变化导致 cache miss |
 
-如果把这些点映射到策略层，会更容易记住：
+先看“稳定前缀”。`src/constants/prompts.ts` 定义 `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`，`src/utils/api.ts` 的 `splitSysPromptPrefix()` 负责按这个边界把 system prompt 切成可 cache prefix 与动态后缀。`src/main.tsx` 为 `--settings` JSON 生成 content-hash 路径，而不是随机 temp path，因为这个路径会进入 Bash tool 的描述，进而进入工具 schema 字节。`src/utils/toolSchemaCache.ts` 更是把“工具 schema 会在 server position 2，任何字节变化都会打爆整个 ~11K-token tool block”写进了注释里。
 
-- `dynamic boundary`、tools 排序、settings hash path：在做“前缀稳定化”。
-- MCP instruction delta：在做“动态尾部污染隔离”。
-- fork child 继承 rendered prompt / exact tools：在做“继承已渲染结果，避免重建字节前缀”。
-- `1h TTL eligibility/session latching`：在做“把高波动 eligibility 锁定到 session/query 边界内”。
+再看“动态尾部”。`src/services/api/claude.ts` 明确把 advisor tool append 到 `toolSchemas` 后面，注释直接写明这么做是为了让 `/advisor` 的切换只 churn 小后缀，而不是 cached prefix。`src/utils/mcpInstructionsDelta.ts` 则把 MCP instructions 变成 attachment delta，而不是每轮重建 system prompt 中那一段危险 uncached 区域；这本质上就是把晚连接、晚发现的动态信息从 prefix 挪到 conversation tail。
 
-### 15.2 多运行面共享同一 query 内核
+“会话内锁存”在源码里同样不是抽象概念。`should1hCacheTTL()` 会把用户资格和 GrowthBook allowlist 锁进 bootstrap state；`claude.ts` 又把 AFK/fast-mode/cache-editing/thinking-clear 这些 beta header 做 sticky-on latch，注释明确写着是为了避免 mid-session toggle 改变 server-side cache key，打爆 `50-70K` tokens。这里的关键不是“读到了什么值”，而是“什么时候停止继续读”。
+
+“exact inheritance”在 fork path 里最明显。`ToolUseContext.renderedSystemPrompt` 的注释已经把问题写穿：如果 fork child 在 spawn 时再去调用 `getSystemPrompt()`，GrowthBook 有可能从 cold 变 warm，导致字节不同，cache 立刻失效。于是 `forkSubagent.ts` 明确规定：
+
+- fork child 用父线程已经渲染好的 `renderedSystemPrompt`；
+- `tools: ['*'] + useExactTools` 让子线程继承父线程 exact tool pool；
+- 所有 fork child 的 placeholder tool_result 文案必须完全一致；
+- 只有最后追加的 directive 文本是每个 child 自己变化的那一小段。
+
+最后是“break detection”。`src/services/api/promptCacheBreakDetection.ts` 并不是调试附属，而是这套模式的自监控层。它同时记录：
+
+- `systemHash`
+- `toolsHash`
+- `cacheControlHash`
+- `perToolHashes`
+- `betas`
+- `globalCacheStrategy`
+- `effortValue`
+- `extraBodyHash`
+
+然后在 cache read token 异常下降时明确说出是 `cache_control changed`、`tool schemas changed`、`betas changed` 还是“可能只是 1h TTL 到期”。也就是说，第 15 章里所谓 cache-stability 的“模式”，已经从设计约束延伸到了运行时诊断。
+
+### 15.2 restore correctness 是系统级优点，不只是 session 子功能
+
+上一章已经讲过 session / transcript / compaction，这里要把它上升成一个更高层判断：这个仓库的一个系统级优点，是它明确把“恢复后继续执行仍然正确”当成一级目标，而不是“历史能读回来就行”。
+
+最能支撑这个判断的是 `src/utils/sessionStorage.ts`。`applyPreservedSegmentRelinks()` 的注释写得非常直白：preserved messages 在 JSONL 上保留 pre-compact 的原始 `parentUuid`，加载时必须在内存里把 head、anchor、tail 重新 relink；如果 tail→head walk 断了，不是硬拼，而是直接放弃 prune，回退到加载完整 pre-compact history，并打 `tengu_relink_walk_broken`。这说明 restore correctness 优先级高于“强行省内存/省解析”。
+
+同文件后面的大文件加载路径也一样：`scanPreBoundaryMetadata()` 会在跳过 pre-boundary 大段 transcript 时，先把 agent-setting、mode、pr-link 等 session-scoped metadata 用便宜的 byte-level 扫描补回来；如果 boundary 带 `preservedSegment`，又会避免在 parse 前做会把 preserved messages 当 orphan 丢掉的优化。也就是说，优化必须服从恢复正确性。
+
+这个优点是系统级的，而不只是 transcript loader 局部的，原因有三条：
+
+- compaction 子系统在生成 `preservedSegment`，loader 子系统在 relink 它，`QueryEngine` 又要在 flush 时把 boundary tail 一起考虑进去；正确性跨越了 compact、storage、resume 三层。
+- headless / bridge / REPL 都要依赖同一份恢复语义。`print.ts`、`structuredIO.ts`、remote worker state 恢复都不是孤立 feature。
+- 一旦 restore correctness 做不好，受影响的不只是“历史回显错一点”，而是后续 query 的上下文主链、compact 边界、tool sidechain、permission 决策上下文都会漂移。
+
+因此可以把它视为和 cache-stability 并列的系统级优点：前者保障“恢复后还是同一条工作链”，后者保障“后续请求还能重用同一条 cache 前缀”。
+
+### 15.3 多运行面共享同一 query 内核
 
 这让系统：
 
-- 不至于在 REPL/headless/agent 各写一套模型循环
-- 但也让宿主层与内核层的边界变得很重要
+- 不至于在 REPL/headless/agent 各写一套模型循环。
+- 宿主层可以各自处理信任、权限 UI、structured IO、bridge 等差异，而 query 内核仍只维护一套上下文治理和 tool loop。
+- 但宿主和内核之间的边界就必须非常清晰，否则控制面变化会在不同运行面上表现不一致。
 
-### 15.3 权限安全链设计较成熟
+换句话说，这个优点和第 16 章要讲的“运行面分叉债”是同一枚硬币的两面：共享 query 内核是强优点，宿主胶水越来越多则是它的代价。
+
+### 15.4 权限安全链设计较成熟
 
 这个系统已经不是“用户点 Yes/No”的权限模型了，但它也不是每次调用都完整经过同一条线性流水线。更准确地说，它是一套分支化的安全栈：
 
@@ -1777,7 +2035,7 @@ sink.logEvent(eventName, metadata)
 
 因此它成熟的点，不是“层数多”，而是把不同风险面拆开了。以 `Edit/Bash` 这类调用为例，真正决定结果的往往是“规则/模式 -> 是否命中 classifier -> 当前场景能否弹 permission -> sandbox 是否仍然兜底”的组合，而不是所有层都等权参与。
 
-### 15.4 MCP 与 Agent 已平台化
+### 15.5 MCP 与 Agent 已平台化
 
 很多工程做到一定规模才会把“工具扩展”和“子代理”当平台能力，这个仓库已经走到了这一步。更落地地看，至少有三个可观察信号：
 
@@ -1787,53 +2045,112 @@ sink.logEvent(eventName, metadata)
 
 ## 16. 风险、隐式耦合与技术债
 
-## 16.1 超级枢纽文件
+## 16.1 超级枢纽文件职责矩阵
 
-风险最高的几个文件：
+原文只列了几个“大文件”，但这还不够。更有用的写法，是把它们为什么是超级枢纽、枢纽在哪里、坏了会坏成什么样一起列出来。
 
-- `src/main.tsx`
-- `src/screens/REPL.tsx`
-- `src/query.ts`
-- `src/tools/AgentTool/AgentTool.tsx`
-- `src/tools/AgentTool/runAgent.ts`
-- `src/services/mcp/client.ts`
+| 文件 | 汇聚职责 | 为什么危险 | 典型 break 面 |
+| --- | --- | --- | --- |
+| `src/main.tsx` | 启动编排、trust 流程、telemetry、bridge/remote、plugin 初始化、会话注册、运行面分流 | 同时承载启动顺序、策略前置、产品 gate、性能 defer | 某一步提早/延后就可能改写 auth、GrowthBook、settings、telemetry 的观察时点 |
+| `src/screens/REPL.tsx` | 交互宿主、permission UI、session restore、MCP/tool 面更新、用户命令流 | UI 文件名低估了 runtime shell 职责 | REPL 特有状态与 query 内核边界容易漂移 |
+| `src/cli/print.ts` | headless 宿主、structured IO、settings hot reload、plugin/MCP refresh、resume/hydration | 它几乎是另一套没有 React 的运行壳 | REPL 修了不等于 headless 修了，反之亦然 |
+| `src/query.ts` | 消息预算、tool loop、compact/snipping/microcompact、prompt 构造前后半链 | 同时握上下文治理、性能优化、correctness 约束 | 任一优化都可能影响 compact、cache、tool side effects |
+| `src/services/mcp/client.ts` | MCP 连接池、配置合并、能力暴露、重连、增量更新 | 外部能力层高度集中，且和 UI/commands/tools 三边相连 | 去重、重连、late-connect 增量非常容易产生隐式耦合 |
+| `src/utils/sessionStorage.ts` | transcript 解析、resume、preserved-segment relink、metadata 恢复 | correctness 约束多且跨 compact / query / IO 边界 | loader 一旦错判，就不是显示问题，而是继续执行的上下文错了 |
 
-问题不是“它们很大”，而是它们同时承载：
+因此“超级枢纽文件”的真正风险不是 LOC，而是这些文件同时握有：
 
-- 编排
-- 策略
-- 状态
-- feature gate
+- 编排顺序
+- 状态快照
+- feature/runtime gate
 - 性能优化
-- 正确性约束
+- 恢复正确性
+- 多运行面兼容层
 
-### 16.2 关键隐式契约过多
+这类文件最难做局部修改，因为任何局部行为都可能是某条跨章节机制链的节点。
 
-更适合按“违反后会坏成什么样”来分组理解：
+## 16.2 隐式契约：producer / consumer / break symptom 对照表
 
-- cache 稳定性契约：  
-  `prompt dynamic boundary` 必须和 API split 逻辑一致；tool 列表与全局 system cache 配置必须同步；fork child 必须继承 exact tools / rendered prompt。  
-  违反后的直接后果，是 prompt cache 命中骤降，fork/summary 继承失效，原本可共享的前缀被打散。
-- 递归与恢复契约：  
-  `querySource` 必须在线程间保留；progress message 不能进入 transcript chain。  
-  违反后的直接后果，是 autocompact / restore 对调用来源和消息主链判断失真，进而出现递归保护错判或 resume 漂移。
-- MCP 身份契约：  
-  MCP dedup 会忽略 `env/headers`。  
-  违反预期时的直接后果，是合法多实例可能被折叠，或连接身份被过度共享。
-- 权限语义契约：  
-  sandbox 路径语义与 permission rule 路径语义并不完全一致。  
-  违反后的直接后果，是“规则上看似允许/禁止”和“OS 级实际行为”出现偏差，调试和审计都会变难。
+这一仓库的高风险耦合，多数都不是显式接口，而是“某文件生成了一种结构，另一文件默认它永远满足某个形状”。按 producer / consumer / break symptom 来看会更直观。
 
-这些都不是单文件能看懂的约束。
+| 隐式契约 | Producer | Consumer | 一旦断裂最先出现的症状 |
+| --- | --- | --- | --- |
+| `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` 的位置必须与 `splitSysPromptPrefix()` 解释一致 | `src/constants/prompts.ts` | `src/utils/api.ts`、`src/services/api/claude.ts` | cache prefix 切错，system prompt 动静边界失效，命中率骤降 |
+| tool schema 必须在 session 内保持 byte-stable，fork child 还要继承 exact tools | `src/utils/api.ts`、`src/utils/toolSchemaCache.ts`、`src/tools/AgentTool/forkSubagent.ts` | `src/services/api/claude.ts`、fork child 请求构造 | 子 agent 和父线程语义看似一致，但 cache 完全不共享 |
+| `preservedSegment` 元数据必须能让 loader 走通 tail→head relink | `src/services/compact/compact.ts`、`sessionMemoryCompact.ts` | `src/utils/sessionStorage.ts`、`src/QueryEngine.ts` | resume 回退为全量历史、出现 phantom/orphan、或 compact 后上下文主链漂移 |
+| settings 变更必须先 reset cache 再 fan-out，并让所有运行面各自重接线 | `src/utils/settings/changeDetector.ts` | `applySettingsChange.ts`、`src/cli/print.ts`、REPL state hooks、plugin/MCP 刷新 | headless 仍持 stale settings，甚至把 policy-blocked agent 泄露到当前会话 |
+| Remote Control entitlement 需要 auth、GrowthBook、policy limits 三方同时一致 | `src/bridge/bridgeEnabled.ts`、`src/services/policyLimits/index.ts`、`src/entrypoints/cli.tsx` | bridge CLI fast path、REPL bridge 初始化、remote session 入口 | UI 显示可用但实际被拒，或 stale false 导致误隐藏 |
+| permission rule 路径语义与 sandbox 路径语义不完全同构 | settings / permission loaders / sandbox config producers | permission evaluator、OS sandbox | “规则上看似允许/禁止”和“实际 OS 行为”出现偏差，调试和审计都困难 |
 
-### 16.3 反编译/研究仓边界问题
+这些契约的共同点是：它们都横跨至少两个一级子系统，所以单文件 review 很容易低估风险。
 
-- 不能简单把“当前仓库文本”当成官方权威实现
-- `prepare-src.mjs` 会改 `src/`
-- build 链是 best-effort
-- feature-gated 模块不完整
+## 16.3 时间语义债：同一逻辑值在不同阶段被不同方式观察
 
-### 16.4 一处显眼的静态可疑点
+这一仓库最真实的技术债之一，不是“代码大”，而是时间语义分散。很多逻辑值在 import-time、init-time、session-time、per-request-time 被不同读者用不同 API 观察。
+
+最典型的例子至少有四个：
+
+- `entrypoints/cli.tsx` 明说某些环境量必须在 import 前决定，因为 `BashTool/AgentTool/PowerShellTool` 会在模块初始化时捕获常量；这类值晚一步就已经错过观察窗口。
+- `applySafeConfigEnvironmentVariables()` 先做 trust 前安全 env，再在 telemetry 路径上等待 remote managed settings 后重新应用 env；同样一组配置值在不同初始化阶段会被不同子系统看到不同快照。
+- settings 既有 `getSettingsWithErrors()` 这种 session-cache 视角，也有 `getSettingsWithSources()` 这种 fresh-read 视角；代码里两种都合法，但读错 API 就会把“观察窗口不同”误认成“优先级 bug”。
+- GrowthBook 既有 `_CACHED_MAY_BE_STALE` 的快速路径，也有 `checkGate_CACHED_OR_BLOCKING()` 的新鲜路径，还有 `onGrowthBookRefresh()` 的长期对象重建路径，以及 `should1hCacheTTL()`/beta headers 的 latch 路径。
+
+这类债的坏处在于：系统不会立刻 crash，而是出现最难排的那种 bug：
+
+- 同一个功能在 REPL 首轮、长会话中途、resume 后、auth 切换后表现不同。
+- 同一份配置文本在两个子系统里看起来像“没生效”和“已生效”同时成立。
+- 修一个 stale read，可能反而把某条 cache-stable 约束打破。
+
+所以这里的债不是“时间相关逻辑很多”，而是“读取时点本身已成为系统行为的一部分”，但代码层没有统一的时间语义框架来约束它。
+
+## 16.4 运行面分叉债：REPL、headless、bridge 共享内核，但宿主胶水越来越分叉
+
+第 15 章说“多运行面共享 query 内核”是优点；代价就是宿主层胶水持续分叉。
+
+从源码可以确认至少有三条明显分叉：
+
+- REPL 有 React tree、permission UI、trust dialog、交互式状态树；headless 没有，所以 `print.ts` 必须自己订阅 `settingsChangeDetector`、自己维护 commands/agents 热更新、自己做 hydrate/restore。
+- bridge / remote-control 又是另一层：除了共享 query 内核，还要处理 OAuth entitlement、policy limits、CCR/transport、keep_alive、poll interval、worker state restore。
+- daemon / assistant / SDK 还会再引入一层“无 UI 但长期存在”的宿主约束，很多 init 顺序和 gating 不再与 REPL 相同。
+
+这类分叉债的危险不在“代码重复”，而在“行为复制但时序不完全复制”。例如：
+
+- REPL 的 `useSettingsChange` 与 headless 的 direct subscribe 逻辑要保持功能一致，但实现路径不一样。
+- bridge 的可见性 gate 和 REPL command 注册时机不一样，稍有不慎就会出现“命令已注册但不可用”或“UI 隐藏但后端实际已开”的不一致。
+- restore correctness 一旦在某一运行面漏了 metadata/hydration 步骤，就会出现只有特定宿主才能复现的漂移。
+
+因此这里真正的债名应该是“运行面分叉债”，不是简单的“多入口复杂”。
+
+## 16.5 已确认工程债与最需要的回归测试面
+
+这一章不能只剩一个“静态可疑点”，因为源码里已经能确认几类工程债，而且它们都非常值得专门回归。
+
+| 已确认工程债 | 为什么说已确认 | 最需要的回归测试面 |
+| --- | --- | --- |
+| 控制面分层多且时间语义不统一 | `settings` / `policySettings` / `policy limits` / GrowthBook / hot reload 明显不是同一层，且读取时点不同 | 改动任一控制面后，验证 REPL、headless、bridge 在首轮、长会话中途、auth 切换后是否一致 |
+| cache-stability 依赖跨文件隐式约束 | dynamic boundary、tool schema cache、latch、exact inheritance、break detection 分散在多文件 | 专测 mid-session gate refresh、fork child、MCP late connect、`--settings` JSON path 是否 still cache-safe |
+| restore correctness 链长且与优化强耦合 | preservedSegment relink、pre-boundary metadata scan、skip-before-parse 都在同一 loader 内交错 | 专测 compact 后 resume、sidechain 恢复、tail/head 缺失时的保守退化是否正确 |
+| hot reload 传播链跨运行面 | watcher/poll/fan-out/app-state/plugin/MCP refresh 分散在 settings 与宿主文件 | 专测 settings/policy 变更后 headless 和 REPL 是否都同步移除被策略禁用的能力 |
+| bridge entitlement 与 org policy 是双门控 | auth + GrowthBook + policy limits 必须协同，且 fast-path/REPL/bridge 各自都有入口 | 专测 stale false、auth refresh、policy 304/404/缓存 miss 时是否出现误允许或误拒绝 |
+
+如果只让我选最需要补的回归测试面，我会优先补这五类：
+
+1. `settings` / `policySettings` / `flagSettings` 热变更后，REPL 与 headless 是否都正确刷新 `settings`、permissions、plugins、agents、MCP。
+2. GrowthBook 在长会话中刷新后，哪些值必须 live 生效，哪些值必须保持 latch，prompt cache 是否仍稳定。
+3. compact + resume + preserved segment + metadata scan 组合路径下，恢复后的消息主链和 session metadata 是否仍正确。
+4. fork child 是否真正继承父线程 rendered prompt 与 exact tools，而不是逻辑相同但字节不同。
+5. bridge / remote-control 在 auth 缺失、GrowthBook stale false、policy limits 禁止、policy cache miss 四种场景下是否都给出正确结果。
+
+### 16.6 反编译/研究仓边界问题
+
+- 不能简单把“当前仓库文本”当成官方权威实现。
+- `prepare-src.mjs` 会改 `src/`。
+- build 链是 best-effort。
+- feature-gated 模块不完整。
+
+这部分虽然不属于产品运行时债，但它会放大所有静态分析结论的误差边界，所以仍然必须保留。
+
+### 16.7 一处显眼的静态可疑点
 
 以当前仓库文本看，`src/constants/prompts.ts` 中 `getAntModelOverrideSection()` 调用了 `getAntModelOverrideConfig()`，但顶部导入区未见对应导入。  
 这类问题有两种可能：
