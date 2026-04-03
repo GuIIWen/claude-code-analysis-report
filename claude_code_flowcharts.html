@@ -65,18 +65,18 @@
     </div>
     <div class="mermaid">
         flowchart TD
-            A[CLI / REPL Host] --> D[Host Assembly / Session Restore]
-            B[Headless Host / QueryEngine] --> D
-            D --> E[Prompt / Context / Cache Prefix]
-            E --> F[query() Runtime]
-            F --> G[Tool Dispatch / Agent Loop]
-            G --> H[Permission / pre-tool hooks]
-            H --> I[Classifier / Sandbox / local execution]
-            G -.visible tool pool comes from.-> J[MCP config / connections / tool-resource exposure]
-            F --> K[Transcript Chain / Session Persistence]
-            K --> L[Memory / Collapse / Compaction]
-            F --> M[REPL / Headless / Bridge output protocols]
-            N[Bridge / Remote Control runtime surface] -.attach / control local session.-> M
+            A["CLI / REPL Host"] --> D["Host Assembly / Session Restore"]
+            B["Headless Host / QueryEngine"] --> D
+            D --> E["Prompt / Context / Cache Prefix"]
+            E --> F["Query Runtime"]
+            F --> G["Tool Dispatch / Agent Loop"]
+            G --> H["Permission / pre-tool hooks"]
+            H --> I["Classifier / Sandbox / local execution"]
+            G -->|visible tool pool| J["MCP config / connections / tool-resource exposure"]
+            F --> K["Transcript Chain / Session Persistence"]
+            K --> L["Memory / Collapse / Compaction"]
+            F --> M["REPL / Headless / Bridge output protocols"]
+            N["Bridge / Remote Control runtime surface"] -->|attach / control| M
     </div>
 
     <h2>2. Startup Routing and Host Assembly</h2>
@@ -85,23 +85,23 @@
     </div>
     <div class="mermaid">
         flowchart TD
-            Start([User runs CLI command]) --> Entry[src/entrypoints/cli.tsx<br/>lightweight dispatcher]
-            Entry --> Fast{Fast path hit?}
-            Fast -- Yes --> FastHandlers[daemon / remote / bridge fast paths]
-            Fast -- No --> Main[src/main.tsx<br/>main startup orchestrator]
-            Main --> Setup[src/setup.ts<br/>initialize context and services]
-            Setup --> Config[config / policy / auth / telemetry]
-            Setup --> Tooling[tool registration / MCP clients / commands]
-            Config --> HostChoice{Which host shape?}
+            Start(["User runs CLI command"]) --> Entry["src/entrypoints/cli.tsx / lightweight dispatcher"]
+            Entry --> Fast{"Fast path hit?"}
+            Fast -->|Yes| FastHandlers["daemon / remote / bridge fast paths"]
+            Fast -->|No| Main["src/main.tsx / main startup orchestrator"]
+            Main --> Setup["src/setup.ts / initialize context and services"]
+            Setup --> Config["config / policy / auth / telemetry"]
+            Setup --> Tooling["tool registration / MCP clients / commands"]
+            Config --> HostChoice{"Which host shape?"}
             Tooling --> HostChoice
-            HostChoice -- Interactive --> ReplHost[src/replLauncher.tsx / REPL.tsx]
-            HostChoice -- Headless --> HeadlessHost[src/QueryEngine.ts]
-            HostChoice -- Subcommand --> Commands[src/commands/*]
-            ReplHost --> HostState[host state assembly<br/>resume / tools / settings / session state]
+            HostChoice -->|Interactive| ReplHost["src/replLauncher.tsx / REPL.tsx"]
+            HostChoice -->|Headless| HeadlessHost["src/QueryEngine.ts"]
+            HostChoice -->|Subcommand| Commands["src/commands/*"]
+            ReplHost --> HostState["host state assembly / resume / tools / settings / session state"]
             HeadlessHost --> HostState
-            HostState --> PromptPrefix[Prompt / Context / Cache Prefix]
-            PromptPrefix --> QueryCore[shared query() runtime]
-            Commands --> End([Process exit])
+            HostState --> PromptPrefix["Prompt / Context / Cache Prefix"]
+            PromptPrefix --> QueryCore["shared query runtime"]
+            Commands --> End(["Process exit"])
             FastHandlers --> End
             QueryCore --> End
     </div>
@@ -112,16 +112,16 @@
     </div>
     <div class="mermaid">
         flowchart TD
-            U[User / Caller] --> Repl[Interactive Host<br/>REPL.tsx]
-            U --> Headless[Headless Host<br/>QueryEngine.ts]
-            Repl --> ReplState[interaction state / resume / UI capability]
-            Headless --> HeadlessState[programmatic session / callbacks]
-            ReplState --> HostAssemble[assemble ToolUseContext / tools / settings]
+            U["User / Caller"] --> Repl["Interactive Host / REPL.tsx"]
+            U --> Headless["Headless Host / QueryEngine.ts"]
+            Repl --> ReplState["interaction state / resume / UI capability"]
+            Headless --> HeadlessState["programmatic session / callbacks"]
+            ReplState --> HostAssemble["assemble ToolUseContext / tools / settings"]
             HeadlessState --> HostAssemble
-            HostAssemble --> PromptLine[fetchSystemPromptParts()<br/>buildEffectiveSystemPrompt()]
-            PromptLine --> CachePrefix[userContext / systemContext / cache-safe prefix]
-            CachePrefix --> Query[shared query() loop]
-            Query --> Output[return result via host protocol]
+            HostAssemble --> PromptLine["System prompt parts / effective system prompt"]
+            PromptLine --> CachePrefix["userContext / systemContext / cache-safe prefix"]
+            CachePrefix --> Query["shared query loop"]
+            Query --> Output["return result via host protocol"]
     </div>
 
     <h2>4. Tool Safety Chain, MCP, and Bridge / Remote Control</h2>
@@ -130,13 +130,13 @@
     </div>
     <div class="mermaid">
         flowchart TD
-            H[REPL / Session Host] --> A[tool_use emitted by query()]
-            A --> B[Tool Dispatch / visible tool pool]
-            B --> C[Permission / pre-tool hooks]
-            C --> D[Classifier / Sandbox]
-            D --> E[local built-in / agent tool execution]
-            B --> F[MCP client / server]
-            G[Bridge / Remote Control gate<br/>OAuth / session handle] -.attach to host, not tool layer.-> H
+            H["REPL / Session Host"] --> A["tool_use emitted by query"]
+            A --> B["Tool Dispatch / visible tool pool"]
+            B --> C["Permission / pre-tool hooks"]
+            C --> D["Classifier / Sandbox"]
+            D --> E["local built-in / agent tool execution"]
+            B --> F["MCP client / server"]
+            G["Bridge / Remote Control gate / OAuth / session handle"] -->|attach to host| H
     </div>
 
     <h2>5. Session / Transcript / Memory / Compaction Loop</h2>
@@ -145,17 +145,17 @@
     </div>
     <div class="mermaid">
         flowchart TD
-            A[Session file / session state] --> B[loadTranscriptFile()]
-            A --> C[restoreSessionStateFromLog()]
-            B --> D[Transcript chain rebuild]
-            C --> E[restore worktree / metadata / agent / read-file state]
-            D --> F[restored query runtime surface]
+            A["Session file / session state"] --> B["loadTranscriptFile"]
+            A --> C["restoreSessionStateFromLog"]
+            B --> D["Transcript chain rebuild"]
+            C --> E["restore worktree / metadata / agent / read-file state"]
+            D --> F["restored query runtime surface"]
             E --> F
-            F --> G[SessionMemory extraction]
-            G --> H[Memory file]
-            F --> I[snip / microcompact / collapse / autocompact]
+            F --> G["SessionMemory extraction"]
+            G --> H["Memory file"]
+            F --> I["snip / microcompact / collapse / autocompact"]
             H --> I
-            I --> J[compact boundary / preserved segment / collapse snapshot]
+            I --> J["compact boundary / preserved segment / collapse snapshot"]
             J --> A
     </div>
 
@@ -215,13 +215,13 @@
     </div>
     <div class="mermaid">
         flowchart TD
-            A[Begin context governance] --> B[tool result budget / content replacement]
-            B --> C[snipCompactIfNeeded]
-            C --> D[microcompact]
-            D --> E[context collapse]
-            E --> F[autocompact]
-            F --> G[reactive compact when needed]
-            G --> H[continue query loop]
+            A["Begin context governance"] --> B["tool result budget / content replacement"]
+            B --> C["snipCompactIfNeeded"]
+            C --> D["microcompact"]
+            D --> E["context collapse"]
+            E --> F["autocompact"]
+            F --> G["reactive compact when needed"]
+            G --> H["continue query loop"]
     </div>
 
     <h2>8. Tool Concurrency Batching</h2>
@@ -230,18 +230,21 @@
     </div>
     <div class="mermaid">
         flowchart LR
-            subgraph Batch1[Batch 1 - concurrent]
-                T1[Tool 1<br/>isConcurrencySafe: true]
-                T2[Tool 2<br/>isConcurrencySafe: true]
+            subgraph Batch1
+                B1Title["Batch 1 - concurrent"]
+                T1["Tool 1 / isConcurrencySafe: true"]
+                T2["Tool 2 / isConcurrencySafe: true"]
             end
 
-            subgraph Batch2[Batch 2 - serial barrier]
-                T3[Tool 3<br/>isConcurrencySafe: false]
+            subgraph Batch2
+                B2Title["Batch 2 - serial barrier"]
+                T3["Tool 3 / isConcurrencySafe: false"]
             end
 
-            subgraph Batch3[Batch 3 - concurrent]
-                T4[Tool 4<br/>isConcurrencySafe: true]
-                T5[Tool 5<br/>isConcurrencySafe: true]
+            subgraph Batch3
+                B3Title["Batch 3 - concurrent"]
+                T4["Tool 4 / isConcurrencySafe: true"]
+                T5["Tool 5 / isConcurrencySafe: true"]
             end
 
             T1 --> T3
