@@ -1231,19 +1231,23 @@ if (tool.block.name === BASH_TOOL_NAME) {
 
 ## 10.1 Agent 不是 prompt 片段，而是二级 runtime
 
-`AgentTool` + `runAgent` 实际解决的是：
+更准确地说，`AgentTool` + `runAgent` 不是“把 prompt 发给另一个 agent”这么简单，而是在进入 `query()` 之前，把子 agent 运行时最容易漂移的几件事统一收口。
 
-- agent type 选择
-- sync vs async
-- fork vs specialized subagent
-- worktree / remote / background
-- agent-specific MCP
-- transcript sidechain
-- permission mode 缩域
-- tool pool 定制
-- thinking config 控制
+| 维度 | 要解决的问题 | 主要机制 | 结果 |
+| --- | --- | --- | --- |
+| agent type 选择 | 调用方不应该自己硬编码 prompt、tools、model、hooks | `loadAgentsDir.ts` 先把 built-in / plugin / user / project agent 统一成 `AgentDefinition`，`AgentTool.tsx` 再根据 `subagent_type` 解析到具体 agent，`runAgent.ts` 按 definition 装配真实运行参数 | 新增 agent 不需要改执行框架，所有 spawn 路径共享同一套分发规则 |
+| sync vs async | 子 agent 到底阻塞当前回合，还是后台跑；后台能不能弹权限框；会不会跟父线程一起被取消 | `AgentTool.tsx` 统一计算 `shouldRunAsync`；`runAgent.ts` 再按 `isAsync` 切换 `abortController`、`isNonInteractiveSession` 和 permission prompt 策略 | 长任务不会意外卡死主线程，后台 agent 也不会错误走前台交互语义 |
+| fork vs specialized subagent | 有时要找“专家 agent”，有时要“继承我当前上下文继续做” | `subagent_type` 有值时走 specialized agent；省略时在 fork gate 打开下走 `FORK_AGENT`。fork 路径不重新拼父 prompt，而是复用已渲染的 system prompt，并通过 `buildForkedMessages()` 构造共享前缀 | 同一套入口同时覆盖“分工式委派”和“上下文复制式并行”两种需求 |
+| worktree / remote / background | 子 agent 可能需要隔离仓库、副本环境或远程环境，还要能脱离前台继续跑 | `AgentTool.tsx` 支持 `isolation`，可落到 `worktree` 或 `remote`；后台执行则注册独立任务、输出文件和恢复元数据 | 解决主仓污染、本地环境不适配、长任务必须脱离前台三类运行环境问题 |
+| agent-specific MCP | 不同 agent 需要不同外部能力，不能把所有 MCP 能力全局灌给每个 agent | `runAgent.ts` 会按 agent definition 启动 agent 专属 MCP，再和已有工具池 additive merge、按名称去重 | 外部能力跟 agent 绑定，而不是污染整个 session |
+| transcript sidechain | 子 agent 要能单独恢复、单独通知、单独审计，不能把历史全揉进父对话 | `runAgent.ts` 在 query 前记录初始 sidechain transcript 和 metadata，后续每条可记录消息继续增量写入 | 恢复时知道它是谁、原任务是什么、是否绑定 worktree，以及该怎么续跑 |
+| permission mode 缩域 | 父线程已经放开的权限，不该自动泄漏给子 agent；后台 agent 也不该卡在权限弹窗上 | `runAgent.ts` 允许 agent definition 覆盖 permission mode，`allowedTools` 重写 session allow，异步 agent 会自动启用 `shouldAvoidPermissionPrompts` | 解决最小权限运行和“后台无 UI 宿主”的权限死锁问题 |
+| tool pool 定制 | 子 agent 不能盲继承父 agent 当前工具集，也不能被父线程临时限制误伤 | `AgentTool.tsx` 先独立装配 worker tool pool，`runAgent.ts` 再按 agent definition 过滤；fork 路径则直接继承父 tools 以保持 cache-safe 前缀一致 | 普通 subagent 拿到收敛后的能力，fork child 拿到 cache 友好的精确能力集 |
+| thinking config 控制 | 普通 subagent 默认开 thinking 成本太高；fork child 如果关掉又会破坏 prompt cache 前缀一致性 | `runAgent.ts` 对普通 subagent 直接 `thinking: disabled`，但对 fork child 继承父 `thinkingConfig` | 在成本控制和 prompt cache 命中之间做了运行时分流 |
 
-这里的“二级 runtime”不是修辞，而是指主线程内部再启动一个拥有独立 `ToolUseContext`、消息链和 `query()` 循环的次级执行宿主。也正因为如此，agent 才不是简单的 prompt 片段展开。
+一句话概括：`AgentTool` 负责把一次 agent 调用描述成结构化意图，`runAgent` 负责把这次调用装成一个真正可执行的子 runtime。
+
+这里的“二级 runtime”不是修辞，而是指主线程内部再启动一个拥有独立 `ToolUseContext`、消息链和 `query()` 循环的次级执行宿主。这里的 runtime 也不只是静态 agent 定义文件，而是模型、system prompt、tools、permission、上下文、transcript 和生命周期策略的组合。也正因为如此，agent 才不是简单的 prompt 片段展开。
 
 ### 10.2 agent 覆盖优先级是显式的
 
