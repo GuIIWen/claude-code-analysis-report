@@ -1471,7 +1471,9 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 
 ### 12.4 Bridge / Remote Control 的 gate 不是单纯 feature flag
 
-`bridgeEnabled.ts` 表明 Remote Control 不是单纯 feature flag：
+`bridgeEnabled.ts` 这段 gate 最容易被误读成普通 feature flag，但先要把名词说清楚。本文里的 `bridge` 如无特别说明，多指 `REPL bridge / Remote Control bridge`：它把本地 CLI / REPL 会话和 claude.ai 上的 Remote Control 会话连起来，形成一条双向运行面，让远端可以查看当前本地会话，并在满足条件时继续把控制操作发回本地执行。这里说的不是泛指所有 bridge 概念，也不是 transport bridge、MCP bridge 或某个 helper 名称。
+
+从实现看，这套能力先受 `feature('BRIDGE_MODE')` 和 Claude AI 订阅资格约束，然后再读 `tengu_ccr_bridge` 这个 gate：
 
 ```ts
 return feature('BRIDGE_MODE')
@@ -1493,23 +1495,59 @@ export async function isBridgeEnabledBlocking(): Promise<boolean> {
 
 文件：`src/bridge/bridgeEnabled.ts`
 
-单靠这段代码，还不足以直接推出“它在 MCP 之外”，但已经足以说明两件事：
+这里把 cached 和 blocking 分开，语义上就不只是“界面上要不要显示一个入口”。`getFeatureValue_CACHED_MAY_BE_STALE()` 更适合 UI 可见性、入口显隐这类可以容忍短暂陈旧结果的场景；真正要进入 bridge 初始化、建立 Remote Control session 或继续控制本地会话时，则要走 `checkGate_CACHED_OR_BLOCKING()`，必要时做更严格的实时确认，避免用过期缓存把本不该启用的远程控制路径放出来。
 
-- UI 可见性判断可以用 cached 语义。
-- 真正进入 bridge 控制路径时，需要更强的 blocking 检查，而不是只看一个前端可见性 flag。
-
-如果把源码链路继续接上去，它更像一套独立远程控制 runtime：有自己的命令入口、`initReplBridge()` 初始化、OAuth / policy / version 检查，以及 bridge session/handle 生命周期。因此更稳妥的结论是：Remote Control 至少不是“挂在 MCP 配置层上的一个小开关”。
+因此，单靠这段代码，还不足以直接证明它完全在 MCP 体系之外；但已经足以说明这不是一个只负责前端显隐的单层 feature flag，而是在给一套远程控制运行面做分层准入。再结合后续 `initReplBridge()`、OAuth / policy / version 检查，以及 bridge session / handle 生命周期，更稳妥的表述是：Remote Control 更像一套独立运行面的入口控制，而不只是“挂在 MCP 配置层上的一个小开关”。
 
 ## 13. Session / Transcript / Memory / Compaction
 
-## 13.1 transcript 不是“所有消息都存”
+这一章更适合按“持久化边界 -> 可重放消息链 -> 恢复正确性 -> 长会话治理”来读，而不是把 session / transcript / memory / compact 当成四个互不相关的名词。源码直接证明的是：这里真正被设计出来的，是一套可恢复、可压缩、可持续运行的长会话宿主。更稳妥的工程归纳则是：这些机制共同在解决上下文预算、恢复正确性、缓存命中率和状态漂移。
 
-`sessionStorage.ts` 明确说 progress 不应进入 transcript chain：
+### 13.1 Session 在这里是“可恢复运行单元”，不只是一个 sessionId
+
+如果只看 CLI 参数，很容易把 session 理解成“当前对话的 UUID”。但写盘路径和恢复路径都说明，`session` 实际上是一个持久化运行单元：消息主链、sidechain、标题/tag、agent 设置、worktree 状态、PR 关联、file history、attribution、content replacement、context-collapse commit log，都按 session 组织并在恢复时重建。
+
+`insertMessageChain()` 在写入 transcript message 时就把不少运行态字段戳到会话记录里，而不是只写消息正文：
+
+```ts
+const transcriptMessage: TranscriptMessage = {
+  parentUuid: isCompactBoundary ? null : effectiveParentUuid,
+  logicalParentUuid: isCompactBoundary ? parentUuid : undefined,
+  isSidechain,
+  teamName: teamInfo?.teamName,
+  agentName: teamInfo?.agentName,
+  promptId: message.type === 'user' ? (getPromptId() ?? undefined) : undefined,
+  agentId,
+  ...message,
+  userType: getUserType(),
+  entrypoint: getEntrypoint(),
+  cwd: getCwd(),
+  sessionId,
+  version: VERSION,
+  gitBranch,
+  slug,
+}
+```
+
+文件：`src/utils/sessionStorage.ts`
+
+而 `loadTranscriptFile()` 返回值更直接暴露了 session 的真实承载面：除了 `messages`，还会同时返回 `customTitles`、`tags`、`agentSettings`、`modes`、`worktreeStates`、`fileHistorySnapshots`、`attributionSnapshots`、`contentReplacements`、`contextCollapseCommits`、`contextCollapseSnapshot`、`leafUuids` 等结构。
+
+源码直接能证明的结论是：session 不是“消息 + 一个 ID”，而是“消息链 + 恢复所需元数据 + 若干派生状态快照”的集合。更稳妥的工程归纳是：这个项目把 session 视为 REPL/runtime 的持久化边界，而不是简单聊天记录。
+
+### 13.2 Transcript 是“可继续 query 的消息链”，不是整个 session file
+
+`sessionStorage.ts` 已经把边界写得非常明确：`transcript message` 有且只有 `user / assistant / attachment / system`，而 progress 明确被排除在外。
 
 ```ts
 /**
- * Progress messages are NOT transcript messages.
- * They are ephemeral UI state and must not be persisted ...
+ * IMPORTANT: This is the single source of truth for what constitutes a transcript message.
+ * loadTranscriptFile() uses this to determine which messages to load into the chain.
+ *
+ * Progress messages are NOT transcript messages. They are ephemeral UI state
+ * and must not be persisted to the JSONL or participate in the parentUuid
+ * chain. Including them caused chain forks that orphaned real conversation
+ * messages on resume.
  */
 export function isTranscriptMessage(entry: Entry): entry is TranscriptMessage {
   return (
@@ -1523,11 +1561,54 @@ export function isTranscriptMessage(entry: Entry): entry is TranscriptMessage {
 
 文件：`src/utils/sessionStorage.ts`
 
-这是 session restore correctness 的核心约束之一。
+因此 transcript 在这个工程里有两个很具体的含义。
 
-### 13.2 session memory 是节流触发的，不是每回合都跑
+第一，它不是“所有落盘内容”。同一个 session file 里还会有 `custom-title`、`mode`、`worktree-state`、`content-replacement`、`marble-origami-commit` 之类 entry；这些 entry 属于 session persistence，但不属于 transcript chain。
 
-`SessionMemory` 的触发条件设计得很克制：
+第二，它也不是“纯粹按写入顺序读取的 JSONL”。恢复时会经过 `loadTranscriptFile()`、`buildConversationChain()`、`recoverOrphanedParallelToolResults()`，把 append-only 记录重建成模型下一次 query 能继续消费的那条主链，并补回 parallel tool use 场景里单父指针 walk 容易丢掉的 sibling/tool_result。
+
+progress / UI state 不能进入 transcript chain 的原因也就不是“存不存都行”的偏好问题，而是恢复正确性问题：一旦它们带着 `parentUuid` 进入主链，resume 时就可能把真实 user/assistant/tool_result 挂到错误分支上，产生 orphan、重复噪声，甚至把后续 query 看到的历史改写掉。
+
+### 13.3 restore / resume 的难点是“状态重建”，不是“把消息读回来”
+
+如果恢复只需要把 JSONL 读回来，那么 `loadConversationForResume()` 之后就应该结束了；但源码里恢复链路后面还有一长串清洗和状态回填。
+
+先看消息层，`deserializeMessagesWithInterruptDetection()` 在 resume 前会做这些处理：
+
+- 迁移旧 attachment 类型；
+- 过滤 unresolved tool uses；
+- 过滤 orphaned thinking-only assistant messages；
+- 过滤纯空白 assistant；
+- 检测 turn interruption，必要时补一条 synthetic continuation user message；
+- 如果最后停在 user message，还会补一个 synthetic assistant sentinel，保证 API 视角消息合法。
+
+再看 session state 层，`restoreSessionStateFromLog()` 和 `REPL.tsx` 的 `resume()` 会继续恢复：
+
+- file history snapshots；
+- attribution snapshots；
+- context-collapse commit log 与 staged snapshot；
+- agent setting / standalone agent context；
+- read-file state；
+- worktree 位置；
+- remote agent tasks；
+- content replacement state；
+- session metadata 和成本状态。
+
+其中一个很高信号的细节，是 REPL resume 会先 `clearSessionMetadata()` 再 `restoreSessionMetadata(log)`；源码注释直接说明，如果不先清空，上一会话的 agent name 等缓存会泄漏到新恢复的 transcript 上，形成典型的状态漂移。
+
+源码直接能证明的难点包括：消息链清洗、interrupt 检测、sidechain/content-replacement 关联恢复、worktree 与 metadata 重新接管、context-collapse 状态恢复。更稳妥的工程归纳是：这里的 resume 本质上是在重建“继续执行所需的运行面”，而不是回放聊天记录。
+
+### 13.4 Session memory 是后台节流提炼，不是每回合都总结
+
+`SessionMemory` 的设计目标不是生成一份漂亮摘要，而是把长会话里值得长期保留的工作事实提炼到独立 memory file，让后续 compaction 有更稳定、更便宜的输入。
+
+它的触发条件很克制，默认阈值在 `sessionMemoryUtils.ts` 里写死为：
+
+- `minimumMessageTokensToInit = 10000`
+- `minimumTokensBetweenUpdate = 5000`
+- `toolCallsBetweenUpdates = 3`
+
+真正触发仍然要求 token 增量达标，只是在“工具调用足够多”或“上一轮已经是自然停顿点”之间二选一：
 
 ```ts
 const shouldExtract =
@@ -1535,20 +1616,70 @@ const shouldExtract =
   (hasMetTokenThreshold && !hasToolCallsInLastTurn)
 ```
 
-文件：`src/services/SessionMemory/sessionMemory.ts`
+文件：`src/services/SessionMemory/sessionMemory.ts`、`src/services/SessionMemory/sessionMemoryUtils.ts`
 
-它强调的是“自然停顿点”和“足够上下文增量”。
+还有几个边界也很关键：
 
-### 13.3 compact 不是简单摘要
+- 它只在 `querySource === 'repl_main_thread'` 时自动运行，不在子 agent / teammate / 其他 fork 上乱触发。
+- `initSessionMemory()` 只有在非 remote 且 auto-compact 开启时才注册 hook，说明它被视为上下文治理链的一部分，而不是通用日志功能。
+- 提炼过程不是直接污染主线程上下文，而是 `createSubagentContext()` + `runForkedAgent()`，并且 `canUseTool` 被限制为只能编辑那一个 memory file。
+- `lastSummarizedMessageId` 只有在“最后一轮没有未闭合 tool call”时才更新，避免把 tool_use/tool_result 对切断。
 
-更准确地说，compact 在这个仓库里不是单一机制，而是一组共同服务于上下文治理的路径：
+这也解释了它和 compaction 的关系：session memory 不是 compact 本身，而是 compact 的前置资产。它先在后台把“长期事实”沉淀出来，后面 session-memory compaction 才能用它替代昂贵的全量摘要。
 
-- `session memory compaction`：从长对话里提炼长期记忆，减少后续 query 的重复上下文负担。
-- `reactive compact`：遇到 `prompt too long` 等即时压力时做自救裁剪，目标是先把执行拉回可继续的范围。
-- `microcompact + traditional compact`：压缩 transcript 中高体积、高噪声块，必要时结合 cached microcompact / cache edit。
-- attachment/image/document 处理：图像/文档剥离、attachment 再注入去重，避免大对象长期污染主上下文。
+### 13.5 Compaction 不是单一摘要，而是上下文治理系统里的多条路径
 
-因此“压缩”在这里更像上下文治理，而不是一个单一 summarization 功能。也不是每次 compact 都会同时走完上述所有路径；某些路径还会被 reactive compact 或 context collapse 的结果抑制，避免过度压缩。
+如果只看 `/compact` 命令，会误以为 compact 就是“调一次摘要模型，把旧消息换成 summary”。但 `query.ts` 的实际顺序明显更复杂：
+
+```ts
+messagesForQuery = await applyToolResultBudget(...)
+const snipResult = snipModule!.snipCompactIfNeeded(messagesForQuery)
+const microcompactResult = await deps.microcompact(messagesForQuery, ...)
+const collapseResult = await contextCollapse.applyCollapsesIfNeeded(...)
+const { compactionResult } = await deps.autocompact(messagesForQuery, ...)
+```
+
+文件：`src/query.ts`
+
+也就是说，在进入真正的 autocompact 前，系统已经可能做过：
+
+- tool result budget / content replacement：先把过大的 tool result 改写成受控表示；
+- `snip`：结构性裁剪历史；
+- `microcompact`：优先清掉高体积、低价值的 tool result 内容，有 time-based 路径，也有 cache-edit 路径；
+- `context collapse`：以 commit log / projected view 方式折叠上下文；严格说它是邻接子系统，不等于传统 compact，但在 query 里与 compact 共同承担 headroom 治理；
+- autocompact：真正生成 compact boundary + summary；
+- reactive compact：当真实 API 返回 `prompt too long` 或媒体过大错误时，在失败后走补救分支，而不是事前统一摘要。
+
+而在 autocompact 内部，也不是只有一条路。`autoCompactIfNeeded()` 会先尝试 `trySessionMemoryCompaction()`；这条路径会等待正在进行的 memory extraction，优先读取 session memory，并分成两类情况：
+
+- 正常情况：有 `lastSummarizedMessageId`，因此知道“哪些消息已经被 memory 覆盖”；
+- resumed session：memory file 已存在，但当前进程不知道边界，于是保守地保留更多近期消息。
+
+再往下看，`buildPostCompactMessages()` 和 `annotateBoundaryWithPreservedSegment()` 说明 compact 结果也不是“summary 替换一切”，而是有明确装配顺序和 preserved segment relink 约束：
+
+- `boundaryMarker`
+- `summaryMessages`
+- `messagesToKeep`
+- `attachments`
+- `hookResults`
+
+这套 preserved-segment 设计的工程意义很大：compact 后保留下来的最近消息在磁盘上不必全部重写，但 loader 必须在恢复时重新把 head / anchor / tail relink 回正确链路。也因此，compaction 的核心不是“生成摘要”，而是“在预算内保住可继续执行的上下文结构”。
+
+另一个高信号细节是 `partialCompactConversation()` 的 `from` / `up_to` 双向模式。源码直接写明，`from` 可以保留较早消息的 prompt cache，而 `up_to` 会让 summary 站到 kept messages 前面，从而打破旧 cache 前缀。这里已经不是摘要功能，而是明确的 cache-aware context surgery。
+
+### 13.6 这些机制一起在解决什么工程问题
+
+把上面几个子系统放在一起看，能落到源码上的工程目标主要有四类。
+
+第一，上下文预算。`SessionMemory` 降低长期事实的重复携带成本；`snip / microcompact / autocompact / reactive compact` 分层处理不同粒度和不同时机的膨胀；`context collapse` 则在更高层上管理长期折叠视图。
+
+第二，恢复正确性。progress 被排除出 transcript chain，parallel tool result 会在读盘时修复，`preservedSegment` 会在加载时 relink，resume 还会做 interruption 检测和 content replacement 重建；这些都不是体验优化，而是为了让恢复后的 query 继续读到“同一条工作链”。
+
+第三，长会话延续性。session memory 提前把长期事实沉淀到文件，resume 会恢复 file history / attribution / worktree / context-collapse / agent context，使长任务跨中断、跨 compact、跨 fork 仍能续跑。
+
+第四，cache 友好与状态不漂移。源码直接能支撑的点包括：session memory 用 `runForkedAgent()` 明说是为了 prompt caching；`partial compact` 明确区分会不会保留 prompt cache；resume 路径显式清空再恢复 session metadata，避免把旧会话状态误写到新 transcript。
+
+更稳妥的总括是：这里并不存在一个单独负责“记忆”或“压缩”的模块。真正存在的是一套围绕长会话 correctness 和 cost 的上下文治理系统，而 `session / transcript / memory / compaction` 只是这套系统里不同层级的对象与动作。
 
 ## 14. 配置、远程托管设置、策略限制、遥测
 
@@ -1977,6 +2108,8 @@ const shouldExtract =
 - `Cache breakpoint`：服务端在 prompt 前缀里切分缓存边界的位置。边界前后是否稳定，直接影响到底能复用多少 cache。
 - `Fork`：从主线程派生出一个继承现有上下文的子执行分支。它的核心目标之一是尽量复用父线程已有的 prompt cache，而不是从零开始重新建上下文。
 - `Worktree`：Git 提供的隔离工作目录。并行 agent 可以各自在自己的 worktree 改代码，减少互相覆盖文件的风险。
+- `Bridge`：本报告里如无特别说明，多指 `REPL bridge / Remote Control bridge`，即把本地 CLI / REPL 会话和 claude.ai 上的远程控制会话连起来的双向运行面。它不是泛指所有“bridge”概念，也不等同于 transport bridge、MCP bridge 或某个 helper 名称。
+- `Remote Control`：基于上述 bridge 的远程控制能力。简单说，就是远端会话可以查看、接续并控制本地 CLI / REPL 会话；真正进入控制路径前，通常还要经过 OAuth、policy、version 和 gate 检查。
 - `Headless`：没有 REPL/TUI 交互壳的运行形态，只保留 agent 内核和程序化接口，常见于 SDK、后台任务或自动化执行路径。
 - `Compaction`：当对话太长时，不是硬截断，而是把长历史压缩成更短、还能继续工作的表示形式，让 query 能在上下文预算内继续跑下去。
 - `Resume / Restore`：把之前保存过的会话状态重新还原出来继续执行。难点不只是“把消息读回来”，而是要把 transcript、工具状态、上下文边界一起恢复正确。

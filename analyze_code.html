@@ -10,7 +10,7 @@
 .content th,.content td{border:1px solid var(--line);padding:12px 14px;vertical-align:top}
 .content th{background:var(--accent-soft);text-align:left}
 </style>
-</head><body><div class="shell"><section class="hero"><h1>Claude Code Source 全量工程分析报告</h1><p>由 <code>analyze_code.md</code> 生成的正式 HTML 阅读版，已并入经过复审和重绘的流程图，便于按章节理解关键机制。源报告最近同步时间：<code>2026-04-03 10:36:13 +0800</code>；图示并入时间：<code>2026-04-03 10:36:13 +0800</code></p></section><div class="layout"><aside class="toc"><p class="toc-title">目录</p>
+</head><body><div class="shell"><section class="hero"><h1>Claude Code Source 全量工程分析报告</h1><p>由 <code>analyze_code.md</code> 生成的正式 HTML 阅读版，已并入经过复审和重绘的流程图，便于按章节理解关键机制。源报告最近同步时间：<code>2026-04-03 11:51:22 +0800</code>；图示并入时间：<code>2026-04-03 11:51:22 +0800</code></p></section><div class="layout"><aside class="toc"><p class="toc-title">目录</p>
 <a class="toc-item level-2" href="#section-2">1. 执行摘要</a>
 <a class="toc-item level-2" href="#section-3">2. 仓库画像与可信边界</a>
 <a class="toc-item level-3" href="#section-4">2.1 基本画像</a>
@@ -74,9 +74,12 @@
 <a class="toc-item level-3" href="#section-62">12.3 plugin / connector 都可能被手工配置压制</a>
 <a class="toc-item level-3" href="#section-63">12.4 Bridge / Remote Control 的 gate 不是单纯 feature flag</a>
 <a class="toc-item level-2" href="#section-64">13. Session / Transcript / Memory / Compaction</a>
-<a class="toc-item level-2" href="#section-65">13.1 transcript 不是“所有消息都存”</a>
-<a class="toc-item level-3" href="#section-66">13.2 session memory 是节流触发的，不是每回合都跑</a>
-<a class="toc-item level-3" href="#section-67">13.3 compact 不是简单摘要</a>
+<a class="toc-item level-3" href="#section-65">13.1 Session 在这里是“可恢复运行单元”，不只是一个 sessionId</a>
+<a class="toc-item level-3" href="#section-65a">13.2 Transcript 是“可继续 query 的消息链”，不是整个 session file</a>
+<a class="toc-item level-3" href="#section-65b">13.3 restore / resume 的难点是“状态重建”，不是“把消息读回来”</a>
+<a class="toc-item level-3" href="#section-65c">13.4 Session memory 是后台节流提炼，不是每回合都总结</a>
+<a class="toc-item level-3" href="#section-65d">13.5 Compaction 不是单一摘要，而是上下文治理系统里的多条路径</a>
+<a class="toc-item level-3" href="#section-65e">13.6 这些机制一起在解决什么工程问题</a>
 <a class="toc-item level-2" href="#section-68">14. 配置、远程托管设置、策略限制、遥测</a>
 <a class="toc-item level-2" href="#section-69">14.1 这是一个强运行时配置驱动系统</a>
 <a class="toc-item level-2" href="#section-70">14.2 analytics 采用 queue-first 设计</a>
@@ -1460,7 +1463,8 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 </ul>
 <p>这说明 MCP 配置层表达的是一个更细的产品优先级：用户显式声明 &gt; 平台自动接入，但前提是这份显式声明本身真的处于可连接、可生效状态。</p>
 <h3 id="section-63">12.4 Bridge / Remote Control 的 gate 不是单纯 feature flag</h3>
-<p><code>bridgeEnabled.ts</code> 表明 Remote Control 不是单纯 feature flag：</p>
+<p><code>bridgeEnabled.ts</code> 这段 gate 最容易被误读成普通 feature flag，但先要把名词说清楚。本文里的 <code>bridge</code> 如无特别说明，多指 <code>REPL bridge / Remote Control bridge</code>：它把本地 CLI / REPL 会话和 claude.ai 上的 Remote Control 会话连起来，形成一条双向运行面，让远端可以查看当前本地会话，并在满足条件时继续把控制操作发回本地执行。这里说的不是泛指所有 bridge 概念，也不是 transport bridge、MCP bridge 或某个 helper 名称。</p>
+<p>从实现看，这套能力先受 <code>feature('BRIDGE_MODE')</code> 和 Claude AI 订阅资格约束，然后再读 <code>tengu_ccr_bridge</code> 这个 gate：</p>
 <pre><code class="language-ts">return feature('BRIDGE_MODE')
   ? isClaudeAISubscriber() &amp;&amp;
       getFeatureValue_CACHED_MAY_BE_STALE('tengu_ccr_bridge', false)
@@ -1475,18 +1479,44 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 }
 </code></pre>
 <p>文件：<code>src/bridge/bridgeEnabled.ts</code></p>
-<p>单靠这段代码，还不足以直接推出“它在 MCP 之外”，但已经足以说明两件事：</p>
-<ul>
-<li>UI 可见性判断可以用 cached 语义。</li>
-<li>真正进入 bridge 控制路径时，需要更强的 blocking 检查，而不是只看一个前端可见性 flag。</li>
-</ul>
-<p>如果把源码链路继续接上去，它更像一套独立远程控制 runtime：有自己的命令入口、<code>initReplBridge()</code> 初始化、OAuth / policy / version 检查，以及 bridge session/handle 生命周期。因此更稳妥的结论是：Remote Control 至少不是“挂在 MCP 配置层上的一个小开关”。</p>
+<p>这里把 cached 和 blocking 分开，语义上就不只是“界面上要不要显示一个入口”。<code>getFeatureValue_CACHED_MAY_BE_STALE()</code> 更适合 UI 可见性、入口显隐这类可以容忍短暂陈旧结果的场景；真正要进入 bridge 初始化、建立 Remote Control session 或继续控制本地会话时，则要走 <code>checkGate_CACHED_OR_BLOCKING()</code>，必要时做更严格的实时确认，避免用过期缓存把本不该启用的远程控制路径放出来。</p>
+<p>因此，单靠这段代码，还不足以直接证明它完全在 MCP 体系之外；但已经足以说明这不是一个只负责前端显隐的单层 feature flag，而是在给一套远程控制运行面做分层准入。再结合后续 <code>initReplBridge()</code>、OAuth / policy / version 检查，以及 bridge session / handle 生命周期，更稳妥的表述是：Remote Control 更像一套独立运行面的入口控制，而不只是“挂在 MCP 配置层上的一个小开关”。</p>
 <h2 id="section-64">13. Session / Transcript / Memory / Compaction</h2>
-<h2 id="section-65">13.1 transcript 不是“所有消息都存”</h2>
-<p><code>sessionStorage.ts</code> 明确说 progress 不应进入 transcript chain：</p>
+<p>这一章更适合按“持久化边界 -&gt; 可重放消息链 -&gt; 恢复正确性 -&gt; 长会话治理”来读，而不是把 session / transcript / memory / compact 当成四个互不相关的名词。源码直接证明的是：这里真正被设计出来的，是一套可恢复、可压缩、可持续运行的长会话宿主。更稳妥的工程归纳则是：这些机制共同在解决上下文预算、恢复正确性、缓存命中率和状态漂移。</p>
+<h3 id="section-65">13.1 Session 在这里是“可恢复运行单元”，不只是一个 sessionId</h3>
+<p>如果只看 CLI 参数，很容易把 session 理解成“当前对话的 UUID”。但写盘路径和恢复路径都说明，<code>session</code> 实际上是一个持久化运行单元：消息主链、sidechain、标题/tag、agent 设置、worktree 状态、PR 关联、file history、attribution、content replacement、context-collapse commit log，都按 session 组织并在恢复时重建。</p>
+<p><code>insertMessageChain()</code> 在写入 transcript message 时就把不少运行态字段戳到会话记录里，而不是只写消息正文：</p>
+<pre><code class="language-ts">const transcriptMessage: TranscriptMessage = {
+  parentUuid: isCompactBoundary ? null : effectiveParentUuid,
+  logicalParentUuid: isCompactBoundary ? parentUuid : undefined,
+  isSidechain,
+  teamName: teamInfo?.teamName,
+  agentName: teamInfo?.agentName,
+  promptId: message.type === 'user' ? (getPromptId() ?? undefined) : undefined,
+  agentId,
+  ...message,
+  userType: getUserType(),
+  entrypoint: getEntrypoint(),
+  cwd: getCwd(),
+  sessionId,
+  version: VERSION,
+  gitBranch,
+  slug,
+}
+</code></pre>
+<p>文件：<code>src/utils/sessionStorage.ts</code></p>
+<p>而 <code>loadTranscriptFile()</code> 返回值更直接暴露了 session 的真实承载面：除了 <code>messages</code>，还会同时返回 <code>customTitles</code>、<code>tags</code>、<code>agentSettings</code>、<code>modes</code>、<code>worktreeStates</code>、<code>fileHistorySnapshots</code>、<code>attributionSnapshots</code>、<code>contentReplacements</code>、<code>contextCollapseCommits</code>、<code>contextCollapseSnapshot</code>、<code>leafUuids</code> 等结构。</p>
+<p>源码直接能证明的结论是：session 不是“消息 + 一个 ID”，而是“消息链 + 恢复所需元数据 + 若干派生状态快照”的集合。更稳妥的工程归纳是：这个项目把 session 视为 REPL/runtime 的持久化边界，而不是简单聊天记录。</p>
+<h3 id="section-65a">13.2 Transcript 是“可继续 query 的消息链”，不是整个 session file</h3>
+<p><code>sessionStorage.ts</code> 已经把边界写得非常明确：<code>transcript message</code> 有且只有 <code>user / assistant / attachment / system</code>，而 progress 明确被排除在外。</p>
 <pre><code class="language-ts">/**
- * Progress messages are NOT transcript messages.
- * They are ephemeral UI state and must not be persisted ...
+ * IMPORTANT: This is the single source of truth for what constitutes a transcript message.
+ * loadTranscriptFile() uses this to determine which messages to load into the chain.
+ *
+ * Progress messages are NOT transcript messages. They are ephemeral UI state
+ * and must not be persisted to the JSONL or participate in the parentUuid
+ * chain. Including them caused chain forks that orphaned real conversation
+ * messages on resume.
  */
 export function isTranscriptMessage(entry: Entry): entry is TranscriptMessage {
   return (
@@ -1498,24 +1528,97 @@ export function isTranscriptMessage(entry: Entry): entry is TranscriptMessage {
 }
 </code></pre>
 <p>文件：<code>src/utils/sessionStorage.ts</code></p>
-<p>这是 session restore correctness 的核心约束之一。</p>
-<h3 id="section-66">13.2 session memory 是节流触发的，不是每回合都跑</h3>
-<p><code>SessionMemory</code> 的触发条件设计得很克制：</p>
+<p>因此 transcript 在这个工程里有两个很具体的含义。</p>
+<p>第一，它不是“所有落盘内容”。同一个 session file 里还会有 <code>custom-title</code>、<code>mode</code>、<code>worktree-state</code>、<code>content-replacement</code>、<code>marble-origami-commit</code> 之类 entry；这些 entry 属于 session persistence，但不属于 transcript chain。</p>
+<p>第二，它也不是“纯粹按写入顺序读取的 JSONL”。恢复时会经过 <code>loadTranscriptFile()</code>、<code>buildConversationChain()</code>、<code>recoverOrphanedParallelToolResults()</code>，把 append-only 记录重建成模型下一次 query 能继续消费的那条主链，并补回 parallel tool use 场景里单父指针 walk 容易丢掉的 sibling/tool_result。</p>
+<p>progress / UI state 不能进入 transcript chain 的原因也就不是“存不存都行”的偏好问题，而是恢复正确性问题：一旦它们带着 <code>parentUuid</code> 进入主链，resume 时就可能把真实 user/assistant/tool_result 挂到错误分支上，产生 orphan、重复噪声，甚至把后续 query 看到的历史改写掉。</p>
+<h3 id="section-65b">13.3 restore / resume 的难点是“状态重建”，不是“把消息读回来”</h3>
+<p>如果恢复只需要把 JSONL 读回来，那么 <code>loadConversationForResume()</code> 之后就应该结束了；但源码里恢复链路后面还有一长串清洗和状态回填。</p>
+<p>先看消息层，<code>deserializeMessagesWithInterruptDetection()</code> 在 resume 前会做这些处理：</p>
+<ul>
+<li>迁移旧 attachment 类型；</li>
+<li>过滤 unresolved tool uses；</li>
+<li>过滤 orphaned thinking-only assistant messages；</li>
+<li>过滤纯空白 assistant；</li>
+<li>检测 turn interruption，必要时补一条 synthetic continuation user message；</li>
+<li>如果最后停在 user message，还会补一个 synthetic assistant sentinel，保证 API 视角消息合法。</li>
+</ul>
+<p>再看 session state 层，<code>restoreSessionStateFromLog()</code> 和 <code>REPL.tsx</code> 的 <code>resume()</code> 会继续恢复：</p>
+<ul>
+<li>file history snapshots；</li>
+<li>attribution snapshots；</li>
+<li>context-collapse commit log 与 staged snapshot；</li>
+<li>agent setting / standalone agent context；</li>
+<li>read-file state；</li>
+<li>worktree 位置；</li>
+<li>remote agent tasks；</li>
+<li>content replacement state；</li>
+<li>session metadata 和成本状态。</li>
+</ul>
+<p>其中一个很高信号的细节，是 REPL resume 会先 <code>clearSessionMetadata()</code> 再 <code>restoreSessionMetadata(log)</code>；源码注释直接说明，如果不先清空，上一会话的 agent name 等缓存会泄漏到新恢复的 transcript 上，形成典型的状态漂移。</p>
+<p>源码直接能证明的难点包括：消息链清洗、interrupt 检测、sidechain/content-replacement 关联恢复、worktree 与 metadata 重新接管、context-collapse 状态恢复。更稳妥的工程归纳是：这里的 resume 本质上是在重建“继续执行所需的运行面”，而不是回放聊天记录。</p>
+<h3 id="section-65c">13.4 Session memory 是后台节流提炼，不是每回合都总结</h3>
+<p><code>SessionMemory</code> 的设计目标不是生成一份漂亮摘要，而是把长会话里值得长期保留的工作事实提炼到独立 memory file，让后续 compaction 有更稳定、更便宜的输入。</p>
+<p>它的触发条件很克制，默认阈值在 <code>sessionMemoryUtils.ts</code> 里写死为：</p>
+<ul>
+<li><code>minimumMessageTokensToInit = 10000</code></li>
+<li><code>minimumTokensBetweenUpdate = 5000</code></li>
+<li><code>toolCallsBetweenUpdates = 3</code></li>
+</ul>
+<p>真正触发仍然要求 token 增量达标，只是在“工具调用足够多”或“上一轮已经是自然停顿点”之间二选一：</p>
 <pre><code class="language-ts">const shouldExtract =
   (hasMetTokenThreshold &amp;&amp; hasMetToolCallThreshold) ||
   (hasMetTokenThreshold &amp;&amp; !hasToolCallsInLastTurn)
 </code></pre>
-<p>文件：<code>src/services/SessionMemory/sessionMemory.ts</code></p>
-<p>它强调的是“自然停顿点”和“足够上下文增量”。</p>
-<h3 id="section-67">13.3 compact 不是简单摘要</h3>
-<p>更准确地说，compact 在这个仓库里不是单一机制，而是一组共同服务于上下文治理的路径：</p>
+<p>文件：<code>src/services/SessionMemory/sessionMemory.ts</code>、<code>src/services/SessionMemory/sessionMemoryUtils.ts</code></p>
+<p>还有几个边界也很关键：</p>
 <ul>
-<li><code>session memory compaction</code>：从长对话里提炼长期记忆，减少后续 query 的重复上下文负担。</li>
-<li><code>reactive compact</code>：遇到 <code>prompt too long</code> 等即时压力时做自救裁剪，目标是先把执行拉回可继续的范围。</li>
-<li><code>microcompact + traditional compact</code>：压缩 transcript 中高体积、高噪声块，必要时结合 cached microcompact / cache edit。</li>
-<li>attachment/image/document 处理：图像/文档剥离、attachment 再注入去重，避免大对象长期污染主上下文。</li>
+<li>它只在 <code>querySource === 'repl_main_thread'</code> 时自动运行，不在子 agent / teammate / 其他 fork 上乱触发。</li>
+<li><code>initSessionMemory()</code> 只有在非 remote 且 auto-compact 开启时才注册 hook，说明它被视为上下文治理链的一部分，而不是通用日志功能。</li>
+<li>提炼过程不是直接污染主线程上下文，而是 <code>createSubagentContext()</code> + <code>runForkedAgent()</code>，并且 <code>canUseTool</code> 被限制为只能编辑那一个 memory file。</li>
+<li><code>lastSummarizedMessageId</code> 只有在“最后一轮没有未闭合 tool call”时才更新，避免把 tool_use/tool_result 对切断。</li>
 </ul>
-<p>因此“压缩”在这里更像上下文治理，而不是一个单一 summarization 功能。也不是每次 compact 都会同时走完上述所有路径；某些路径还会被 reactive compact 或 context collapse 的结果抑制，避免过度压缩。</p>
+<p>这也解释了它和 compaction 的关系：session memory 不是 compact 本身，而是 compact 的前置资产。它先在后台把“长期事实”沉淀出来，后面 session-memory compaction 才能用它替代昂贵的全量摘要。</p>
+<h3 id="section-65d">13.5 Compaction 不是单一摘要，而是上下文治理系统里的多条路径</h3>
+<p>如果只看 <code>/compact</code> 命令，会误以为 compact 就是“调一次摘要模型，把旧消息换成 summary”。但 <code>query.ts</code> 的实际顺序明显更复杂：</p>
+<pre><code class="language-ts">messagesForQuery = await applyToolResultBudget(...)
+const snipResult = snipModule!.snipCompactIfNeeded(messagesForQuery)
+const microcompactResult = await deps.microcompact(messagesForQuery, ...)
+const collapseResult = await contextCollapse.applyCollapsesIfNeeded(...)
+const { compactionResult } = await deps.autocompact(messagesForQuery, ...)
+</code></pre>
+<p>文件：<code>src/query.ts</code></p>
+<p>也就是说，在进入真正的 autocompact 前，系统已经可能做过：</p>
+<ul>
+<li>tool result budget / content replacement：先把过大的 tool result 改写成受控表示；</li>
+<li><code>snip</code>：结构性裁剪历史；</li>
+<li><code>microcompact</code>：优先清掉高体积、低价值的 tool result 内容，有 time-based 路径，也有 cache-edit 路径；</li>
+<li><code>context collapse</code>：以 commit log / projected view 方式折叠上下文；严格说它是邻接子系统，不等于传统 compact，但在 query 里与 compact 共同承担 headroom 治理；</li>
+<li>autocompact：真正生成 compact boundary + summary；</li>
+<li>reactive compact：当真实 API 返回 <code>prompt too long</code> 或媒体过大错误时，在失败后走补救分支，而不是事前统一摘要。</li>
+</ul>
+<p>而在 autocompact 内部，也不是只有一条路。<code>autoCompactIfNeeded()</code> 会先尝试 <code>trySessionMemoryCompaction()</code>；这条路径会等待正在进行的 memory extraction，优先读取 session memory，并分成两类情况：</p>
+<ul>
+<li>正常情况：有 <code>lastSummarizedMessageId</code>，因此知道“哪些消息已经被 memory 覆盖”；</li>
+<li>resumed session：memory file 已存在，但当前进程不知道边界，于是保守地保留更多近期消息。</li>
+</ul>
+<p>再往下看，<code>buildPostCompactMessages()</code> 和 <code>annotateBoundaryWithPreservedSegment()</code> 说明 compact 结果也不是“summary 替换一切”，而是有明确装配顺序和 preserved segment relink 约束：</p>
+<ul>
+<li><code>boundaryMarker</code></li>
+<li><code>summaryMessages</code></li>
+<li><code>messagesToKeep</code></li>
+<li><code>attachments</code></li>
+<li><code>hookResults</code></li>
+</ul>
+<p>这套 preserved-segment 设计的工程意义很大：compact 后保留下来的最近消息在磁盘上不必全部重写，但 loader 必须在恢复时重新把 head / anchor / tail relink 回正确链路。也因此，compaction 的核心不是“生成摘要”，而是“在预算内保住可继续执行的上下文结构”。</p>
+<p>另一个高信号细节是 <code>partialCompactConversation()</code> 的 <code>from</code> / <code>up_to</code> 双向模式。源码直接写明，<code>from</code> 可以保留较早消息的 prompt cache，而 <code>up_to</code> 会让 summary 站到 kept messages 前面，从而打破旧 cache 前缀。这里已经不是摘要功能，而是明确的 cache-aware context surgery。</p>
+<h3 id="section-65e">13.6 这些机制一起在解决什么工程问题</h3>
+<p>把上面几个子系统放在一起看，能落到源码上的工程目标主要有四类。</p>
+<p>第一，上下文预算。<code>SessionMemory</code> 降低长期事实的重复携带成本；<code>snip / microcompact / autocompact / reactive compact</code> 分层处理不同粒度和不同时机的膨胀；<code>context collapse</code> 则在更高层上管理长期折叠视图。</p>
+<p>第二，恢复正确性。progress 被排除出 transcript chain，parallel tool result 会在读盘时修复，<code>preservedSegment</code> 会在加载时 relink，resume 还会做 interruption 检测和 content replacement 重建；这些都不是体验优化，而是为了让恢复后的 query 继续读到“同一条工作链”。</p>
+<p>第三，长会话延续性。session memory 提前把长期事实沉淀到文件，resume 会恢复 file history / attribution / worktree / context-collapse / agent context，使长任务跨中断、跨 compact、跨 fork 仍能续跑。</p>
+<p>第四，cache 友好与状态不漂移。源码直接能支撑的点包括：session memory 用 <code>runForkedAgent()</code> 明说是为了 prompt caching；<code>partial compact</code> 明确区分会不会保留 prompt cache；resume 路径显式清空再恢复 session metadata，避免把旧会话状态误写到新 transcript。</p>
+<p>更稳妥的总括是：这里并不存在一个单独负责“记忆”或“压缩”的模块。真正存在的是一套围绕长会话 correctness 和 cost 的上下文治理系统，而 <code>session / transcript / memory / compaction</code> 只是这套系统里不同层级的对象与动作。</p>
 <h2 id="section-68">14. 配置、远程托管设置、策略限制、遥测</h2>
 <h2 id="section-69">14.1 这是一个强运行时配置驱动系统</h2>
 <p>运行时行为确实受很多层共同影响，但它们不是“平权并列开关”，而是一套带 precedence 和观察时点差异的配置系统：</p>
@@ -1850,6 +1953,8 @@ sink.logEvent(eventName, metadata)
 <li><code>Cache breakpoint</code>：服务端在 prompt 前缀里切分缓存边界的位置。边界前后是否稳定，直接影响到底能复用多少 cache。</li>
 <li><code>Fork</code>：从主线程派生出一个继承现有上下文的子执行分支。它的核心目标之一是尽量复用父线程已有的 prompt cache，而不是从零开始重新建上下文。</li>
 <li><code>Worktree</code>：Git 提供的隔离工作目录。并行 agent 可以各自在自己的 worktree 改代码，减少互相覆盖文件的风险。</li>
+<li><code>Bridge</code>：本报告里如无特别说明，多指 <code>REPL bridge / Remote Control bridge</code>，即把本地 CLI / REPL 会话和 claude.ai 上的远程控制会话连起来的双向运行面。它不是泛指所有“bridge”概念，也不等同于 transport bridge、MCP bridge 或某个 helper 名称。</li>
+<li><code>Remote Control</code>：基于上述 bridge 的远程控制能力。简单说，就是远端会话可以查看、接续并控制本地 CLI / REPL 会话；真正进入控制路径前，通常还要经过 OAuth、policy、version 和 gate 检查。</li>
 <li><code>Headless</code>：没有 REPL/TUI 交互壳的运行形态，只保留 agent 内核和程序化接口，常见于 SDK、后台任务或自动化执行路径。</li>
 <li><code>Compaction</code>：当对话太长时，不是硬截断，而是把长历史压缩成更短、还能继续工作的表示形式，让 query 能在上下文预算内继续跑下去。</li>
 <li><code>Resume / Restore</code>：把之前保存过的会话状态重新还原出来继续执行。难点不只是“把消息读回来”，而是要把 transcript、工具状态、上下文边界一起恢复正确。</li>
