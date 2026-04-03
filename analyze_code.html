@@ -1,4 +1,13 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Claude Code Source 全量工程分析报告</title><style>:root{--bg:#f5f1e8;--panel:#fffdf8;--panel-strong:#fffaf0;--text:#1f2328;--muted:#5b6470;--line:#dfd7c8;--accent:#8a3d12;--accent-soft:#f2e5d4;--code-bg:#2b2118;--code-text:#f5efe6;--shadow:0 18px 50px rgba(61,37,19,.08);--max:1480px}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",Georgia,serif;color:var(--text);background:radial-gradient(circle at top left,rgba(138,61,18,.08),transparent 22%),radial-gradient(circle at top right,rgba(94,119,97,.08),transparent 18%),linear-gradient(180deg,#f7f3eb 0%,#f2ede3 100%);line-height:1.8}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.shell{max-width:var(--max);margin:0 auto;padding:28px 20px 56px}.hero{background:linear-gradient(135deg,rgba(138,61,18,.10),rgba(255,255,255,.78));border:1px solid rgba(138,61,18,.14);box-shadow:var(--shadow);border-radius:24px;padding:28px 30px;margin-bottom:24px;backdrop-filter:blur(8px)}.hero h1{margin:0 0 10px;font-size:clamp(28px,4vw,44px);line-height:1.15;letter-spacing:-.02em}.hero p{margin:0;color:var(--muted);font-size:15px}.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}.toc{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;background:rgba(255,253,248,.86);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:20px;padding:18px 16px 18px 18px;box-shadow:var(--shadow)}.toc-title{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.toc-item{display:block;padding:7px 10px;margin:2px 0;border-radius:10px;color:var(--text);font-size:14px;line-height:1.45}.toc-item:hover{background:var(--accent-soft);text-decoration:none}.toc-item.level-3{padding-left:20px;color:var(--muted)}.toc-item.level-4{padding-left:30px;color:var(--muted)}.content{background:rgba(255,253,248,.92);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:34px 40px 42px;overflow:hidden}.content h1,.content h2,.content h3,.content h4,.content h5,.content h6{scroll-margin-top:24px;line-height:1.25;letter-spacing:-.02em}.content h1{font-size:clamp(28px,3.6vw,42px);margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid var(--line)}.content h2{margin-top:42px;font-size:30px;border-top:1px solid rgba(223,215,200,.7);padding-top:24px}.content h3{margin-top:28px;font-size:22px;color:#4d2a16}.content h4{font-size:18px;margin-top:22px}.content p,.content li,.content blockquote{font-size:16px}.content p{margin:0 0 16px}.content ul,.content ol{margin:0 0 18px 1.4em;padding-left:1.1em}.content li{margin:.3em 0}.content li>ul,.content li>ol{margin-top:.45em}.content code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;background:rgba(138,61,18,.08);border:1px solid rgba(138,61,18,.10);border-radius:6px;padding:.14em .4em;font-size:.92em}.content pre{margin:18px 0 22px;padding:18px 20px;overflow:auto;background:linear-gradient(180deg,#31251a 0%,#241b14 100%);color:var(--code-text);border-radius:16px;border:1px solid rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.content pre code{background:transparent;border:none;padding:0;color:inherit;font-size:14px;line-height:1.65;white-space:pre}.content blockquote{margin:18px 0 22px;padding:14px 18px;border-left:4px solid var(--accent);background:var(--panel-strong);color:#4f4a43;border-radius:0 14px 14px 0}.content img{max-width:100%;border-radius:14px}@media (max-width:1080px){.layout{grid-template-columns:1fr}.toc{position:relative;top:auto;max-height:none}}@media (max-width:720px){.shell{padding:16px 12px 32px}.hero{padding:22px 20px;border-radius:18px}.content{padding:24px 18px 28px;border-radius:18px}.content h2{font-size:24px}.content h3{font-size:20px}.content p,.content li,.content blockquote{font-size:15px}.toc-item{font-size:13px}}</style></head><body><div class="shell"><section class="hero"><h1>Claude Code Source 全量工程分析报告</h1><p>由 <code>analyze_code.md</code> 生成的本地静态 HTML 版本，便于浏览器查看、目录跳转和代码块阅读。最近同步时间：<code>2026-04-02 19:58:11 +0800</code></p></section><div class="layout"><aside class="toc"><p class="toc-title">目录</p>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Claude Code Source 全量工程分析报告</title><style>:root{--bg:#f5f1e8;--panel:#fffdf8;--panel-strong:#fffaf0;--text:#1f2328;--muted:#5b6470;--line:#dfd7c8;--accent:#8a3d12;--accent-soft:#f2e5d4;--code-bg:#2b2118;--code-text:#f5efe6;--shadow:0 18px 50px rgba(61,37,19,.08);--max:1480px}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",Georgia,serif;color:var(--text);background:radial-gradient(circle at top left,rgba(138,61,18,.08),transparent 22%),radial-gradient(circle at top right,rgba(94,119,97,.08),transparent 18%),linear-gradient(180deg,#f7f3eb 0%,#f2ede3 100%);line-height:1.8}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.shell{max-width:var(--max);margin:0 auto;padding:28px 20px 56px}.hero{background:linear-gradient(135deg,rgba(138,61,18,.10),rgba(255,255,255,.78));border:1px solid rgba(138,61,18,.14);box-shadow:var(--shadow);border-radius:24px;padding:28px 30px;margin-bottom:24px;backdrop-filter:blur(8px)}.hero h1{margin:0 0 10px;font-size:clamp(28px,4vw,44px);line-height:1.15;letter-spacing:-.02em}.hero p{margin:0;color:var(--muted);font-size:15px}.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}.toc{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;background:rgba(255,253,248,.86);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:20px;padding:18px 16px 18px 18px;box-shadow:var(--shadow)}.toc-title{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.toc-item{display:block;padding:7px 10px;margin:2px 0;border-radius:10px;color:var(--text);font-size:14px;line-height:1.45}.toc-item:hover{background:var(--accent-soft);text-decoration:none}.toc-item.level-3{padding-left:20px;color:var(--muted)}.toc-item.level-4{padding-left:30px;color:var(--muted)}.content{background:rgba(255,253,248,.92);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:34px 40px 42px;overflow:hidden}.content h1,.content h2,.content h3,.content h4,.content h5,.content h6{scroll-margin-top:24px;line-height:1.25;letter-spacing:-.02em}.content h1{font-size:clamp(28px,3.6vw,42px);margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid var(--line)}.content h2{margin-top:42px;font-size:30px;border-top:1px solid rgba(223,215,200,.7);padding-top:24px}.content h3{margin-top:28px;font-size:22px;color:#4d2a16}.content h4{font-size:18px;margin-top:22px}.content p,.content li,.content blockquote{font-size:16px}.content p{margin:0 0 16px}.content ul,.content ol{margin:0 0 18px 1.4em;padding-left:1.1em}.content li{margin:.3em 0}.content li>ul,.content li>ol{margin-top:.45em}.content code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;background:rgba(138,61,18,.08);border:1px solid rgba(138,61,18,.10);border-radius:6px;padding:.14em .4em;font-size:.92em}.content pre{margin:18px 0 22px;padding:18px 20px;overflow:auto;background:linear-gradient(180deg,#31251a 0%,#241b14 100%);color:var(--code-text);border-radius:16px;border:1px solid rgba(0,0,0,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.content pre code{background:transparent;border:none;padding:0;color:inherit;font-size:14px;line-height:1.65;white-space:pre}.content blockquote{margin:18px 0 22px;padding:14px 18px;border-left:4px solid var(--accent);background:var(--panel-strong);color:#4f4a43;border-radius:0 14px 14px 0}.content img{max-width:100%;border-radius:14px}@media (max-width:1080px){.layout{grid-template-columns:1fr}.toc{position:relative;top:auto;max-height:none}}@media (max-width:720px){.shell{padding:16px 12px 32px}.hero{padding:22px 20px;border-radius:18px}.content{padding:24px 18px 28px;border-radius:18px}.content h2{font-size:24px}.content h3{font-size:20px}.content p,.content li,.content blockquote{font-size:15px}.toc-item{font-size:13px}}</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,securityLevel:'loose'});</script>
+<style>
+.diagram{margin:18px 0 24px;padding:16px 18px;border:1px solid rgba(138,61,18,.14);background:linear-gradient(180deg,rgba(242,229,212,.55),rgba(255,253,248,.92));border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
+.diagram-title{margin:0 0 10px;font-size:14px;font-weight:700;color:#6a3417;letter-spacing:.01em}
+.diagram-note{margin:10px 0 0;font-size:14px;color:#5b6470}
+.mermaid{margin:0;background:rgba(255,250,240,.92);padding:14px 14px;border-radius:14px;border:1px solid rgba(138,61,18,.10);display:flex;justify-content:center;overflow-x:auto}
+</style>
+</head><body><div class="shell"><section class="hero"><h1>Claude Code Source 全量工程分析报告</h1><p>由 <code>analyze_code.md</code> 生成的正式 HTML 阅读版，已并入经过复审和重绘的流程图，便于按章节理解关键机制。源报告最近同步时间：<code>2026-04-02 19:58:11 +0800</code>；图示并入时间：<code>2026-04-03 09:59:52 +0800</code></p></section><div class="layout"><aside class="toc"><p class="toc-title">目录</p>
 <a class="toc-item level-2" href="#section-2">1. 执行摘要</a>
 <a class="toc-item level-2" href="#section-3">2. 仓库画像与可信边界</a>
 <a class="toc-item level-3" href="#section-4">2.1 基本画像</a>
@@ -223,7 +232,17 @@ for (const file of files) {
 <li><code>输出面</code> 要单列，因为 REPL、headless、bridge 共享 query 内核，但宿主协议、UI 能力、恢复/交互方式并不相同。</li>
 </ul>
 <p>所以更短地说：这套系统当然可以被压扁成“CLI 调 API”，但那样会把真正决定 cache、权限、工具和运行面差异的结构全部压没。</p>
-<h3 id="section-10">3.2 可以把系统分成 8 个一级子系统</h3>
+<h3 id="section-10">3.2 可以把系统分成 8 个一级子系统</h3><div class="diagram"><p class="diagram-title">图：8 个一级子系统是分析框架，不是严格调用图</p><div class="mermaid">graph TD
+    A[启动与运行面分流] --> B[Prompt / Context / API 前缀构建]
+    B --> C[Query 执行内核]
+    C --> D[Tool 协议与工具调度]
+    C --> E[Permission / Classifier / Sandbox]
+    C --> F[Agent / Skill / Fork / Team]
+    D --> G[MCP 配置 / 连接 / 暴露面]
+    C --> H[Persistence / Session / Memory / Telemetry / Remote policy]
+    E -.边界交叠.-> D
+    F -.边界交叠.-> G
+    H -.反向约束.-> C</div><p class="diagram-note">这张图表达的是“阅读和分析时的一级分层”，不是源码里一条严格单向的调用链。</p></div>
 <p>这里的 8 层更适合作为“分析框架”来理解，而不是把它误读成仓库内部明示的一张官方架构图。源码里的边界并不完全干净，尤其 <code>Query / Tool / Permission / Agent</code> 之间存在明显交叠。</p>
 <ol>
 <li>启动与运行面分流</li>
@@ -432,7 +451,39 @@ return join(tmpdir(), `${prefix}-${id}${extension}`)
 <li>REPL 路径与 headless 路径共享底层 <code>query()</code></li>
 <li>区别主要在宿主层状态管理、交互能力与输出协议</li>
 </ul>
-<h2 id="section-21">6. 端到端请求生命周期</h2>
+<h2 id="section-21">6. 端到端请求生命周期</h2><div class="diagram"><p class="diagram-title">图：一次请求从入口装配到持久化与宿主输出的主链路</p><div class="mermaid">sequenceDiagram
+    participant U as 用户 / 调用方
+    participant E as 入口与宿主装配
+    participant P as Prompt / Context 构建
+    participant Q as query() 内核
+    participant M as 模型 API
+    participant X as 工具统一执行壳
+    participant R as Persistence
+    participant O as Host Output
+
+    U->>E: 提交 prompt
+    E->>E: 装配 ToolUseContext / tools / settings / MCP state
+    E->>P: fetchSystemPromptParts()
+    P-->>E: default + userContext + systemContext
+    E->>P: buildEffectiveSystemPrompt()
+    P-->>E: effective system prompt
+    E->>Q: 进入 query() 主循环
+    loop Query loop
+        Q->>Q: tool result budget -> snip -> microcompact -> collapse -> autocompact
+        Q->>M: 流式采样
+        M-->>Q: assistant / tool_use
+        alt 需要执行工具
+            Q->>X: runToolUse / runTools
+            X->>X: 输入校验 + pre-tool hooks + permission resolution
+            opt 按 tool 或 mode 命中
+                X->>X: classifier / sandbox 分支
+            end
+            X-->>Q: tool_result + context updates
+        end
+    end
+    Q->>R: transcript / session memory / compact / usage / notifications
+    Q->>O: REPL / headless / bridge 协议分流输出
+    O-->>U: 最终结果</div><p class="diagram-note">图里把工具阶段画成“统一执行壳”，因为真正固定存在的是校验、hooks、permission 主干，classifier 和 sandbox 只在部分路径命中。</p></div>
 <p>从“用户输入一句话”到“系统返回结果”，主链路可以概括为：</p>
 <ol>
 <li>用户从 REPL 或 headless 入口提交 prompt。</li>
@@ -812,7 +863,19 @@ export function buildQueryConfig(): QueryConfig {
 <li>不在这里快照的，是 <code>feature()</code> 树上的另一类 gates；源码注释已经明确写了 <code>Intentionally excludes feature() gates</code>。</li>
 </ul>
 <p>所以更准确地说，<code>query()</code> 不是“冻结所有运行时开关”，而是冻结“这一轮必须保持稳定”的那一小组 gates。</p>
-<h3 id="section-36">8.3 上下文治理流水线不是互斥关系，而是层叠关系</h3>
+<h3 id="section-36">8.3 上下文治理流水线不是互斥关系，而是层叠关系</h3><div class="diagram"><p class="diagram-title">图：上下文治理不是 5 个同类变换，而是按对象和兜底层级逐层处理</p><div class="mermaid">graph TD
+    A[开始本轮上下文治理] --> B[1. applyToolResultBudget
+处理对象: 最新 tool_result 体积]
+    B --> C[2. snipCompactIfNeeded
+处理对象: 历史 transcript 结构性裁剪]
+    C --> D[3. microcompact
+处理对象: 局部高体积块]
+    D --> E[4. contextCollapse.applyCollapsesIfNeeded
+处理对象: read-time projection]
+    E --> F[5. autocompact
+处理对象: 超阈值后的重兜底 compact]
+    F --> G[进入下一轮 query / sampling]
+    E -.若已压回阈值.-> G</div><p class="diagram-note">关键不是“五步顺序”本身，而是每一层处理的对象不同；`contextCollapse` 更像读取视图折叠，`autocompact` 才是更重的兜底手段。</p></div>
 <p>在主循环里，执行顺序是：</p>
 <ol>
 <li><code>applyToolResultBudget</code></li>
@@ -996,7 +1059,36 @@ return uniqBy(
 <blockquote>
 <p><code>9.3</code> 的重点不是“排序让输出更整齐”，而是“通过 built-in 前缀稳定化，把 cache 失效面从整段工具面收缩到 MCP 动态尾部”。</p>
 </blockquote>
-<h3 id="section-44">9.4 并发不是“所有只读一起跑”，而是“连续 safe block 才一起跑”</h3>
+<h3 id="section-44">9.4 并发不是“所有只读一起跑”，而是“连续 safe block 才一起跑”</h3><div class="diagram"><p class="diagram-title">图：并发批次按模型输出顺序切分，而不是全局搜集所有 safe tool</p><div class="mermaid">graph LR
+    A[模型输出 1
+Tool A
+本次 input 判定: safe] --> B[模型输出 2
+Tool B
+本次 input 判定: safe]
+    B --> C[模型输出 3
+Tool C
+本次 input 判定: non-safe]
+    C --> D[模型输出 4
+Tool D
+本次 input 判定: safe]
+    D --> E[模型输出 5
+Tool E
+本次 input 判定: safe]
+
+    subgraph Batch1[并发批次 1]
+      A
+      B
+    end
+    subgraph Batch2[串行栅栏]
+      C
+    end
+    subgraph Batch3[并发批次 2]
+      D
+      E
+    end
+
+    B -.non-safe 打断连续 safe block.-> C
+    E -.整批完成后按原始顺序回放 contextModifier.-> F[回放到 currentContext]</div><p class="diagram-note">`isConcurrencySafe` 是“这次输入下的运行时判定”，不是工具的永久标签；真正被保护的是模型动作顺序和 context 回放顺序。</p></div>
 <p><code>src/services/tools/toolOrchestration.ts</code>：</p>
 <pre><code class="language-ts">function partitionToolCalls(...) {
   ...
