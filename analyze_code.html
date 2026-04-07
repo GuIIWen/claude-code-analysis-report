@@ -2145,12 +2145,53 @@ const { compactionResult } = await deps.autocompact(messagesForQuery, ...)
 </ul>
 <p>一个很好记的反例是：如果 settings 路径每次随机、fork child 又不继承 rendered prompt，那么语义没变也会让字节前缀漂移，prompt cache 前缀就会被持续打爆。</p>
 <h3 id="section-95">17.2 Agent 权限边界图</h3>
-<p>建议专门拆，而且要按“决策输入 / 中间 gate / 最终表现”来画：</p>
+<p>这一节不能再写成“agent 是否继承父权限”的一句话，因为源码真正做的是四层拆分：决策输入、运行时 gate、最终执行表现、能力作用域。主装配点在 <code>src/tools/AgentTool/runAgent.ts</code>，无 UI 场景下的权限收口点在 <code>src/utils/permissions/permissions.ts</code>。</p>
+<div class="diagram"><div class="mermaid">flowchart LR
+    subgraph A["决策输入"]
+        A1["agent 定义&lt;br/&gt;permissionMode / background / mcpServers"]
+        A2["调用参数&lt;br/&gt;isAsync / canShowPermissionPrompts / allowedTools"]
+        A3["父上下文&lt;br/&gt;parent mode / cliArg allow rules / parent MCP clients"]
+    end
+
+    subgraph B["中间 gate"]
+        B1["runAgent 组装 toolPermissionContext&lt;br/&gt;mode override"]
+        B2["计算 shouldAvoidPermissionPrompts&lt;br/&gt;bubble 可提示; 默认 async 避免提示"]
+        B3["async 且可提示&lt;br/&gt;awaitAutomatedChecksBeforeDialog = true"]
+        B4["allowedTools 重写 session allow&lt;br/&gt;但保留 cliArg allow"]
+        B5["permissions.ts&lt;br/&gt;classifier / PermissionRequest hooks / auto deny"]
+        B6["agent-specific MCP 初始化&lt;br/&gt;与父 MCP additive merge + uniqBy(name)"]
+    end
+
+    subgraph C["最终表现"]
+        C1["sync agent&lt;br/&gt;通常可直接弹确认"]
+        C2["bubble 或显式可提示&lt;br/&gt;权限确认可冒泡到父终端"]
+        C3["headless 或 async 无 UI&lt;br/&gt;先跑 classifier / hook, 无结论则 deny"]
+        C4["background async 且可提示&lt;br/&gt;先等 automated checks, 再弹确认"]
+        C5["工具作用域&lt;br/&gt;session allow 被收窄, cliArg allow 仍生效"]
+        C6["能力作用域&lt;br/&gt;在父工具池上叠加 agent MCP, 非全局污染"]
+    end
+
+    A1 --&gt; B1
+    A2 --&gt; B1
+    A3 --&gt; B1
+    B1 --&gt; B2
+    B1 --&gt; B4
+    A1 --&gt; B6
+    A3 --&gt; B6
+    B2 --&gt; C1
+    B2 --&gt; C2
+    B2 --&gt; B5
+    B2 --&gt; B3
+    B5 --&gt; C3
+    B3 --&gt; C4
+    B4 --&gt; C5
+    B6 --&gt; C6
+</div></div><p>可以把图下的阅读顺序记成四句话：</p>
 <ul>
-<li>权限继承来源：<code>sync vs async agent</code>、<code>allowedTools</code>、inherited <code>cliArg</code> rules。</li>
-<li>是否可弹确认：<code>bubble mode</code>、<code>canShowPermissionPrompts</code>（当前宿主是否具备权限确认 UI 承接能力）、background/async agent 在什么场景下直接避免 permission prompt。</li>
-<li>最终执行表现：background agent 自动检查/等待、哪些路径会直接 deny、哪些路径会把决策冒泡回父线程。</li>
-<li>能力作用域：<code>agent-specific MCP</code> 如何与父线程已有能力叠加或缩域。</li>
+<li>输入层：<code>runAgent.ts</code> 会先根据 agent definition 决定是否覆写 permission mode；但如果父线程已经在 <code>bypassPermissions</code>、<code>acceptEdits</code>，或者 transcript classifier 打开的 <code>auto</code> 模式里，子 agent 不能随意把它改回去。</li>
+<li>gate 层：<code>shouldAvoidPermissionPrompts</code> 不是“async 就直接 deny”。显式 <code>canShowPermissionPrompts</code> 优先，<code>bubble</code> 模式会强制保留提示能力，让确认可以冒泡到父终端；只有确实没有 UI 承接能力时，才进入 avoid-prompt 分支。</li>
+<li>无 UI 分支：<code>permissions.ts</code> 会先跑 classifier 和 <code>PermissionRequest hooks</code>。只有这些自动化 gate 都给不出 allow/deny 结论时，才会 auto-deny。所以 background agent 不是“不做权限检查”，而是“不停在一个没人能点的弹窗上”。</li>
+<li>能力作用域：agent-specific MCP 是 additive merge，不是全局替换。它在父线程已有 MCP clients 基础上增量启动，再按 tool name 去重，解决的是“给这个 agent 加一块能力”，不是“污染整个 session 的工具池”。</li>
 </ul>
 <h3 id="section-96">17.3 Session restore correctness</h3>
 <p>所谓 restore correctness，不是“历史能读回来”这么简单，而是恢复后的 query 还必须保持与中断前同样的消息主链、compact 边界和 sidechain 关联，不产生行为漂移。</p>
