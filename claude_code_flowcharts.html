@@ -1,48 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Code - Architecture and Execution Flowcharts</title>
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'default',
-            securityLevel: 'loose',
-            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
-        });
-    </script>
+    <title>Claude Code - 架构与执行流程图 / Architecture and Execution Flowcharts</title>
     <style>
+        :root {
+            color-scheme: light;
+            --bg: #f9f9f9;
+            --surface: #ffffff;
+            --text: #333333;
+            --muted: #5f6b76;
+            --heading: #2c3e50;
+            --border: #e5e7eb;
+            --panel: #e8f4f8;
+            --panel-border: #3498db;
+            --button: #ffffff;
+            --button-active: #2c3e50;
+            --button-active-text: #ffffff;
+        }
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--text);
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f9f9f9;
+            background-color: var(--bg);
         }
         h1, h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
+            color: var(--heading);
+            border-bottom: 2px solid #eeeeee;
             padding-bottom: 10px;
             margin-top: 40px;
         }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            margin-top: 0;
+            width: 100%;
+        }
+        .lead {
+            margin: 0;
+            color: var(--muted);
+            max-width: 880px;
+        }
+        .lang-toggle {
+            display: inline-flex;
+            gap: 8px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+            position: sticky;
+            top: 12px;
+            z-index: 10;
+        }
+        .lang-toggle button {
+            border: 0;
+            background: var(--button);
+            color: var(--heading);
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+        }
+        .lang-toggle button:hover {
+            transform: translateY(-1px);
+        }
+        .lang-toggle button.is-active {
+            background: var(--button-active);
+            color: var(--button-active-text);
+        }
+        .section-description {
+            background: var(--panel);
+            padding: 15px;
+            border-left: 4px solid var(--panel-border);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
         .mermaid {
-            background: white;
+            background: var(--surface);
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             padding: 20px;
             margin: 20px 0;
             overflow-x: auto;
         }
-        .description {
-            background: #e8f4f8;
-            padding: 15px;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        .loading-note {
+            color: var(--muted);
+            font-size: 0.95rem;
         }
         footer {
             margin-top: 50px;
@@ -50,211 +108,490 @@
             color: #7f8c8d;
             font-size: 0.9em;
             padding-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #eeeeee;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+            .page-header {
+                align-items: stretch;
+            }
+            .lang-toggle {
+                top: 8px;
+                width: 100%;
+                justify-content: center;
+            }
+            .lang-toggle button {
+                flex: 1 1 auto;
+            }
         }
     </style>
 </head>
 <body>
-
-    <h1>Claude Code Architecture Flowcharts</h1>
-    <p>This document has been synchronized to the currently accepted report structure. The focus is on correcting host relationships, restoring the Prompt / Context / Cache mainline, separating safety boundaries, and showing Session recovery as a governance loop.</p>
-
-    <h2>1. First-Class Boundaries and Main Information Flow</h2>
-    <div class="description">
-        This diagram shows Claude Code's first-class subsystem boundaries and its main information flow, not a single strict call stack. The key points are: REPL and Headless are parallel hosts; both feed the shared <code>query()</code> runtime; Prompt / Context / Cache is assembled before <code>query()</code>; Tool safety, MCP, Bridge / Remote Control, and Session governance are adjacent boundaries rather than one blended runtime layer.
-    </div>
-    <div class="mermaid">
-        flowchart TD
-            A["CLI / REPL Host"] --> D["Host Assembly / Session Restore"]
-            B["Headless Host / QueryEngine"] --> D
-            D --> E["Prompt / Context / Cache Prefix"]
-            E --> F["Query Runtime"]
-            F --> G["Tool Dispatch / Agent Loop"]
-            G --> H["Permission / pre-tool hooks"]
-            H --> I["Classifier / Sandbox / local execution"]
-            G -->|visible tool pool| J["MCP config / connections / tool-resource exposure"]
-            F --> K["Transcript Chain / Session Persistence"]
-            K --> L["Memory / Collapse / Compaction"]
-            F --> M["REPL / Headless / Bridge output protocols"]
-            N["Bridge / Remote Control runtime surface"] -->|attach / control| M
+    <div class="page-header">
+        <div>
+            <h1 id="page-title">Claude Code 架构与执行流程图</h1>
+            <p id="page-lead" class="lead">本文档已按当前主报告的已验收表述同步，重点修正宿主关系、Prompt / Context / Cache 主线、安全边界拆层，以及 Session 恢复与治理闭环。</p>
+        </div>
+        <div class="lang-toggle" aria-label="Language switcher">
+            <button type="button" data-switch-lang="zh" class="is-active">中文</button>
+            <button type="button" data-switch-lang="en">English</button>
+        </div>
     </div>
 
-    <h2>2. Startup Routing and Host Assembly</h2>
-    <div class="description">
-        The real startup path is not "enter CLI and call the model". The entrypoint first handles fast-path routing and initialization, then decides whether execution enters the interactive host, the headless host, or a specific subcommand. REPL UI and QueryEngine are two host shells here, not a parent-child chain.
-    </div>
-    <div class="mermaid">
-        flowchart TD
-            Start(["User runs CLI command"]) --> Entry["src/entrypoints/cli.tsx / lightweight dispatcher"]
-            Entry --> Fast{"Fast path hit?"}
-            Fast -->|Yes| FastHandlers["daemon / remote / bridge fast paths"]
-            Fast -->|No| Main["src/main.tsx / main startup orchestrator"]
-            Main --> Setup["src/setup.ts / initialize context and services"]
-            Setup --> Config["config / policy / auth / telemetry"]
-            Setup --> Tooling["tool registration / MCP clients / commands"]
-            Config --> HostChoice{"Which host shape?"}
-            Tooling --> HostChoice
-            HostChoice -->|Interactive| ReplHost["src/replLauncher.tsx / REPL.tsx"]
-            HostChoice -->|Headless| HeadlessHost["src/QueryEngine.ts"]
-            HostChoice -->|Subcommand| Commands["src/commands/*"]
-            ReplHost --> HostState["host state assembly / resume / tools / settings / session state"]
-            HeadlessHost --> HostState
-            HostState --> PromptPrefix["Prompt / Context / Cache Prefix"]
-            PromptPrefix --> QueryCore["shared query runtime"]
-            Commands --> End(["Process exit"])
-            FastHandlers --> End
-            QueryCore --> End
-    </div>
+    <main id="content">
+        <p class="loading-note">加载中...</p>
+    </main>
 
-    <h2>3. Hosts and the Shared query() Runtime</h2>
-    <div class="description">
-        This section explicitly fixes the old "REPL -&gt; QueryEngine" misconception. The accurate model is: the REPL host owns interaction, resume, and UI state; the Headless host is carried by <code>QueryEngine</code> for programmatic sessions; both complete host assembly first and then enter the shared <code>query()</code> runtime.
-    </div>
-    <div class="mermaid">
-        flowchart TD
-            U["User / Caller"] --> Repl["Interactive Host / REPL.tsx"]
-            U --> Headless["Headless Host / QueryEngine.ts"]
-            Repl --> ReplState["interaction state / resume / UI capability"]
-            Headless --> HeadlessState["programmatic session / callbacks"]
-            ReplState --> HostAssemble["assemble ToolUseContext / tools / settings"]
-            HeadlessState --> HostAssemble
-            HostAssemble --> PromptLine["System prompt parts / effective system prompt"]
-            PromptLine --> CachePrefix["userContext / systemContext / cache-safe prefix"]
-            CachePrefix --> Query["shared query loop"]
-            Query --> Output["return result via host protocol"]
-    </div>
+    <footer id="page-footer">为 Claude Code 源码分析生成</footer>
 
-    <h2>4. Tool Safety Chain, MCP, and Bridge / Remote Control</h2>
-    <div class="description">
-        This diagram intentionally separates three things: <code>Permission / Classifier / Sandbox</code> is the local execution safety chain; <code>MCP client / server</code> is the external capability access layer; <code>Bridge / Remote Control</code> attaches to the host and session control surface rather than to the tool execution layer.
-    </div>
-    <div class="mermaid">
-        flowchart TD
-            H["REPL / Session Host"] --> A["tool_use emitted by query"]
-            A --> B["Tool Dispatch / visible tool pool"]
-            B --> C["Permission / pre-tool hooks"]
-            C --> D["Classifier / Sandbox"]
-            D --> E["local built-in / agent tool execution"]
-            B --> F["MCP client / server"]
-            G["Bridge / Remote Control gate / OAuth / session handle"] -->|attach to host| H
-    </div>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.5/dist/mermaid.esm.min.mjs';
 
-    <h2>5. Session / Transcript / Memory / Compaction Loop</h2>
-    <div class="description">
-        This replaces the old over-simplified "load/save history" framing. More accurately: Session is a recoverable runtime unit, Transcript is the message chain that can still feed <code>query()</code>, SessionMemory is a background-throttled long-term fact asset, and Compaction is part of the context-governance loop that feeds back into future recovery and cache behavior.
-    </div>
-    <div class="mermaid">
-        flowchart TD
-            A["Session file / session state"] --> B["loadTranscriptFile"]
-            A --> C["restoreSessionStateFromLog"]
-            B --> D["Transcript chain rebuild"]
-            C --> E["restore worktree / metadata / agent / read-file state"]
-            D --> F["restored query runtime surface"]
-            E --> F
-            F --> G["SessionMemory extraction"]
-            G --> H["Memory file"]
-            F --> I["snip / microcompact / collapse / autocompact"]
-            H --> I
-            I --> J["compact boundary / preserved segment / collapse snapshot"]
-            J --> A
-    </div>
+        const pageCopy = {
+            zh: {
+                title: 'Claude Code 架构与执行流程图',
+                lead: '本文档已按当前主报告的已验收表述同步，重点修正宿主关系、Prompt / Context / Cache 主线、安全边界拆层，以及 Session 恢复与治理闭环。',
+                footer: '为 Claude Code 源码分析生成'
+            },
+            en: {
+                title: 'Claude Code Architecture Flowcharts',
+                lead: 'This document has been synchronized to the currently accepted report structure. The focus is on correcting host relationships, restoring the Prompt / Context / Cache mainline, separating safety boundaries, and showing Session recovery as a governance loop.',
+                footer: 'Generated for Claude Code source analysis'
+            }
+        };
 
-    <h2>6. End-to-End Request Lifecycle</h2>
-    <div class="description">
-        This diagram keeps only the real mainline: the host assembles state and the prompt prefix first, then calls the shared <code>query()</code>; once execution enters tools, the local safety chain and the MCP external-capability branch split; finally state lands in transcript / session state / memory / compaction and returns through REPL, headless, or bridge protocols.
-    </div>
-    <div class="mermaid">
-        sequenceDiagram
-            participant U as User / Caller
-            participant H as Host(REPL or QueryEngine)
-            participant P as Prompt / Context / Cache
-            participant Q as query() runtime
-            participant M as Model API
-            participant T as Tool Dispatch
-            participant S as Permission / Classifier / Sandbox
-            participant L as local built-in / agent tool
-            participant C as MCP client / server
-            participant R as Session / Transcript / Memory / Compaction
-            participant O as REPL / Headless / Bridge output
+        const sections = [
+            {
+                zh: {
+                    heading: '1. 一级边界与主信息流',
+                    description: '这张图表达的是 Claude Code 的一级边界和主信息流，不是源码里一条严格单向的调用栈。关键点是：REPL 与 Headless 是并列宿主，二者都把请求送进共享 <code>query()</code> 内核；Prompt / Context / Cache 在进入 <code>query()</code> 之前就已经成立；Tool 安全链、MCP、Bridge / Remote Control、Session 治理是相邻边界，不该再混成一层。',
+                    graph: `flowchart TD
+    A["CLI / REPL 宿主"] --> D["宿主装配 / Session 恢复"]
+    B["Headless 宿主 / QueryEngine"] --> D
+    D --> E["Prompt / Context / Cache Prefix"]
+    E --> F["Query 内核"]
+    F --> G["Tool 调度 / Agent Loop"]
+    G --> H["Permission / pre-tool hooks"]
+    H --> I["Classifier / Sandbox / 本地执行"]
+    G -->|可见工具池| J["MCP 配置 / 连接 / tool-resource 暴露"]
+    F --> K["Transcript 链 / Session 持久化"]
+    K --> L["Memory / Collapse / Compaction"]
+    F --> M["REPL / Headless / Bridge 输出协议"]
+    N["Bridge / Remote Control 运行面"] -->|接续 / 控制| M`
+                },
+                en: {
+                    heading: '1. First-Class Boundaries and Main Information Flow',
+                    description: 'This diagram shows Claude Code&apos;s first-class subsystem boundaries and its main information flow, not a single strict call stack. The key points are: REPL and Headless are parallel hosts; both feed the shared <code>query()</code> runtime; Prompt / Context / Cache is assembled before <code>query()</code>; Tool safety, MCP, Bridge / Remote Control, and Session governance are adjacent boundaries rather than one blended runtime layer.',
+                    graph: `flowchart TD
+    A["CLI / REPL Host"] --> D["Host Assembly / Session Restore"]
+    B["Headless Host / QueryEngine"] --> D
+    D --> E["Prompt / Context / Cache Prefix"]
+    E --> F["Query Runtime"]
+    F --> G["Tool Dispatch / Agent Loop"]
+    G --> H["Permission / pre-tool hooks"]
+    H --> I["Classifier / Sandbox / local execution"]
+    G -->|visible tool pool| J["MCP config / connections / tool-resource exposure"]
+    F --> K["Transcript Chain / Session Persistence"]
+    K --> L["Memory / Collapse / Compaction"]
+    F --> M["REPL / Headless / Bridge output protocols"]
+    N["Bridge / Remote Control runtime surface"] -->|attach / control| M`
+                }
+            },
+            {
+                zh: {
+                    heading: '2. 启动分流与宿主装配',
+                    description: '真正的启动链路不是“进入 CLI 后直接打模型”。入口先做快速路径分流和初始化，再决定进入交互式宿主、headless 宿主或特定子命令。REPL UI 和 QueryEngine 在这里是两种宿主壳，而不是上下级关系。',
+                    graph: `flowchart TD
+    Start(["用户运行 CLI 命令"]) --> Entry["src/entrypoints/cli.tsx / 轻量分发器"]
+    Entry --> Fast{"是否命中快速路径"}
+    Fast -->|是| FastHandlers["daemon / remote / bridge 等快速路径"]
+    Fast -->|否| Main["src/main.tsx / 主启动编排"]
+    Main --> Setup["src/setup.ts / 初始化上下文与服务"]
+    Setup --> Config["配置 / policy / auth / telemetry"]
+    Setup --> Tooling["工具注册 / MCP 客户端 / commands"]
+    Config --> HostChoice{"进入哪类宿主"}
+    Tooling --> HostChoice
+    HostChoice -->|交互式| ReplHost["src/replLauncher.tsx / REPL.tsx"]
+    HostChoice -->|Headless| HeadlessHost["src/QueryEngine.ts"]
+    HostChoice -->|子命令| Commands["src/commands/*"]
+    ReplHost --> HostState["宿主状态装配 / resume / tools / settings / session state"]
+    HeadlessHost --> HostState
+    HostState --> PromptPrefix["Prompt / Context / Cache Prefix"]
+    PromptPrefix --> QueryCore["共享 query 内核"]
+    Commands --> End(["进程退出"])
+    FastHandlers --> End
+    QueryCore --> End`
+                },
+                en: {
+                    heading: '2. Startup Routing and Host Assembly',
+                    description: 'The real startup path is not "enter CLI and call the model". The entrypoint first handles fast-path routing and initialization, then decides whether execution enters the interactive host, the headless host, or a specific subcommand. REPL UI and QueryEngine are two host shells here, not a parent-child chain.',
+                    graph: `flowchart TD
+    Start(["User runs CLI command"]) --> Entry["src/entrypoints/cli.tsx / lightweight dispatcher"]
+    Entry --> Fast{"Fast path hit?"}
+    Fast -->|Yes| FastHandlers["daemon / remote / bridge fast paths"]
+    Fast -->|No| Main["src/main.tsx / main startup orchestrator"]
+    Main --> Setup["src/setup.ts / initialize context and services"]
+    Setup --> Config["config / policy / auth / telemetry"]
+    Setup --> Tooling["tool registration / MCP clients / commands"]
+    Config --> HostChoice{"Which host shape?"}
+    Tooling --> HostChoice
+    HostChoice -->|Interactive| ReplHost["src/replLauncher.tsx / REPL.tsx"]
+    HostChoice -->|Headless| HeadlessHost["src/QueryEngine.ts"]
+    HostChoice -->|Subcommand| Commands["src/commands/*"]
+    ReplHost --> HostState["host state assembly / resume / tools / settings / session state"]
+    HeadlessHost --> HostState
+    HostState --> PromptPrefix["Prompt / Context / Cache Prefix"]
+    PromptPrefix --> QueryCore["shared query runtime"]
+    Commands --> End(["Process exit"])
+    FastHandlers --> End
+    QueryCore --> End`
+                }
+            },
+            {
+                zh: {
+                    heading: '3. 宿主与共享 query() 内核',
+                    description: '这一节专门纠正旧版 “REPL -&gt; QueryEngine” 误导。更准确的关系是：REPL 宿主承接交互、resume、UI 状态；Headless 宿主由 <code>QueryEngine</code> 承接程序化会话；二者都先完成宿主装配，再进入共享 <code>query()</code> 内核。',
+                    graph: `flowchart TD
+    U["用户 / 调用方"] --> Repl["交互式宿主 / REPL.tsx"]
+    U --> Headless["Headless 宿主 / QueryEngine.ts"]
+    Repl --> ReplState["交互状态 / resume / UI capability"]
+    Headless --> HeadlessState["programmatic session / callbacks"]
+    ReplState --> HostAssemble["装配 ToolUseContext / tools / settings"]
+    HeadlessState --> HostAssemble
+    HostAssemble --> PromptLine["system prompt parts / effective system prompt"]
+    PromptLine --> CachePrefix["userContext / systemContext / cache-safe prefix"]
+    CachePrefix --> Query["共享 query 主循环"]
+    Query --> Output["按宿主协议输出结果"]`
+                },
+                en: {
+                    heading: '3. Hosts and the Shared query() Runtime',
+                    description: 'This section explicitly fixes the old "REPL -&gt; QueryEngine" misconception. The accurate model is: the REPL host owns interaction, resume, and UI state; the Headless host is carried by <code>QueryEngine</code> for programmatic sessions; both complete host assembly first and then enter the shared <code>query()</code> runtime.',
+                    graph: `flowchart TD
+    U["User / Caller"] --> Repl["Interactive Host / REPL.tsx"]
+    U --> Headless["Headless Host / QueryEngine.ts"]
+    Repl --> ReplState["interaction state / resume / UI capability"]
+    Headless --> HeadlessState["programmatic session / callbacks"]
+    ReplState --> HostAssemble["assemble ToolUseContext / tools / settings"]
+    HeadlessState --> HostAssemble
+    HostAssemble --> PromptLine["System prompt parts / effective system prompt"]
+    PromptLine --> CachePrefix["userContext / systemContext / cache-safe prefix"]
+    CachePrefix --> Query["shared query loop"]
+    Query --> Output["return result via host protocol"]`
+                }
+            },
+            {
+                zh: {
+                    heading: '4. Tool 安全链、MCP 与 Bridge / Remote Control',
+                    description: '这里故意把三件事拆开：<code>Permission / Classifier / Sandbox</code> 是本地执行安全链；<code>MCP client / server</code> 是外部能力接入层；<code>Bridge / Remote Control</code> 接的是宿主与 session 控制面，不属于 tool 执行层。',
+                    graph: `flowchart TD
+    H["REPL / Session Host"] --> A["query 产出的 tool_use"]
+    A --> B["Tool 调度 / 可见工具池"]
+    B --> C["Permission / pre-tool hooks"]
+    C --> D["Classifier / Sandbox"]
+    D --> E["本地 built-in / agent tool 执行"]
+    B --> F["MCP client / server"]
+    G["Bridge / Remote Control gate / OAuth / session handle"] -->|接入宿主| H`
+                },
+                en: {
+                    heading: '4. Tool Safety Chain, MCP, and Bridge / Remote Control',
+                    description: 'This diagram intentionally separates three things: <code>Permission / Classifier / Sandbox</code> is the local execution safety chain; <code>MCP client / server</code> is the external capability access layer; <code>Bridge / Remote Control</code> attaches to the host and session control surface rather than to the tool execution layer.',
+                    graph: `flowchart TD
+    H["REPL / Session Host"] --> A["tool_use emitted by query"]
+    A --> B["Tool Dispatch / visible tool pool"]
+    B --> C["Permission / pre-tool hooks"]
+    C --> D["Classifier / Sandbox"]
+    D --> E["local built-in / agent tool execution"]
+    B --> F["MCP client / server"]
+    G["Bridge / Remote Control gate / OAuth / session handle"] -->|attach to host| H`
+                }
+            },
+            {
+                zh: {
+                    heading: '5. Session / Transcript / Memory / Compaction 闭环',
+                    description: '这里不再使用 “load/save history” 那种过度简化的旧图。更准确的说法是：Session 是可恢复运行单元，Transcript 是可继续喂给 <code>query()</code> 的消息链，SessionMemory 是后台节流提炼出的长期事实资产，Compaction 是上下文治理闭环的一部分，并会反过来影响后续恢复与 cache 命中。',
+                    graph: `flowchart TD
+    A["Session file / session state"] --> B["loadTranscriptFile"]
+    A --> C["restoreSessionStateFromLog"]
+    B --> D["Transcript chain rebuild"]
+    C --> E["worktree / metadata / agent / read-file state 恢复"]
+    D --> F["恢复后的 query 运行面"]
+    E --> F
+    F --> G["SessionMemory 提炼"]
+    G --> H["Memory file"]
+    F --> I["snip / microcompact / collapse / autocompact"]
+    H --> I
+    I --> J["compact boundary / preserved segment / collapse snapshot"]
+    J --> A`
+                },
+                en: {
+                    heading: '5. Session / Transcript / Memory / Compaction Loop',
+                    description: 'This replaces the old over-simplified "load/save history" framing. More accurately: Session is a recoverable runtime unit, Transcript is the message chain that can still feed <code>query()</code>, SessionMemory is a background-throttled long-term fact asset, and Compaction is part of the context-governance loop that feeds back into future recovery and cache behavior.',
+                    graph: `flowchart TD
+    A["Session file / session state"] --> B["loadTranscriptFile"]
+    A --> C["restoreSessionStateFromLog"]
+    B --> D["Transcript chain rebuild"]
+    C --> E["restore worktree / metadata / agent / read-file state"]
+    D --> F["restored query runtime surface"]
+    E --> F
+    F --> G["SessionMemory extraction"]
+    G --> H["Memory file"]
+    F --> I["snip / microcompact / collapse / autocompact"]
+    H --> I
+    I --> J["compact boundary / preserved segment / collapse snapshot"]
+    J --> A`
+                }
+            },
+            {
+                zh: {
+                    heading: '6. 端到端请求生命周期',
+                    description: '这张图保留实际主链：宿主先装配状态与 Prompt 前缀，再调用共享 <code>query()</code>；进入工具执行时，本地安全链与 MCP 外部能力链路分开；最后分别落到 transcript / session state / memory / compaction，并按 REPL、headless、bridge 的协议输出。',
+                    graph: `sequenceDiagram
+    participant U as 用户 / 调用方
+    participant H as 宿主(REPL 或 QueryEngine)
+    participant P as Prompt / Context / Cache
+    participant Q as query() 内核
+    participant M as 模型 API
+    participant T as Tool 调度
+    participant S as Permission / Classifier / Sandbox
+    participant L as 本地 built-in / agent tool
+    participant C as MCP client / server
+    participant R as Session / Transcript / Memory / Compaction
+    participant O as REPL / Headless / Bridge 输出
 
-            U->>H: Submit prompt
-            alt interactive
-                Note over H: REPL owns interaction, resume, and UI state
-            else programmatic
-                Note over H: QueryEngine owns the headless session
+    U->>H: 提交 prompt
+    alt interactive
+        Note over H: REPL 承接交互、resume、UI 状态
+    else programmatic
+        Note over H: QueryEngine 承接 headless 会话
+    end
+    H->>H: 装配 ToolUseContext / tools / settings / session state
+    H->>P: fetchSystemPromptParts() + buildEffectiveSystemPrompt()
+    P-->>H: effective prompt + userContext + systemContext + cache-safe prefix
+    H->>Q: 调用共享 query() 内核
+    loop Query loop
+        Q->>Q: budget -> snip -> microcompact -> collapse -> autocompact
+        Q->>M: 流式采样
+        M-->>Q: assistant / tool_use
+        alt 需要执行工具
+            Q->>T: StreamingToolExecutor / runTools
+            T->>S: 输入校验 + hooks + permission resolution
+            alt 本地 built-in / agent tool
+                S->>L: classifier / sandbox / local exec
+                L-->>T: tool_result + context updates
+            else MCP tool
+                T->>C: MCP call / external capability
+                C-->>T: tool_result / resource delta
             end
-            H->>H: Assemble ToolUseContext / tools / settings / session state
-            H->>P: fetchSystemPromptParts() + buildEffectiveSystemPrompt()
-            P-->>H: effective prompt + userContext + systemContext + cache-safe prefix
-            H->>Q: Call shared query() runtime
-            loop Query loop
-                Q->>Q: budget -> snip -> microcompact -> collapse -> autocompact
-                Q->>M: Stream sampling
-                M-->>Q: assistant / tool_use
-                alt Tool execution required
-                    Q->>T: StreamingToolExecutor / runTools
-                    T->>S: input validation + hooks + permission resolution
-                    alt local built-in / agent tool
-                        S->>L: classifier / sandbox / local exec
-                        L-->>T: tool_result + context updates
-                    else MCP tool
-                        T->>C: MCP call / external capability
-                        C-->>T: tool_result / resource delta
-                    end
-                    T-->>Q: tool_result blocks
-                end
+            T-->>Q: tool_result blocks
+        end
+    end
+    Q->>R: transcript append + session state + memory hooks + compaction state
+    Q->>O: 输出协议分流
+    O-->>U: 最终结果`
+                },
+                en: {
+                    heading: '6. End-to-End Request Lifecycle',
+                    description: 'This diagram keeps only the real mainline: the host assembles state and the prompt prefix first, then calls the shared <code>query()</code>; once execution enters tools, the local safety chain and the MCP external-capability branch split; finally state lands in transcript / session state / memory / compaction and returns through REPL, headless, or bridge protocols.',
+                    graph: `sequenceDiagram
+    participant U as User / Caller
+    participant H as Host(REPL or QueryEngine)
+    participant P as Prompt / Context / Cache
+    participant Q as query() runtime
+    participant M as Model API
+    participant T as Tool Dispatch
+    participant S as Permission / Classifier / Sandbox
+    participant L as local built-in / agent tool
+    participant C as MCP client / server
+    participant R as Session / Transcript / Memory / Compaction
+    participant O as REPL / Headless / Bridge output
+
+    U->>H: Submit prompt
+    alt interactive
+        Note over H: REPL owns interaction, resume, and UI state
+    else programmatic
+        Note over H: QueryEngine owns the headless session
+    end
+    H->>H: Assemble ToolUseContext / tools / settings / session state
+    H->>P: fetchSystemPromptParts() + buildEffectiveSystemPrompt()
+    P-->>H: effective prompt + userContext + systemContext + cache-safe prefix
+    H->>Q: Call shared query() runtime
+    loop Query loop
+        Q->>Q: budget -> snip -> microcompact -> collapse -> autocompact
+        Q->>M: Stream sampling
+        M-->>Q: assistant / tool_use
+        alt Tool execution required
+            Q->>T: StreamingToolExecutor / runTools
+            T->>S: input validation + hooks + permission resolution
+            alt local built-in / agent tool
+                S->>L: classifier / sandbox / local exec
+                L-->>T: tool_result + context updates
+            else MCP tool
+                T->>C: MCP call / external capability
+                C-->>T: tool_result / resource delta
             end
-            Q->>R: transcript append + session state + memory hooks + compaction state
-            Q->>O: Split by output protocol
-            O-->>U: Final result
-    </div>
+            T-->>Q: tool_result blocks
+        end
+    end
+    Q->>R: transcript append + session state + memory hooks + compaction state
+    Q->>O: Split by output protocol
+    O-->>U: Final result`
+                }
+            },
+            {
+                zh: {
+                    heading: '7. 上下文治理与压缩',
+                    description: '上下文治理不是“只要超长就做一次摘要”。它是分层次的预算与压缩系统：先管 tool result 预算，再做 snip、microcompact、collapse，最后才进入 autocompact；必要时还会在错误后走 reactive compact。',
+                    graph: `flowchart TD
+    A["开始上下文治理"] --> B["tool result budget / content replacement"]
+    B --> C["snipCompactIfNeeded"]
+    C --> D["microcompact"]
+    D --> E["context collapse"]
+    E --> F["autocompact"]
+    F --> G["必要时 reactive compact"]
+    G --> H["继续 query loop"]`
+                },
+                en: {
+                    heading: '7. Context Governance and Compression',
+                    description: 'Context governance is not "summarize once when the chat is too long". It is a layered budget and compression system: first tool-result budgeting, then snip, microcompact, collapse, and only then autocompact; if needed, the system may also enter reactive compact after an error.',
+                    graph: `flowchart TD
+    A["Begin context governance"] --> B["tool result budget / content replacement"]
+    B --> C["snipCompactIfNeeded"]
+    C --> D["microcompact"]
+    D --> E["context collapse"]
+    E --> F["autocompact"]
+    F --> G["reactive compact when needed"]
+    G --> H["continue query loop"]`
+                }
+            },
+            {
+                zh: {
+                    heading: '8. 工具并发批次',
+                    description: '工具并发也不是“所有只读工具一次性全开”。系统会根据 <code>isConcurrencySafe</code> 把工具拆成安全批次；可并发的工具同批执行，不安全的工具会形成串行屏障。',
+                    graph: `flowchart LR
+    subgraph Batch1
+        B1Title["批次 1 - 可并发"]
+        T1["Tool 1 / isConcurrencySafe: true"]
+        T2["Tool 2 / isConcurrencySafe: true"]
+    end
 
-    <h2>7. Context Governance and Compression</h2>
-    <div class="description">
-        Context governance is not "summarize once when the chat is too long". It is a layered budget and compression system: first tool-result budgeting, then snip, microcompact, collapse, and only then autocompact; if needed, the system may also enter reactive compact after an error.
-    </div>
-    <div class="mermaid">
-        flowchart TD
-            A["Begin context governance"] --> B["tool result budget / content replacement"]
-            B --> C["snipCompactIfNeeded"]
-            C --> D["microcompact"]
-            D --> E["context collapse"]
-            E --> F["autocompact"]
-            F --> G["reactive compact when needed"]
-            G --> H["continue query loop"]
-    </div>
+    subgraph Batch2
+        B2Title["批次 2 - 串行屏障"]
+        T3["Tool 3 / isConcurrencySafe: false"]
+    end
 
-    <h2>8. Tool Concurrency Batching</h2>
-    <div class="description">
-        Tool concurrency is also not "run all read-only tools at once". The system groups tools into safe batches based on <code>isConcurrencySafe</code>; concurrency-safe tools run within the same batch, while an unsafe tool becomes a serial barrier between batches.
-    </div>
-    <div class="mermaid">
-        flowchart LR
-            subgraph Batch1
-                B1Title["Batch 1 - concurrent"]
-                T1["Tool 1 / isConcurrencySafe: true"]
-                T2["Tool 2 / isConcurrencySafe: true"]
-            end
+    subgraph Batch3
+        B3Title["批次 3 - 可并发"]
+        T4["Tool 4 / isConcurrencySafe: true"]
+        T5["Tool 5 / isConcurrencySafe: true"]
+    end
 
-            subgraph Batch2
-                B2Title["Batch 2 - serial barrier"]
-                T3["Tool 3 / isConcurrencySafe: false"]
-            end
+    T1 --> T3
+    T2 --> T3
+    T3 --> T4
+    T3 --> T5`
+                },
+                en: {
+                    heading: '8. Tool Concurrency Batching',
+                    description: 'Tool concurrency is also not "run all read-only tools at once". The system groups tools into safe batches based on <code>isConcurrencySafe</code>; concurrency-safe tools run within the same batch, while an unsafe tool becomes a serial barrier between batches.',
+                    graph: `flowchart LR
+    subgraph Batch1
+        B1Title["Batch 1 - concurrent"]
+        T1["Tool 1 / isConcurrencySafe: true"]
+        T2["Tool 2 / isConcurrencySafe: true"]
+    end
 
-            subgraph Batch3
-                B3Title["Batch 3 - concurrent"]
-                T4["Tool 4 / isConcurrencySafe: true"]
-                T5["Tool 5 / isConcurrencySafe: true"]
-            end
+    subgraph Batch2
+        B2Title["Batch 2 - serial barrier"]
+        T3["Tool 3 / isConcurrencySafe: false"]
+    end
 
-            T1 --> T3
-            T2 --> T3
-            T3 --> T4
-            T3 --> T5
-    </div>
+    subgraph Batch3
+        B3Title["Batch 3 - concurrent"]
+        T4["Tool 4 / isConcurrencySafe: true"]
+        T5["Tool 5 / isConcurrencySafe: true"]
+    end
 
-    <footer>
-        Generated for Claude Code source analysis
-    </footer>
+    T1 --> T3
+    T2 --> T3
+    T3 --> T4
+    T3 --> T5`
+                }
+            }
+        ];
+
+        let currentLang = 'zh';
+        let renderToken = 0;
+
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' }
+        });
+
+        function updateChrome(lang) {
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+            document.title = lang === 'zh'
+                ? 'Claude Code - 架构与执行流程图 / Architecture and Execution Flowcharts'
+                : 'Claude Code - Architecture and Execution Flowcharts / 架构与执行流程图';
+            document.getElementById('page-title').textContent = pageCopy[lang].title;
+            document.getElementById('page-lead').innerHTML = pageCopy[lang].lead;
+            document.getElementById('page-footer').textContent = pageCopy[lang].footer;
+            document.querySelectorAll('[data-switch-lang]').forEach((button) => {
+                button.classList.toggle('is-active', button.dataset.switchLang === lang);
+                button.setAttribute('aria-pressed', String(button.dataset.switchLang === lang));
+            });
+        }
+
+        function buildSections(lang) {
+            return sections.map((section, index) => {
+                const item = section[lang];
+                return `
+                    <section>
+                        <h2>${item.heading}</h2>
+                        <div class="section-description">${item.description}</div>
+                        <div class="mermaid" data-graph-index="${index}">${item.graph}</div>
+                    </section>
+                `;
+            }).join('');
+        }
+
+        async function renderLanguage(lang) {
+            currentLang = lang;
+            renderToken += 1;
+            const token = renderToken;
+            updateChrome(lang);
+
+            const content = document.getElementById('content');
+            content.innerHTML = buildSections(lang);
+
+            try {
+                await mermaid.run({
+                    nodes: content.querySelectorAll('.mermaid')
+                });
+            } catch (error) {
+                console.error('Mermaid render failed:', error);
+                if (token === renderToken) {
+                    content.insertAdjacentHTML(
+                        'afterbegin',
+                        `<p class="loading-note">${lang === 'zh' ? 'Mermaid 渲染失败，请查看控制台。' : 'Mermaid rendering failed. Check the console.'}</p>`
+                    );
+                }
+            }
+        }
+
+        document.querySelectorAll('[data-switch-lang]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const nextLang = button.dataset.switchLang;
+                if (nextLang && nextLang !== currentLang) {
+                    renderLanguage(nextLang);
+                }
+            });
+        });
+
+        renderLanguage('zh');
+    </script>
 </body>
 </html>
