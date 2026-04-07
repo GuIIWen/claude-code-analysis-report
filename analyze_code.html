@@ -255,18 +255,18 @@ for (const file of files) {
 <li>Tool 安全链、MCP、Bridge / Remote Control、Session / Memory / Compaction 是相邻边界，不是一层“大杂烩运行时”。</li>
 </ul>
 <div class="diagram"><div class="mermaid">flowchart TD
-    A[CLI / REPL 宿主] --&gt; D[宿主装配 / Session 恢复]
-    B[Headless 宿主 / QueryEngine] --&gt; D
-    D --&gt; E[Prompt / Context / Cache Prefix]
-    E --&gt; F[query() 内核]
-    F --&gt; G[Tool 调度 / Agent Loop]
-    G --&gt; H[Permission / pre-tool hooks]
-    H --&gt; I[Classifier / Sandbox / 本地执行]
-    G -.可见工具池来自.-&gt; J[MCP 配置 / 连接 / tool/resource 暴露]
-    F --&gt; K[Transcript 链 / Session 持久化]
-    K --&gt; L[Memory / Collapse / Compaction]
-    F --&gt; M[REPL / Headless / Bridge 输出协议]
-    N[Bridge / Remote Control 运行面] -.接续 / 控制本地会话.-&gt; M
+    A["CLI / REPL 宿主"] --&gt; D["宿主装配 / Session 恢复"]
+    B["Headless 宿主 / QueryEngine"] --&gt; D
+    D --&gt; E["Prompt / Context / Cache Prefix"]
+    E --&gt; F["Query 内核"]
+    F --&gt; G["Tool 调度 / Agent Loop"]
+    G --&gt; H["Permission / pre-tool hooks"]
+    H --&gt; I["Classifier / Sandbox / 本地执行"]
+    G --&gt;|可见工具池| J["MCP 配置 / 连接 / tool-resource 暴露"]
+    F --&gt; K["Transcript 链 / Session 持久化"]
+    K --&gt; L["Memory / Collapse / Compaction"]
+    F --&gt; M["REPL / Headless / Bridge 输出协议"]
+    N["Bridge / Remote Control 运行面"] --&gt;|接续 / 控制| M
 </div></div><p>这张图表达的是“一级边界和主信息流”，不是源码里一条严格单向的调用栈；但它至少把后文最关键的宿主并列关系和安全边界关系画对了。</p>
 <p>和后文章节的对应关系可以直接这样读：</p>
 <ul>
@@ -1467,13 +1467,14 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 <p><code>bridgeEnabled.ts</code> 这段 gate 最容易被误读成普通 feature flag，但先要把名词说清楚。本文里的 <code>bridge</code> 如无特别说明，多指 <code>REPL bridge / Remote Control bridge</code>：它把本地 CLI / REPL 会话和 claude.ai 上的 Remote Control 会话连起来，形成一条双向运行面，让远端可以查看当前本地会话，并在满足条件时继续把控制操作发回本地执行。这里说的不是泛指所有 bridge 概念，也不是 transport bridge、MCP bridge 或某个 helper 名称。</p>
 <p>如果把第 <code>9/10/11/12</code> 章放在一张边界图里，更准确的关系应该是：</p>
 <div class="diagram"><div class="mermaid">flowchart TD
-    H[REPL / Session Host] --&gt; A[query() 产出的 tool_use]
-    A --&gt; B[Tool 调度 / 可见工具池]
-    B --&gt; C[Permission / pre-tool hooks]
-    C --&gt; D[Classifier / Sandbox]
-    D --&gt; E[本地 built-in / agent tool 执行]
-    B --&gt; F[MCP client / server]
-    G[Bridge / Remote Control gate / OAuth / session handle] -.接入宿主而非工具层.-&gt; H
+    H["REPL / Session Host"] --&gt; A["query 产出的 tool use"]
+    A --&gt; B["Tool 调度 / 可见工具池"]
+    B --&gt; C["Permission / pre tool hooks"]
+    C --&gt; D["Classifier / Sandbox"]
+    D --&gt; E["本地 built-in / agent tool 执行"]
+    B --&gt; F["MCP client / server"]
+    G["Bridge / Remote Control gate / OAuth / session handle"] --&gt; I["接入宿主"]
+    I --&gt; H
 </div></div><p>这张图故意把三件事拆开：</p>
 <ul>
 <li><code>Permission / Sandbox</code> 是本地执行安全链。</li>
@@ -1501,17 +1502,17 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 <p>这一章更适合按“持久化边界 -&gt; 可重放消息链 -&gt; 恢复正确性 -&gt; 长会话治理”来读，而不是把 session / transcript / memory / compact 当成四个互不相关的名词。源码直接证明的是：这里真正被设计出来的，是一套可恢复、可压缩、可持续运行的长会话宿主。更稳妥的工程归纳则是：这些机制共同在解决上下文预算、恢复正确性、缓存命中率和状态漂移。</p>
 <p>如果要把这一章画成流程图，应该更接近下面这条“恢复与治理闭环”，而不是一句轻飘飘的 <code>load/save history</code>：</p>
 <div class="diagram"><div class="mermaid">flowchart TD
-    A[Session file / session state] --&gt; B[loadTranscriptFile()]
-    A --&gt; C[restoreSessionStateFromLog()]
-    B --&gt; D[Transcript chain rebuild]
-    C --&gt; E[worktree / metadata / agent / read-file state 恢复]
-    D --&gt; F[恢复后的 query 运行面]
+    A["Session file 与 session state"] --&gt; B["loadTranscriptFile"]
+    A --&gt; C["restoreSessionStateFromLog"]
+    B --&gt; D["Transcript chain rebuild"]
+    C --&gt; E["worktree、metadata、agent、read file state 恢复"]
+    D --&gt; F["恢复后的 query runtime"]
     E --&gt; F
-    F --&gt; G[SessionMemory 提炼]
-    G --&gt; H[Memory file]
-    F --&gt; I[snip / microcompact / collapse / autocompact]
+    F --&gt; G["SessionMemory 提炼"]
+    G --&gt; H["Memory file"]
+    F --&gt; I["snip、microcompact、collapse、autocompact"]
     H --&gt; I
-    I --&gt; J[compact boundary / preserved segment / collapse snapshot]
+    I --&gt; J["compact boundary、preserved segment、collapse snapshot"]
     J --&gt; A
 </div></div><p>这里至少要避免四种误读：</p>
 <ul>

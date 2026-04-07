@@ -158,18 +158,18 @@ for (const file of files) {
 
 ```mermaid
 flowchart TD
-    A[CLI / REPL 宿主] --> D[宿主装配 / Session 恢复]
-    B[Headless 宿主 / QueryEngine] --> D
-    D --> E[Prompt / Context / Cache Prefix]
-    E --> F[query() 内核]
-    F --> G[Tool 调度 / Agent Loop]
-    G --> H[Permission / pre-tool hooks]
-    H --> I[Classifier / Sandbox / 本地执行]
-    G -.可见工具池来自.-> J[MCP 配置 / 连接 / tool/resource 暴露]
-    F --> K[Transcript 链 / Session 持久化]
-    K --> L[Memory / Collapse / Compaction]
-    F --> M[REPL / Headless / Bridge 输出协议]
-    N[Bridge / Remote Control 运行面] -.接续 / 控制本地会话.-> M
+    A["CLI / REPL 宿主"] --> D["宿主装配 / Session 恢复"]
+    B["Headless 宿主 / QueryEngine"] --> D
+    D --> E["Prompt / Context / Cache Prefix"]
+    E --> F["Query 内核"]
+    F --> G["Tool 调度 / Agent Loop"]
+    G --> H["Permission / pre-tool hooks"]
+    H --> I["Classifier / Sandbox / 本地执行"]
+    G -->|可见工具池| J["MCP 配置 / 连接 / tool-resource 暴露"]
+    F --> K["Transcript 链 / Session 持久化"]
+    K --> L["Memory / Collapse / Compaction"]
+    F --> M["REPL / Headless / Bridge 输出协议"]
+    N["Bridge / Remote Control 运行面"] -->|接续 / 控制| M
 ```
 
 这张图表达的是“一级边界和主信息流”，不是源码里一条严格单向的调用栈；但它至少把后文最关键的宿主并列关系和安全边界关系画对了。
@@ -1561,13 +1561,14 @@ export function getMcpServerSignature(config: McpServerConfig): string | null {
 
 ```mermaid
 flowchart TD
-    H[REPL / Session Host] --> A[query() 产出的 tool_use]
-    A --> B[Tool 调度 / 可见工具池]
-    B --> C[Permission / pre-tool hooks]
-    C --> D[Classifier / Sandbox]
-    D --> E[本地 built-in / agent tool 执行]
-    B --> F[MCP client / server]
-    G[Bridge / Remote Control gate / OAuth / session handle] -.接入宿主而非工具层.-> H
+    H["REPL / Session Host"] --> A["query 产出的 tool use"]
+    A --> B["Tool 调度 / 可见工具池"]
+    B --> C["Permission / pre tool hooks"]
+    C --> D["Classifier / Sandbox"]
+    D --> E["本地 built-in / agent tool 执行"]
+    B --> F["MCP client / server"]
+    G["Bridge / Remote Control gate / OAuth / session handle"] --> I["接入宿主"]
+    I --> H
 ```
 
 这张图故意把三件事拆开：
@@ -1610,17 +1611,17 @@ export async function isBridgeEnabledBlocking(): Promise<boolean> {
 
 ```mermaid
 flowchart TD
-    A[Session file / session state] --> B[loadTranscriptFile()]
-    A --> C[restoreSessionStateFromLog()]
-    B --> D[Transcript chain rebuild]
-    C --> E[worktree / metadata / agent / read-file state 恢复]
-    D --> F[恢复后的 query 运行面]
+    A["Session file 与 session state"] --> B["loadTranscriptFile"]
+    A --> C["restoreSessionStateFromLog"]
+    B --> D["Transcript chain rebuild"]
+    C --> E["worktree、metadata、agent、read file state 恢复"]
+    D --> F["恢复后的 query runtime"]
     E --> F
-    F --> G[SessionMemory 提炼]
-    G --> H[Memory file]
-    F --> I[snip / microcompact / collapse / autocompact]
+    F --> G["SessionMemory 提炼"]
+    G --> H["Memory file"]
+    F --> I["snip、microcompact、collapse、autocompact"]
     H --> I
-    I --> J[compact boundary / preserved segment / collapse snapshot]
+    I --> J["compact boundary、preserved segment、collapse snapshot"]
     J --> A
 ```
 
