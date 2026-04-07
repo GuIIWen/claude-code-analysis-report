@@ -2002,7 +2002,7 @@ const { compactionResult } = await deps.autocompact(messagesForQuery, ...)
 <td>tool schema 必须在 session 内保持 byte-stable，fork child 还要继承 exact tools</td>
 <td><code>src/utils/api.ts</code>、<code>src/utils/toolSchemaCache.ts</code>、<code>src/tools/AgentTool/forkSubagent.ts</code></td>
 <td><code>src/services/api/claude.ts</code>、fork child 请求构造</td>
-<td>子 agent 和父线程语义看似一致，但 cache 完全不共享</td>
+<td>子 agent 和父线程语义看似一致，但默认往往命不中同一组 prompt cache key；共享的是远端缓存池，打散的是命中前缀</td>
 </tr>
 <tr>
 <td><code>preservedSegment</code> 元数据必须能让 loader 走通 tail→head relink</td>
