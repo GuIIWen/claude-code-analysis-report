@@ -1297,6 +1297,39 @@ if (tool.block.name === BASH_TOOL_NAME) {
 </table>
 <p>一句话概括：<code>AgentTool</code> 负责把一次 agent 调用描述成结构化意图，<code>runAgent</code> 负责把这次调用装成一个真正可执行的子 runtime。</p>
 <p>这里的“二级 runtime”不是修辞，而是指主线程内部再启动一个拥有独立 <code>ToolUseContext</code>、消息链和 <code>query()</code> 循环的次级执行宿主。这里的 runtime 也不只是静态 agent 定义文件，而是模型、system prompt、tools、permission、上下文、transcript 和生命周期策略的组合。也正因为如此，agent 才不是简单的 prompt 片段展开。</p>
+<p>这里顺手补一个前文容易漏掉的点：上面那张表主要是在讲“运行机制型差异”，所以没有把 <code>verification agent</code> 单独列成一条 runtime 分支。它在源码里是正式的 <code>subagent_type</code>，但更准确地说，它属于“业务角色型 agent”，不是另一套独立执行引擎。</p>
+<table>
+<thead>
+<tr>
+<th>类型层次</th>
+<th>代表项</th>
+<th>在工程里的含义</th>
+<th>为什么要分开看</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>运行机制型</td>
+<td><code>fork</code>、<code>background</code>、<code>worktree</code>、<code>remote</code></td>
+<td>决定子 agent 怎么跑：是否继承上下文、是否异步、是否隔离仓库、是否切到远端运行面</td>
+<td>这一层解决的是 runtime 装配问题，所以前文 10.1 的主表围绕它展开</td>
+</tr>
+<tr>
+<td>业务角色型</td>
+<td><code>verification</code></td>
+<td>仍然跑在同一套 <code>AgentTool</code> + <code>runAgent</code> runtime 上，但承担“独立对实现结果做对抗式验证”的专用职责</td>
+<td>这一层解决的是组织分工和质量闸门，不是再发明一套新的执行形态</td>
+</tr>
+</tbody>
+</table>
+<p><code>verification</code> 的源码证据很直接：</p>
+<ul>
+<li><code>src/tools/AgentTool/constants.ts</code> 明确把 <code>VERIFICATION_AGENT_TYPE</code> 定义成 <code>'verification'</code>，说明它不是口头角色，而是正式 wire type。</li>
+<li><code>src/constants/prompts.ts</code> 又给了它很强的契约：只有 verifier 能给出最终 PASS / FAIL / PARTIAL，普通实现 agent、自检和 fork 自检都不能替代它。这解决的不是“再跑一次测试”，而是把“实现”和“验收”拆成两个角色，避免同一上下文自我背书。</li>
+<li><code>src/skills/bundled/verify.ts</code> 里，verify skill 只在 <code>process.env.USER_TYPE === 'ant'</code> 时注册；同时 prompt 侧还有 <code>VERIFICATION_AGENT</code> feature gate 和 <code>tengu_hive_evidence</code> 开关，所以它当前更像一条受 gate 控制的专用能力，而不是所有用户默认启用的基础运行机制。</li>
+<li><code>src/utils/hooks.ts</code> 还专门强调要防止 session hooks 从 <code>verification agent</code> 泄漏回主线程，这进一步说明它在运行时上仍是“同一套 agent 体系里的一个类型”，而不是体系外另挂的一套 verifier 进程。</li>
+</ul>
+<p>所以更准确的说法是：前文没把 <code>verification</code> 展开，不是因为仓库里没有它，而是因为 10.1 那张表聚焦的是“agent 怎么跑”；<code>verification</code> 回答的是“这个 agent 被派来干什么”。</p>
 <h3 id="section-49">10.2 agent 覆盖优先级是显式的</h3>
 <p><code>src/tools/AgentTool/loadAgentsDir.ts</code>：</p>
 <pre><code class="language-ts">const agentGroups = [

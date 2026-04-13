@@ -1333,6 +1333,22 @@ if (tool.block.name === BASH_TOOL_NAME) {
 
 这里的“二级 runtime”不是修辞，而是指主线程内部再启动一个拥有独立 `ToolUseContext`、消息链和 `query()` 循环的次级执行宿主。这里的 runtime 也不只是静态 agent 定义文件，而是模型、system prompt、tools、permission、上下文、transcript 和生命周期策略的组合。也正因为如此，agent 才不是简单的 prompt 片段展开。
 
+这里顺手补一个前文容易漏掉的点：上面那张表主要是在讲“运行机制型差异”，所以没有把 `verification agent` 单独列成一条 runtime 分支。它在源码里是正式的 `subagent_type`，但更准确地说，它属于“业务角色型 agent”，不是另一套独立执行引擎。
+
+| 类型层次 | 代表项 | 在工程里的含义 | 为什么要分开看 |
+| --- | --- | --- | --- |
+| 运行机制型 | `fork`、`background`、`worktree`、`remote` | 决定子 agent 怎么跑：是否继承上下文、是否异步、是否隔离仓库、是否切到远端运行面 | 这一层解决的是 runtime 装配问题，所以前文 10.1 的主表围绕它展开 |
+| 业务角色型 | `verification` | 仍然跑在同一套 `AgentTool` + `runAgent` runtime 上，但承担“独立对实现结果做对抗式验证”的专用职责 | 这一层解决的是组织分工和质量闸门，不是再发明一套新的执行形态 |
+
+`verification` 的源码证据很直接：
+
+- `src/tools/AgentTool/constants.ts` 明确把 `VERIFICATION_AGENT_TYPE` 定义成 `'verification'`，说明它不是口头角色，而是正式 wire type。
+- `src/constants/prompts.ts` 又给了它很强的契约：只有 verifier 能给出最终 PASS / FAIL / PARTIAL，普通实现 agent、自检和 fork 自检都不能替代它。这解决的不是“再跑一次测试”，而是把“实现”和“验收”拆成两个角色，避免同一上下文自我背书。
+- `src/skills/bundled/verify.ts` 里，verify skill 只在 `process.env.USER_TYPE === 'ant'` 时注册；同时 prompt 侧还有 `VERIFICATION_AGENT` feature gate 和 `tengu_hive_evidence` 开关，所以它当前更像一条受 gate 控制的专用能力，而不是所有用户默认启用的基础运行机制。
+- `src/utils/hooks.ts` 还专门强调要防止 session hooks 从 `verification agent` 泄漏回主线程，这进一步说明它在运行时上仍是“同一套 agent 体系里的一个类型”，而不是体系外另挂的一套 verifier 进程。
+
+所以更准确的说法是：前文没把 `verification` 展开，不是因为仓库里没有它，而是因为 10.1 那张表聚焦的是“agent 怎么跑”；`verification` 回答的是“这个 agent 被派来干什么”。
+
 ### 10.2 agent 覆盖优先级是显式的
 
 `src/tools/AgentTool/loadAgentsDir.ts`：
