@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>《Agentic Design Patterns》全书分析</title>
+  <title>《Agentic Design Patterns》逐章深度提炼</title>
   <style>
     :root {
       --bg: #07111f;
@@ -263,8 +263,8 @@
       <div class="hero-card">
         <div>
           <span class="eyebrow">Agentic Design Patterns</span>
-          <h1>一本关于 Agent 系统设计语言的全景分析</h1>
-          <p class="lead">基于 `analysis.md` 收敛为单页展示：把全书从导论、核心章节、附录到结论压缩成可浏览、可展开、可落地的中文摘要页。</p>
+          <h1>《Agentic Design Patterns》逐章深度提炼</h1>
+          <p class="lead">基于新版 `analysis.md` 生成的单页展示：不是一句话摘要，而是按每章的定位、脉络、机制、场景、落地与边界做结构化提炼。</p>
         </div>
         <div class="hero-stats">
           <div class="stat"><strong>31</strong><span>正式内容条目</span></div>
@@ -481,10 +481,10 @@
     };
 
     function classifySection(title) {
-      if (title === '智能体设计模式') return 'intro';
+      if (title.startsWith('智能体设计模式')) return 'intro';
       if (title.startsWith('第 ')) return 'chapter';
       if (title.startsWith('附录')) return 'appendix';
-      if (title === '结论' || title.startsWith('常见问题')) return 'wrapup';
+      if (title.startsWith('结论') || title.startsWith('常见问题')) return 'wrapup';
       return 'other';
     }
 
@@ -512,7 +512,7 @@
 
       list.innerHTML = visible.map((section) => {
         const group = classifySection(section.title);
-        const preview = section.bullets[3] || section.bullets[0] || '查看展开内容';
+        const preview = section.bullets[0] || '查看展开内容';
         const details = section.bullets.map((bullet) => `<li>${bullet}</li>`).join('');
         return `
           <article class="chapter-card" data-group="${group}">
