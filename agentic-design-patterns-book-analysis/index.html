@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>《Agentic Design Patterns》全书分析</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(13, 25, 45, 0.88);
+      --panel-2: rgba(18, 35, 61, 0.92);
+      --line: rgba(145, 190, 255, 0.18);
+      --text: #eaf2ff;
+      --muted: #97a8c6;
+      --brand: #64d2ff;
+      --brand-2: #78f0c8;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      --radius: 18px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(100, 210, 255, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(120, 240, 200, 0.12), transparent 26%),
+        linear-gradient(180deg, #07111f 0%, #091425 100%);
+      line-height: 1.7;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .shell { width: min(calc(100% - 32px), var(--max)); margin: 0 auto; }
+
+    .hero {
+      min-height: 88vh;
+      display: flex;
+      align-items: center;
+      padding: 72px 0 32px;
+    }
+
+    .hero-card, .panel, .chapter-card, .summary-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-card {
+      padding: 36px;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(100, 210, 255, 0.12);
+      border: 1px solid rgba(100, 210, 255, 0.18);
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(34px, 6vw, 58px); line-height: 1.06; margin-top: 18px; }
+    .lead { color: var(--muted); font-size: 18px; margin-top: 18px; max-width: 60ch; }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      align-content: start;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .stat strong { display: block; font-size: 30px; color: var(--brand-2); }
+    .stat span { color: var(--muted); font-size: 14px; }
+
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 12px 0;
+      background: rgba(7, 17, 31, 0.78);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(145, 190, 255, 0.1);
+    }
+
+    .topnav .shell {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .topnav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(14, 26, 48, 0.7);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .topnav a:hover, .topnav a:focus { color: var(--text); border-color: rgba(100, 210, 255, 0.45); }
+
+    main { padding: 28px 0 64px; }
+    section { margin-top: 28px; }
+    .panel { padding: 28px; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .section-head p { color: var(--muted); max-width: 70ch; }
+    .grid { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .chapter-card {
+      padding: 20px;
+      background: var(--panel-2);
+    }
+
+    .chapter-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .chapter-tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(120, 240, 200, 0.12);
+      color: var(--brand-2);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chapter-card p { color: var(--muted); margin-top: 10px; }
+
+    .toggle {
+      margin-top: 14px;
+      width: 100%;
+      border: 1px solid rgba(100, 210, 255, 0.22);
+      background: rgba(100, 210, 255, 0.08);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .toggle:hover { border-color: rgba(100, 210, 255, 0.45); }
+    .detail {
+      display: none;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .chapter-card.open .detail { display: block; }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    li + li { margin-top: 8px; }
+
+    .summary-card {
+      padding: 22px;
+      background: linear-gradient(180deg, rgba(16, 29, 53, 0.92), rgba(12, 23, 42, 0.96));
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .filter-btn {
+      border: 1px solid var(--line);
+      background: rgba(14, 26, 48, 0.7);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .filter-btn.active,
+    .filter-btn:hover {
+      color: var(--text);
+      border-color: rgba(100, 210, 255, 0.45);
+      background: rgba(100, 210, 255, 0.08);
+    }
+
+    .chapter-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chapter-list .chapter-card h3 {
+      font-size: 18px;
+    }
+
+    .loading {
+      color: var(--muted);
+      padding: 12px 0 4px;
+    }
+
+    footer {
+      padding: 24px 0 48px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-card, .grid-2 { grid-template-columns: 1fr; }
+      .hero { min-height: auto; padding-top: 36px; }
+    }
+
+    @media (max-width: 640px) {
+      .shell { width: min(calc(100% - 20px), var(--max)); }
+      .hero-card, .panel, .chapter-card, .summary-card { padding: 18px; }
+      .topnav .shell { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+      .topnav a { white-space: nowrap; }
+      .chapter-list { grid-template-columns: 1fr; }
+      h2 { font-size: 24px; }
+      .lead { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" id="top">
+    <div class="shell">
+      <div class="hero-card">
+        <div>
+          <span class="eyebrow">Agentic Design Patterns</span>
+          <h1>一本关于 Agent 系统设计语言的全景分析</h1>
+          <p class="lead">基于 `analysis.md` 收敛为单页展示：把全书从导论、核心章节、附录到结论压缩成可浏览、可展开、可落地的中文摘要页。</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>31</strong><span>正式内容条目</span></div>
+          <div class="stat"><strong>4</strong><span>展示分区</span></div>
+          <div class="stat"><strong>21</strong><span>核心章节</span></div>
+          <div class="stat"><strong>7</strong><span>附录扩展</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="topnav">
+    <div class="shell">
+      <a href="#intro">导论</a>
+      <a href="#chapters">核心章节</a>
+      <a href="#detail">逐章展开</a>
+      <a href="#appendix">附录</a>
+      <a href="#conclusion">结论</a>
+      <a href="#actions">落地建议</a>
+    </div>
+  </nav>
+
+  <main class="shell">
+    <section id="intro" class="panel">
+      <div class="section-head">
+        <div>
+          <h2>导论：这本书到底在讲什么</h2>
+          <p>分析稿的总判断很明确：这不是零散技巧集，而是一套从控制流、能力接入、记忆学习、治理评估到平台化落地的模式语言。</p>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <article class="summary-card">
+          <h3>全书主线</h3>
+          <ul>
+            <li>前半段先解决“任务如何分解、执行、协作”。</li>
+            <li>后半段重点回答“系统如何稳定上线、长期运行”。</li>
+            <li>附录补齐提示工程、框架选型、企业平台与编码 Agent 实战视角。</li>
+          </ul>
+        </article>
+        <article class="summary-card">
+          <h3>工程视角</h3>
+          <ul>
+            <li>建议按“提示链 → 路由/规划 → 工具/RAG → 记忆/学习 → 治理/评估”递进建设。</li>
+            <li>高价值不在单章技巧，而在多模式组合、观测和治理能力。</li>
+            <li>目标对象不是聊天机器人，而是可嵌入业务流程的执行体。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="chapters" class="panel">
+      <div class="section-head">
+        <div>
+          <h2>核心章节</h2>
+          <p>将 21 章压缩为 4 个主题簇：控制流、能力接入、状态与治理、协作与探索。点击卡片可展开查看要点。</p>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <article class="chapter-card">
+          <div class="chapter-top">
+            <div>
+              <span class="chapter-tag">第 1-7 章</span>
+              <h3>控制流与任务组织</h3>
+            </div>
+          </div>
+          <p>提示链、路由、并行、反思、工具、规划、多 Agent，构成 Agent 的执行骨架。</p>
+          <button class="toggle" type="button">展开详情</button>
+          <div class="detail">
+            <ul>
+              <li>提示链把难题拆成结构化步骤，提升稳定性。</li>
+              <li>路由决定走哪条流程，规划决定任务如何推进。</li>
+              <li>并行和多 Agent 强化吞吐与分工，反思负责打磨质量。</li>
+            </ul>
+          </div>
+        </article>
+        <article class="chapter-card">
+          <div class="chapter-top">
+            <div>
+              <span class="chapter-tag">第 8-15 章</span>
+              <h3>能力接入与系统连接</h3>
+            </div>
+          </div>
+          <p>记忆、学习、MCP、目标监控、异常恢复、HITL、RAG、A2A，把 Agent 接到真实世界。</p>
+          <button class="toggle" type="button">展开详情</button>
+          <div class="detail">
+            <ul>
+              <li>记忆与学习负责跨会话延续和适应环境。</li>
+              <li>MCP、RAG、A2A 解决工具、知识与其他 Agent 的标准化接入。</li>
+              <li>目标监控、异常恢复、人机协同是生产可用的必要条件。</li>
+            </ul>
+          </div>
+        </article>
+        <article class="chapter-card">
+          <div class="chapter-top">
+            <div>
+              <span class="chapter-tag">第 16-20 章</span>
+              <h3>治理、优化与评估</h3>
+            </div>
+          </div>
+          <p>资源优化、推理技术、安全护栏、评估监控、优先级排序，共同回答“如何长期稳定运行”。</p>
+          <button class="toggle" type="button">展开详情</button>
+          <div class="detail">
+            <ul>
+              <li>资源感知优化强调模型路由、预算控制和优雅降级。</li>
+              <li>Guardrails 与评估监控是可信、可审计的底座。</li>
+              <li>优先级排序让系统不只会做事，还知道先做什么。</li>
+            </ul>
+          </div>
+        </article>
+        <article class="chapter-card">
+          <div class="chapter-top">
+            <div>
+              <span class="chapter-tag">第 21 章</span>
+              <h3>探索与发现</h3>
+            </div>
+          </div>
+          <p>Agent 从“执行既定流程”走向“主动发现机会”，适合科研、洞察、创意和开放式问题。</p>
+          <button class="toggle" type="button">展开详情</button>
+          <div class="detail">
+            <ul>
+              <li>核心是生成假设、评估路径、进化方案，而非单轮回答。</li>
+              <li>探索型系统更依赖多 Agent 角色协作与人类监督。</li>
+              <li>它代表本书最前沿、也最需要治理能力的一面。</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="detail" class="panel">
+      <div class="section-head">
+        <div>
+          <h2>逐章展开</h2>
+          <p>这里直接读取同目录下的 `analysis.md`，按导论、核心章节、附录与收束内容生成 31 个可展开卡片。</p>
+        </div>
+      </div>
+      <div class="toolbar" id="filters">
+        <button class="filter-btn active" type="button" data-filter="all">全部</button>
+        <button class="filter-btn" type="button" data-filter="intro">导论</button>
+        <button class="filter-btn" type="button" data-filter="chapter">核心章节</button>
+        <button class="filter-btn" type="button" data-filter="appendix">附录</button>
+        <button class="filter-btn" type="button" data-filter="wrapup">结论/FAQ</button>
+      </div>
+      <div class="loading" id="chapter-loading">正在载入逐章摘要…</div>
+      <div class="grid chapter-list" id="chapter-list"></div>
+    </section>
+
+    <section id="appendix" class="panel">
+      <div class="section-head">
+        <div>
+          <h2>附录</h2>
+          <p>附录不是边角料，而是在回答“模式如何接入现实世界”。</p>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <article class="summary-card">
+          <h3>方法与框架</h3>
+          <ul>
+            <li>附录 A 强调高级提示工程是认知接口设计。</li>
+            <li>附录 C 说明框架选型应反推业务复杂度。</li>
+            <li>附录 F 解释推理引擎内部机制与工程兜底必要性。</li>
+          </ul>
+        </article>
+        <article class="summary-card">
+          <h3>平台与场景</h3>
+          <ul>
+            <li>附录 B 把 Agent 扩展到 GUI、浏览器、语音与现实环境。</li>
+            <li>附录 D 说明企业平台化接入的重要性。</li>
+            <li>附录 E、G 聚焦 CLI 与编码 Agent 的团队协作实践。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="conclusion" class="panel">
+      <div class="section-head">
+        <div>
+          <h2>合并结论</h2>
+          <p>两份章节分析收束后，最稳定的共识落在“组合关系、显式化、生产化”三件事上。</p>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <article class="summary-card">
+          <h3>关键结论</h3>
+          <ul>
+            <li>单点模式不重要，重要的是模式之间如何组合成系统。</li>
+            <li>显式计划、显式状态、显式协议、显式评估，是可治理 Agent 的共同特征。</li>
+            <li>前半册解决“能做”，后半册解决“能长期做”。</li>
+          </ul>
+        </article>
+        <article class="summary-card" id="actions">
+          <h3>工程落地建议</h3>
+          <ul>
+            <li>第一阶段先搭执行骨架：提示链、路由、规划、工具调用。</li>
+            <li>第二阶段补齐知识与状态：RAG、记忆、学习、目标监控。</li>
+            <li>第三阶段做生产治理：异常恢复、Guardrails、评估监控、资源优化。</li>
+            <li>第四阶段再扩展生态：MCP、A2A、多 Agent 协作与平台化接入。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    单文件展示页 · 无外部依赖 · 面向移动端可读
+  </footer>
+
+  <script>
+    const tagMap = {
+      intro: '导论',
+      chapter: '核心章节',
+      appendix: '附录',
+      wrapup: '结论/FAQ',
+    };
+
+    function classifySection(title) {
+      if (title === '智能体设计模式') return 'intro';
+      if (title.startsWith('第 ')) return 'chapter';
+      if (title.startsWith('附录')) return 'appendix';
+      if (title === '结论' || title.startsWith('常见问题')) return 'wrapup';
+      return 'other';
+    }
+
+    function parseMarkdown(text) {
+      const sections = [];
+      let current = null;
+      text.split('\n').forEach((line) => {
+        if (line.startsWith('## ')) {
+          if (current) sections.push(current);
+          current = { title: line.slice(3).trim(), bullets: [] };
+          return;
+        }
+        if (current && line.startsWith('- ')) {
+          current.bullets.push(line.slice(2).trim());
+        }
+      });
+      if (current) sections.push(current);
+      return sections.filter((section) => ['intro', 'chapter', 'appendix', 'wrapup'].includes(classifySection(section.title)));
+    }
+
+    function renderChapters(sections, filter = 'all') {
+      const list = document.getElementById('chapter-list');
+      const loading = document.getElementById('chapter-loading');
+      const visible = sections.filter((section) => filter === 'all' || classifySection(section.title) === filter);
+
+      list.innerHTML = visible.map((section) => {
+        const group = classifySection(section.title);
+        const preview = section.bullets[3] || section.bullets[0] || '查看展开内容';
+        const details = section.bullets.map((bullet) => `<li>${bullet}</li>`).join('');
+        return `
+          <article class="chapter-card" data-group="${group}">
+            <div class="chapter-top">
+              <div>
+                <span class="chapter-tag">${tagMap[group]}</span>
+                <h3>${section.title}</h3>
+              </div>
+            </div>
+            <p>${preview}</p>
+            <button class="toggle" type="button">展开详情</button>
+            <div class="detail">
+              <ul>${details}</ul>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      loading.textContent = `已载入 ${visible.length} 个条目`;
+      bindToggles();
+    }
+
+    function bindToggles() {
+      document.querySelectorAll('.toggle').forEach((button) => {
+        button.onclick = () => {
+          const card = button.closest('.chapter-card');
+          const open = card.classList.toggle('open');
+          button.textContent = open ? '收起详情' : '展开详情';
+        };
+      });
+    }
+
+    document.querySelectorAll('.toggle').forEach((button) => {
+      button.addEventListener('click', () => {
+        const card = button.closest('.chapter-card');
+        const open = card.classList.toggle('open');
+        button.textContent = open ? '收起详情' : '展开详情';
+      });
+    });
+
+    fetch('./analysis.md')
+      .then((response) => {
+        if (!response.ok) throw new Error('load failed');
+        return response.text();
+      })
+      .then((text) => {
+        const sections = parseMarkdown(text);
+        renderChapters(sections);
+        document.getElementById('filters').addEventListener('click', (event) => {
+          const button = event.target.closest('.filter-btn');
+          if (!button) return;
+          document.querySelectorAll('.filter-btn').forEach((item) => item.classList.remove('active'));
+          button.classList.add('active');
+          renderChapters(sections, button.dataset.filter);
+        });
+      })
+      .catch(() => {
+        document.getElementById('chapter-loading').textContent = '逐章卡片加载失败，请直接阅读同目录下的 analysis.md';
+      });
+  </script>
+</body>
+</html>
