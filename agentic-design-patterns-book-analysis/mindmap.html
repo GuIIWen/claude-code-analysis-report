@@ -41,7 +41,7 @@
     }
 
     .topbar {
-      max-width: 1680px;
+      max-width: 1960px;
       margin: 0 auto;
       padding: 16px 22px;
       display: grid;
@@ -111,7 +111,7 @@
     }
 
     main {
-      max-width: 1680px;
+      max-width: 1960px;
       margin: 0 auto;
       padding: 22px;
     }
@@ -164,6 +164,36 @@
       pointer-events: none;
     }
 
+    .map-tools {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(216, 207, 193, .74);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 10px 24px rgba(37, 32, 25, .08);
+    }
+
+    .map-tools button {
+      min-width: 40px;
+      padding: 8px 12px;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .zoom-level {
+      min-width: 56px;
+      color: #465064;
+      font-size: 13px;
+      font-weight: 900;
+      text-align: center;
+    }
+
     .chip {
       padding: 7px 10px;
       border-radius: 999px;
@@ -181,14 +211,17 @@
       height: min(78vh, 880px);
       min-height: 720px;
       overflow: auto;
+      padding: 50px 22px 26px;
+      scroll-behavior: smooth;
     }
 
     svg {
       display: block;
-      width: 100%;
-      height: 100%;
-      min-width: 1180px;
-      min-height: 760px;
+      width: 2860px;
+      height: 1480px;
+      min-width: 2060px;
+      min-height: 1060px;
+      transition: width .16s ease, height .16s ease;
     }
 
     .root-halo { fill: url(#rootGlow); opacity: .95; }
@@ -333,7 +366,11 @@
       .legend { grid-template-columns: 1fr; }
       .map-shell { min-height: 620px; }
       .svg-wrap { min-height: 620px; }
-      svg { min-width: 1080px; min-height: 680px; }
+      .map-tools {
+        left: 14px;
+        right: 14px;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -361,8 +398,14 @@
       <div>
         <section class="map-shell" aria-label="SVG 发散式脑图">
           <div class="map-meta" id="mapMeta"></div>
+          <div class="map-tools" aria-label="脑图缩放控件">
+            <button id="zoomOut" type="button" class="secondary" aria-label="缩小脑图">－</button>
+            <span class="zoom-level" id="zoomLevel">88%</span>
+            <button id="zoomIn" type="button" class="secondary" aria-label="放大脑图">＋</button>
+            <button id="zoomReset" type="button" class="secondary" aria-label="重置脑图缩放">重置</button>
+          </div>
           <div class="svg-wrap" id="svgWrap">
-            <svg id="mindmapSvg" viewBox="0 0 1800 1260" role="img" aria-labelledby="svgTitle svgDesc">
+            <svg id="mindmapSvg" viewBox="0 0 2860 1480" role="img" aria-labelledby="svgTitle svgDesc">
               <title id="svgTitle">Agentic Design Patterns SVG mind map</title>
               <desc id="svgDesc">一个从中心主题向四个 Part、章节、组件和技术节点发散的 SVG 脑图。</desc>
               <defs>
@@ -381,14 +424,14 @@
                   <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#182033" stroke-opacity=".045" stroke-width="1" />
                 </pattern>
               </defs>
-              <rect width="1800" height="1260" fill="url(#microGrid)" opacity=".9"></rect>
+              <rect width="2860" height="1480" fill="url(#microGrid)" opacity=".9"></rect>
               <g id="linksLayer"></g>
               <g id="nodesLayer"></g>
             </svg>
           </div>
         </section>
         <section class="legend" id="legend"></section>
-        <p class="note">这不是章节卡片墙：所有内容都通过 SVG 曲线路径挂接到中心节点，主干、章节枝干、组件/技术细枝按层级发散。画布上的叶节点用于记忆速览；点击任一章节后，右侧面板展示该章完整组件、技术节点、落地与风险。</p>
+        <p class="note">这不是章节卡片墙：所有内容都通过 SVG 曲线路径挂接到中心节点，主干、章节枝干、组件/技术细枝按层级发散。现在画布横向更宽，可直接拖动横向滚动条；右上角支持放大、缩小、重置，点击任一章节后，右侧面板展示该章完整组件、技术节点、落地与风险。</p>
       </div>
       <aside class="inspector" id="inspector" aria-live="polite"></aside>
     </section>
@@ -411,11 +454,11 @@
           title: '基础工作流与协作',
           range: '1-7',
           color: '#7c3aed',
-          x: 600,
-          y: 360,
+          x: 980,
+          y: 330,
           direction: -1,
-          chapterX: 350,
-          leafX: 125,
+          chapterX: 450,
+          leafX: 210,
           chapters: [
             [1, '提示词链', '把复杂任务拆成多个顺序步骤，让上一步输出成为下一步输入。', ['任务拆分器', '提示契约', '中间结果载体', '校验关口'], ['顺序执行', '结构化输出', '中间变量传递', '步骤级日志', '链尾接工具/反思/路由'], '抽取信息 → 转结构化数据 → 生成报告 / 邮件 / 代码说明', '链越长，错误传播越明显；步骤切太碎会让编排复杂度飙升。', '先拆后传，步步验算。'],
             [2, '路由', '根据输入意图、语义或规则，把请求送到最合适的分支、工具或子 Agent。', ['路由器', '标签集合', '分支处理器', '兜底分支'], ['意图分类', '向量语义路由', '规则路由', '低置信度澄清', '路由日志回放'], '客服分流、代码助手分工、研究任务按查询类型派发', '路由错一次，后面整条链都可能建立在错前提上。', '先判路，再出手。'],
@@ -431,11 +474,11 @@
           title: '状态、学习与控制',
           range: '8-11',
           color: '#0ea5e9',
-          x: 600,
-          y: 940,
+          x: 980,
+          y: 1140,
           direction: -1,
-          chapterX: 350,
-          leafX: 125,
+          chapterX: 450,
+          leafX: 210,
           chapters: [
             [8, '记忆管理', '让 Agent 管理会话内短期状态与跨会话长期知识。', ['Session', 'State', 'Long-term Memory', '检索器', '命名空间'], ['短期/长期分层', 'session.state', 'user/app/temp 作用域', '事件驱动更新', '摘要压缩', '语义检索'], '记住用户偏好、跨多轮跟踪任务、复用过往成功策略', '记忆不等于真相，过期事实和错误偏好会污染后续决策。', '短期保上下文，长期存经验。'],
             [9, '学习和适应', '让 Agent 因过去经验而改变策略、结构或代码，形成持续改进。', ['经验档案库', '评估器', '更新器', '监督者', '变异与选择机制'], ['PPO', 'DPO', '在线学习', '自我改进编码 Agent', '进化搜索', '隔离自修改执行'], '个性化助手持续调优、编码 Agent 自我进化、推荐 / 交易系统在线适应', '评估器设计差会让系统学会刷分，而非真正变好。', '先评再改，优胜迭代。'],
@@ -448,11 +491,11 @@
           title: '可靠性、人在回路与知识接地',
           range: '12-14',
           color: '#f59e0b',
-          x: 1200,
-          y: 360,
+          x: 1790,
+          y: 320,
           direction: 1,
-          chapterX: 1450,
-          leafX: 1675,
+          chapterX: 2340,
+          leafX: 2340,
           chapters: [
             [12, '异常处理和恢复', '让 Agent 在工具失败、超时、数据损坏或外部依赖失效时仍能识错、降级、恢复。', ['异常探测器', '故障分类器', '重试/回退器', '状态恢复器', '升级器'], ['超时/错误码/告警', '瞬时重试', 'fallback handler', '优雅降级', '状态回滚', '结构化异常日志'], '主工具失败时切备用工具，数据库挂了就先返回缓存或简化答案', '只吞错不留痕，系统会长期静默失败而不自知。', '先识错，再降级，最后升级。'],
             [13, '人机协同（HITL）', '在高风险、强模糊、强责任场景里，把人类判断纳入系统闭环。', ['升级规则', '人工工作台', '证据包', '人工裁决', '反馈沉淀器'], ['human-in/on-the-loop', '风险分级阈值', '升级摘要', '脱敏隐私', '审批点', '人工反馈写回'], '法律 / 医疗 / 金融辅助、复杂客服、敏感内容审核、关键动作审批', '人越多吞吐越低；升级太晚时人接手可能已难以补救。', '高风险交给人。'],
@@ -464,11 +507,11 @@
           title: '协议、优化与高级智能',
           range: '15-21',
           color: '#10b981',
-          x: 1200,
-          y: 940,
+          x: 1790,
+          y: 1130,
           direction: 1,
-          chapterX: 1450,
-          leafX: 1675,
+          chapterX: 2340,
+          leafX: 2358,
           chapters: [
             [15, 'Agent 间通信（A2A）', '让不同框架、不同服务、不同团队发布的 Agent 按统一协议协作。', ['Agent Card', '发现机制', '任务模型', '消息/工件模型', '上下文关联器'], ['well-known URI', '同步/异步/SSE/webhook', '任务状态机', '远程认证', '工件流式返回', 'A2A vs MCP'], '研究 Agent 调分析 Agent、企业多团队发布独立 Agent 服务', '协议统一不代表质量统一，远程 Agent 的可靠性仍需评估与监控。', 'Agent 找 Agent，按协议协作。'],
             [16, '资源感知优化', '让 Agent 在成本、时延、模型强度、上下文长度和算力之间动态平衡。', ['复杂度分类器', '模型路由器', '预算管理器', '回退链', '反馈器'], ['请求分类', '强/轻模型分工', '上下文裁剪', '成本/token/时延观测', '优雅降级', 'critic 复盘'], '高价值任务走强模型，轻问答走便宜模型，最新事实问题自动接搜索', '分类器误判会省了钱却错了答案。', '难题配强模，简单走轻模。'],
@@ -492,8 +535,9 @@
     };
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
-    const center = { x: 900, y: 630, rx: 178, ry: 76 };
-    const state = { query: '', selected: { type: 'center' } };
+    const canvas = { width: 2860, height: 1480 };
+    const center = { x: 1370, y: 740, rx: 184, ry: 80 };
+    const state = { query: '', selected: { type: 'center' }, zoom: 0.88 };
     const svg = document.getElementById('mindmapSvg');
     const linksLayer = document.getElementById('linksLayer');
     const nodesLayer = document.getElementById('nodesLayer');
@@ -501,12 +545,21 @@
     const searchInput = document.getElementById('searchInput');
     const mapMeta = document.getElementById('mapMeta');
     const legend = document.getElementById('legend');
+    const svgWrap = document.getElementById('svgWrap');
+    const zoomLevel = document.getElementById('zoomLevel');
 
     const chapterYRanges = {
-      1: [150, 620],
-      2: [800, 1050],
-      3: [220, 510],
-      4: [700, 1160]
+      1: [100, 700],
+      2: [920, 1290],
+      3: [140, 500],
+      4: [670, 1395]
+    };
+
+    const leafLayouts = {
+      1: { outsideDistances: [298, 320], insideDistances: [240, 258], yOffsets: [-30, -6, 12, 30], chapterWave: 18, staggerSides: true },
+      2: { outsideDistances: [282, 302], insideDistances: [218, 238], yOffsets: [-34, -8, 16, 40], chapterWave: 14, staggerSides: true },
+      3: { outsideDistances: [272, 296], insideDistances: [214, 236], yOffsets: [-36, -10, 14, 42], chapterWave: 12, staggerSides: true },
+      4: { outsideDistances: [300, 324], insideDistances: [240, 262], yOffsets: [-42, -14, 16, 44], chapterWave: 24, staggerSides: true }
     };
 
     function normalizeParts() {
@@ -523,6 +576,7 @@
           risk: chapter[6],
           motto: chapter[7],
           part,
+          index,
           x: part.chapterX,
           y: startY + gap * index
         }));
@@ -648,20 +702,43 @@
       ].slice(0, 4);
     }
 
+    function positionedLeaves(chapter) {
+      const layout = leafLayouts[chapter.part.id] || {
+        outsideDistances: [280, 300],
+        insideDistances: [220, 240],
+        yOffsets: [-34, -10, 14, 38],
+        chapterWave: 0,
+        staggerSides: false
+      };
+      const chapterWave = layout.chapterWave ? (chapter.index % 2 === 0 ? -layout.chapterWave : layout.chapterWave) : 0;
+      const leaves = leafItems(chapter);
+      return leaves.map((leaf, index) => {
+        const useOutside = layout.staggerSides
+          ? ((index + chapter.index) % 2 === 0)
+          : leaf.className === 'component';
+        const sideDirection = useOutside ? chapter.part.direction : -chapter.part.direction;
+        const distancePool = useOutside ? layout.outsideDistances : layout.insideDistances;
+        const distance = distancePool[index % distancePool.length] + chapterWave;
+        return {
+          ...leaf,
+          direction: sideDirection,
+          x: chapter.x + sideDirection * distance,
+          y: chapter.y + (layout.yOffsets[index] ?? ((index - 1.5) * 28))
+        };
+      });
+    }
+
     function renderSvg() {
       linksLayer.innerHTML = '';
       nodesLayer.innerHTML = '';
 
       mindmapData.parts.forEach(part => {
-        addPath({ x: center.x + part.direction * 178, y: center.y }, { x: part.x - part.direction * 126, y: part.y }, 'trunk', part.color, part.direction);
+        addPath({ x: center.x + part.direction * center.rx, y: center.y }, { x: part.x - part.direction * 132, y: part.y }, 'trunk', part.color, part.direction);
         part.chapters.forEach(chapter => {
-          addPath({ x: part.x + part.direction * 146, y: part.y }, { x: chapter.x - part.direction * 118, y: chapter.y }, 'branch', part.color, part.direction);
-          const leaves = leafItems(chapter);
-          const leafGap = 26;
-          const firstLeafY = chapter.y - ((leaves.length - 1) * leafGap) / 2;
-          leaves.forEach((leaf, index) => {
-            const leafY = firstLeafY + leafGap * index;
-            addPath({ x: chapter.x + part.direction * 120, y: chapter.y }, { x: part.leafX - part.direction * 88, y: leafY }, `twig ${leaf.className === 'tech' ? 'tech' : ''}`, part.color, part.direction);
+          addPath({ x: part.x + part.direction * 156, y: part.y }, { x: chapter.x - part.direction * 126, y: chapter.y }, 'branch', part.color, part.direction);
+          const leaves = positionedLeaves(chapter);
+          leaves.forEach(leaf => {
+            addPath({ x: chapter.x + leaf.direction * 130, y: chapter.y }, { x: leaf.x - leaf.direction * 102, y: leaf.y }, `twig ${leaf.className === 'tech' ? 'tech' : ''}`, part.color, leaf.direction);
           });
         });
       });
@@ -680,8 +757,8 @@
         const partGroup = addRoundedNode({
           x: part.x,
           y: part.y,
-          width: 290,
-          height: 92,
+          width: 318,
+          height: 96,
           fill: part.color,
           stroke: part.color,
           className: nodeClasses({ type: 'part', part }, 'part-node'),
@@ -695,8 +772,8 @@
           addRoundedNode({
             x: chapter.x,
             y: chapter.y,
-            width: 235,
-            height: 68,
+            width: 248,
+            height: 72,
             fill: '#fffefb',
             stroke: part.color,
             className: nodeClasses({ type: 'chapter', chapter }, 'chapter-node'),
@@ -704,16 +781,13 @@
             subtitle: chapter.motto.replace(/。$/, ''),
             onClick: () => selectChapter(chapter)
           });
-          const leaves = leafItems(chapter);
-          const leafGap = 26;
-          const firstLeafY = chapter.y - ((leaves.length - 1) * leafGap) / 2;
-          leaves.forEach((leaf, index) => {
-            const leafY = firstLeafY + leafGap * index;
+          const leaves = positionedLeaves(chapter);
+          leaves.forEach(leaf => {
             addRoundedNode({
-              x: part.leafX,
-              y: leafY,
-              width: 182,
-              height: 28,
+              x: leaf.x,
+              y: leaf.y,
+              width: 194,
+              height: 30,
               fill: leaf.className === 'tech' ? '#ecfeff' : '#f7f0ff',
               stroke: leaf.className === 'tech' ? '#0ea5e9' : part.color,
               className: nodeClasses({ type: 'leaf', chapter, label: leaf.label, kind: leaf.kind }, `leaf-node ${leaf.className}`),
@@ -822,6 +896,43 @@
       `).join('');
     }
 
+    function applyZoom(keepScrollPosition = false) {
+      const horizontalRatio = svgWrap.scrollWidth > svgWrap.clientWidth
+        ? svgWrap.scrollLeft / (svgWrap.scrollWidth - svgWrap.clientWidth)
+        : 0;
+      const verticalRatio = svgWrap.scrollHeight > svgWrap.clientHeight
+        ? svgWrap.scrollTop / (svgWrap.scrollHeight - svgWrap.clientHeight)
+        : 0;
+      svg.style.width = `${Math.round(canvas.width * state.zoom)}px`;
+      svg.style.height = `${Math.round(canvas.height * state.zoom)}px`;
+      zoomLevel.textContent = `${Math.round(state.zoom * 100)}%`;
+      if (!keepScrollPosition) return;
+      requestAnimationFrame(() => {
+        svgWrap.scrollLeft = horizontalRatio * Math.max(svgWrap.scrollWidth - svgWrap.clientWidth, 0);
+        svgWrap.scrollTop = verticalRatio * Math.max(svgWrap.scrollHeight - svgWrap.clientHeight, 0);
+      });
+    }
+
+    function adjustZoom(delta) {
+      const nextZoom = Math.min(1.36, Math.max(0.72, Number((state.zoom + delta).toFixed(2))));
+      if (nextZoom === state.zoom) return;
+      state.zoom = nextZoom;
+      applyZoom(true);
+    }
+
+    function resetZoom() {
+      state.zoom = 0.88;
+      applyZoom(true);
+    }
+
+    function centerViewport() {
+      requestAnimationFrame(() => {
+        const scale = svg.clientWidth / canvas.width;
+        svgWrap.scrollLeft = Math.max(center.x * scale - svgWrap.clientWidth / 2, 0);
+        svgWrap.scrollTop = Math.max(center.y * scale - svgWrap.clientHeight / 2, 0);
+      });
+    }
+
     function applySearch() {
       state.query = searchInput.value.trim().toLowerCase();
       const firstHit = allChapters().find(chapter => matches({ type: 'chapter', chapter }));
@@ -837,6 +948,8 @@
       renderLegend();
       renderSvg();
       renderInspector();
+      applyZoom();
+      centerViewport();
       searchInput.addEventListener('input', applySearch);
       document.getElementById('clearSearch').addEventListener('click', () => {
         searchInput.value = '';
@@ -848,6 +961,14 @@
         selectCenter();
       });
       document.getElementById('focusMemory').addEventListener('click', selectCenter);
+      document.getElementById('zoomOut').addEventListener('click', () => adjustZoom(-0.1));
+      document.getElementById('zoomIn').addEventListener('click', () => adjustZoom(0.1));
+      document.getElementById('zoomReset').addEventListener('click', resetZoom);
+      svgWrap.addEventListener('wheel', event => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        adjustZoom(event.deltaY > 0 ? -0.08 : 0.08);
+      }, { passive: false });
     }
 
     init();
