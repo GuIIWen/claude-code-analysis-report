@@ -8,7 +8,7 @@
     :root {
       color-scheme: light;
       --bg: #f7f3ea;
-      --paper: rgba(255, 255, 255, .82);
+      --paper: rgba(255, 255, 255, .84);
       --paper-solid: #fffefb;
       --ink: #182033;
       --muted: #667085;
@@ -26,8 +26,8 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       background:
         radial-gradient(circle at 18% 12%, rgba(124, 58, 237, .18), transparent 30%),
-        radial-gradient(circle at 82% 16%, rgba(14, 165, 233, .16), transparent 28%),
-        radial-gradient(circle at 50% 88%, rgba(245, 158, 11, .14), transparent 32%),
+        radial-gradient(circle at 82% 16%, rgba(14, 165, 233, .15), transparent 28%),
+        radial-gradient(circle at 50% 88%, rgba(245, 158, 11, .13), transparent 32%),
         linear-gradient(135deg, #fbf7ed 0%, var(--bg) 54%, #eef6ff 100%);
     }
 
@@ -41,7 +41,7 @@
     }
 
     .topbar {
-      max-width: 1960px;
+      max-width: 2260px;
       margin: 0 auto;
       padding: 16px 22px;
       display: grid;
@@ -110,15 +110,22 @@
       box-shadow: none;
     }
 
+    button.is-current {
+      background: #172033;
+      color: #fff;
+      border-color: #172033;
+      box-shadow: 0 12px 24px rgba(23, 32, 51, .16);
+    }
+
     main {
-      max-width: 1960px;
+      max-width: 2260px;
       margin: 0 auto;
       padding: 22px;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-columns: minmax(0, 1fr) 380px;
       gap: 18px;
       align-items: start;
     }
@@ -135,7 +142,7 @@
     .map-shell {
       position: relative;
       overflow: hidden;
-      min-height: 720px;
+      min-height: 780px;
     }
 
     .map-shell::before {
@@ -147,7 +154,7 @@
         linear-gradient(rgba(24, 32, 51, .045) 1px, transparent 1px),
         linear-gradient(90deg, rgba(24, 32, 51, .045) 1px, transparent 1px);
       background-size: 34px 34px;
-      mask-image: radial-gradient(circle at 50% 50%, black, transparent 78%);
+      mask-image: radial-gradient(circle at 50% 50%, black, transparent 82%);
     }
 
     .map-meta {
@@ -160,7 +167,7 @@
       gap: 8px;
       justify-content: center;
       transform: translateX(-50%);
-      max-width: min(880px, calc(100% - 36px));
+      max-width: min(1100px, calc(100% - 36px));
       pointer-events: none;
     }
 
@@ -208,41 +215,214 @@
     .svg-wrap {
       position: relative;
       width: 100%;
-      height: min(78vh, 880px);
-      min-height: 720px;
+      height: min(80vh, 960px);
+      min-height: 760px;
       overflow: auto;
-      padding: 50px 22px 26px;
+      padding: 54px 22px 26px;
       scroll-behavior: smooth;
     }
 
     svg {
       display: block;
-      width: 2860px;
-      height: 1480px;
-      min-width: 2060px;
-      min-height: 1060px;
+      width: 3600px;
+      height: 1900px;
+      min-width: 2500px;
+      min-height: 1360px;
       transition: width .16s ease, height .16s ease;
     }
 
-    .root-halo { fill: url(#rootGlow); opacity: .95; }
-    .root-ring { fill: none; stroke: rgba(255, 255, 255, .65); stroke-width: 2; }
-    .trunk { fill: none; stroke-linecap: round; stroke-width: 13; opacity: .42; }
-    .branch { fill: none; stroke-linecap: round; stroke-width: 5.2; opacity: .58; }
-    .twig { fill: none; stroke-linecap: round; stroke-width: 2.3; opacity: .54; }
-    .twig.tech { stroke-dasharray: 5 7; }
-    .node-rect { stroke-width: 1.4; filter: url(#nodeShadow); }
+    .zone-panel {
+      stroke-width: 1.8;
+      opacity: .96;
+    }
+
+    .zone-watermark {
+      fill: rgba(24, 32, 51, .18);
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: .04em;
+    }
+
+    .zone-subtitle {
+      fill: rgba(24, 32, 51, .42);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .root-halo { fill: url(#rootGlow); opacity: .96; }
+    .root-ring { fill: none; stroke: rgba(255, 255, 255, .68); stroke-width: 2.2; }
+    .trunk { fill: none; stroke-linecap: round; stroke-width: 13; opacity: .32; transition: opacity .18s ease, stroke-width .18s ease; }
+    .branch { fill: none; stroke-linecap: round; stroke-width: 6.2; opacity: .42; transition: opacity .18s ease, stroke-width .18s ease; }
+    .twig { fill: none; stroke-linecap: round; stroke-width: 3.2; opacity: .44; transition: opacity .18s ease, stroke-width .18s ease; }
+    .twig.tech { stroke-dasharray: 8 8; }
+    .twig.risk { stroke-dasharray: 2 7; stroke-width: 2.8; }
+    .path-active { opacity: .98; filter: url(#activeShadow); }
+    .trunk.path-active { stroke-width: 15px; }
+    .branch.path-active { stroke-width: 7.6px; }
+    .twig.path-active { stroke-width: 4.4px; }
+    .twig.risk.path-active { stroke-width: 3.4px; }
+    .path-context { opacity: .54; }
+    .path-dim { opacity: .08; }
+
+    .node-text { fill: #182033; font-weight: 820; }
+    .node-subtitle { fill: #4d5a70; font-weight: 700; }
     .root-text { fill: #fff; text-anchor: middle; font-weight: 900; letter-spacing: -.035em; }
-    .node-title { fill: #182033; font-weight: 900; }
-    .node-subtitle { fill: #606a7b; font-weight: 700; }
-    .leaf-text { fill: #263247; font-weight: 760; }
-    .leaf-kind { fill: #667085; font-weight: 900; }
-    .chapter-node, .part-node, .leaf-node { cursor: pointer; transition: opacity .16s ease; }
-    .part-node:hover .node-rect,
-    .chapter-node:hover .node-rect,
-    .leaf-node:hover .node-rect { stroke-width: 2.5; }
-    .is-active .node-rect { stroke-width: 3; filter: url(#activeShadow); }
-    .is-dim { opacity: .12; }
-    .is-hit .node-rect { stroke: #111827; stroke-width: 3; }
+    .part-node,
+    .chapter-node,
+    .group-node {
+      cursor: pointer;
+      transition: opacity .16s ease;
+    }
+
+    .node-active { opacity: 1; }
+    .node-context { opacity: .58; }
+    .node-dim { opacity: .14; }
+    .node-hit .hit-frame { stroke: #111827 !important; stroke-width: 3 !important; }
+
+    .part-shell,
+    .chapter-shell,
+    .group-frame,
+    .risk-frame {
+      filter: url(#nodeShadow);
+      transition: stroke-width .16s ease, filter .16s ease, opacity .16s ease;
+    }
+
+    .node-active .part-shell,
+    .node-active .chapter-shell,
+    .node-active .group-frame,
+    .node-active .risk-frame {
+      filter: url(#activeShadow);
+      stroke-width: 2.8;
+    }
+
+    .part-range {
+      fill: rgba(255, 255, 255, .88);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .part-mnemonic {
+      fill: #304057;
+      font-size: 14px;
+      font-weight: 760;
+    }
+
+    .chapter-head-text {
+      fill: #fff;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .chapter-title {
+      fill: #182033;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .chapter-definition {
+      fill: #425168;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .chapter-anchor-label {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+
+    .chapter-anchor-text {
+      fill: #28364a;
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .chapter-count {
+      font-size: 11px;
+      font-weight: 900;
+      fill: #233146;
+    }
+
+    .chapter-badge-text {
+      fill: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      text-anchor: middle;
+    }
+
+    .group-title {
+      fill: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .05em;
+    }
+
+    .group-line {
+      fill: #263247;
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .group-frame.tech {
+      stroke-dasharray: 9 6;
+    }
+
+    .group-tag {
+      fill: #5b687d;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .risk-line {
+      fill: #562b16;
+      font-size: 12px;
+      font-weight: 820;
+    }
+
+    .legend {
+      margin-top: 18px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      box-shadow: 0 14px 38px rgba(37, 32, 25, .08);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      color: #3d4659;
+      font-size: 13px;
+      font-weight: 820;
+    }
+
+    .legend-text {
+      display: grid;
+      gap: 4px;
+    }
+
+    .legend-small {
+      color: #6b7280;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .note {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
 
     .inspector {
       position: sticky;
@@ -313,37 +493,47 @@
       color: #075985;
     }
 
-    .legend {
-      margin-top: 18px;
-      padding: 14px 16px;
+    .pill.risk {
+      border-color: rgba(217, 119, 6, .24);
+      background: rgba(255, 237, 213, .88);
+      color: #9a3412;
+    }
+
+    .checklist {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      box-shadow: 0 14px 38px rgba(37, 32, 25, .08);
     }
 
-    .legend-item {
+    .check-item {
+      display: grid;
+      gap: 5px;
+      padding: 11px 12px;
+      border-radius: 16px;
+      background: rgba(248, 250, 252, .9);
+      border: 1px solid rgba(216, 207, 193, .7);
+    }
+
+    .check-item strong {
+      font-size: 13px;
+      color: #182033;
+    }
+
+    .check-item span {
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .jump-grid {
       display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      color: #3d4659;
-      font-size: 13px;
-      font-weight: 820;
+      flex-wrap: wrap;
+      gap: 7px;
     }
 
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 999px;
-      flex: 0 0 auto;
-    }
-
-    .note {
-      margin: 14px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
+    .jump-grid button,
+    .focus-btn {
+      padding: 8px 11px;
+      font-size: 12px;
     }
 
     mark {
@@ -353,7 +543,7 @@
       padding: 0 2px;
     }
 
-    @media (max-width: 1120px) {
+    @media (max-width: 1200px) {
       .topbar { grid-template-columns: 1fr; }
       .actions { justify-content: flex-start; }
       .layout { grid-template-columns: 1fr; }
@@ -361,11 +551,11 @@
       .legend { grid-template-columns: repeat(2, 1fr); }
     }
 
-    @media (max-width: 620px) {
+    @media (max-width: 700px) {
       main, .topbar { padding-left: 14px; padding-right: 14px; }
       .legend { grid-template-columns: 1fr; }
-      .map-shell { min-height: 620px; }
-      .svg-wrap { min-height: 620px; }
+      .map-shell { min-height: 660px; }
+      .svg-wrap { min-height: 660px; }
       .map-tools {
         left: 14px;
         right: 14px;
@@ -379,7 +569,7 @@
     <div class="topbar">
       <div>
         <h1>Agentic Design Patterns</h1>
-        <div class="subtitle">中心主题 → 4 个 Part 主干 → 21 章分支 → 组件 / 技术叶节点；内容源来自 <code>analyze.md</code>。</div>
+        <div class="subtitle">中心主题 → 4 个 Part → 21 章记忆卡 → 组件组 / 技术组 / 风险锚点；默认图上直接承载完整背诵骨架。</div>
       </div>
       <label class="search" aria-label="搜索脑图节点">
         <input id="searchInput" type="search" placeholder="搜索章节、组件或技术节点，例如 MCP / RAG / Guardrails" />
@@ -388,6 +578,9 @@
       <div class="actions">
         <button id="showAll">显示全部</button>
         <button id="focusMemory" class="secondary">总记忆</button>
+        <button id="viewOverview" class="secondary is-current" type="button">总览</button>
+        <button id="viewMemory" class="secondary" type="button">背诵</button>
+        <button id="viewRisk" class="secondary" type="button">风险</button>
         <button id="clearSearch" class="secondary">清空</button>
       </div>
     </div>
@@ -400,14 +593,14 @@
           <div class="map-meta" id="mapMeta"></div>
           <div class="map-tools" aria-label="脑图缩放控件">
             <button id="zoomOut" type="button" class="secondary" aria-label="缩小脑图">－</button>
-            <span class="zoom-level" id="zoomLevel">88%</span>
+            <span class="zoom-level" id="zoomLevel">86%</span>
             <button id="zoomIn" type="button" class="secondary" aria-label="放大脑图">＋</button>
             <button id="zoomReset" type="button" class="secondary" aria-label="重置脑图缩放">重置</button>
           </div>
           <div class="svg-wrap" id="svgWrap">
-            <svg id="mindmapSvg" viewBox="0 0 2860 1480" role="img" aria-labelledby="svgTitle svgDesc">
+            <svg id="mindmapSvg" viewBox="0 0 3600 1900" role="img" aria-labelledby="svgTitle svgDesc">
               <title id="svgTitle">Agentic Design Patterns</title>
-              <desc id="svgDesc">一个从中心主题向四个 Part、章节、组件和技术节点发散的 SVG 脑图。</desc>
+              <desc id="svgDesc">一个从中心主题向四个 Part、二十一章、组件组、技术组和风险锚点发散的 SVG 脑图。</desc>
               <defs>
                 <radialGradient id="rootGlow" cx="50%" cy="50%" r="64%">
                   <stop offset="0%" stop-color="#7c3aed" />
@@ -424,14 +617,15 @@
                   <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#182033" stroke-opacity=".045" stroke-width="1" />
                 </pattern>
               </defs>
-              <rect width="2860" height="1480" fill="url(#microGrid)" opacity=".9"></rect>
+              <rect width="3600" height="1900" fill="url(#microGrid)" opacity=".92"></rect>
+              <g id="zonesLayer"></g>
               <g id="linksLayer"></g>
               <g id="nodesLayer"></g>
             </svg>
           </div>
         </section>
         <section class="legend" id="legend"></section>
-        <p class="note">这不是章节卡片墙：所有内容都通过 SVG 曲线路径挂接到中心节点，主干、章节枝干、组件/技术细枝按层级发散。现在画布横向更宽，可直接拖动横向滚动条；右上角支持放大、缩小、重置，点击任一章节后，右侧面板展示该章完整组件、技术节点、落地与风险。</p>
+        <p class="note">保留真正 SVG 脑图：中心主题、4 个 Part、21 章、组件组 / 技术组 / 风险锚点都通过 <code>&lt;path&gt;</code> 曲线连接；支持缩放、横向滚动、搜索与章节聚焦。</p>
       </div>
       <aside class="inspector" id="inspector" aria-live="polite"></aside>
     </section>
@@ -446,19 +640,29 @@
       },
       memory: {
         summary: '工作流组织行动，状态管理连续性，可靠性保证上线，协议与推理拉高上限。',
-        parts: ['把活拆开并分配。', '把状态记住并调控。', '把系统做稳并接地。', '把能力连通、优化、推到高级智能。']
+        parts: ['拆、判、并、审、用、规、协。', '记、学、接、盯。', '稳、审、证。', '连、优、想、守、量、排、探。']
       },
       parts: [
         {
           id: 1,
           title: '基础工作流与协作',
           range: '1-7',
-          color: '#7c3aed',
-          x: 980,
-          y: 330,
+          mnemonic: '拆、判、并、审、用、规、协',
+          palette: {
+            trunk: '#7c3aed',
+            branch: '#8b5cf6',
+            soft: '#f3e8ff',
+            softer: '#faf5ff',
+            border: '#a78bfa',
+            text: '#3b0764',
+            accent: '#c084fc'
+          },
+          zone: { x: 48, y: 54, width: 1520, height: 820 },
+          x: 1220,
+          y: 440,
           direction: -1,
-          chapterX: 450,
-          leafX: 210,
+          chapterX: 880,
+          groupX: 390,
           chapters: [
             [1, '提示词链', '把复杂任务拆成多个顺序步骤，让上一步输出成为下一步输入。', ['任务拆分器', '提示契约', '中间结果载体', '校验关口'], ['顺序执行', '结构化输出', '中间变量传递', '步骤级日志', '链尾接工具/反思/路由'], '抽取信息 → 转结构化数据 → 生成报告 / 邮件 / 代码说明', '链越长，错误传播越明显；步骤切太碎会让编排复杂度飙升。', '先拆后传，步步验算。'],
             [2, '路由', '根据输入意图、语义或规则，把请求送到最合适的分支、工具或子 Agent。', ['路由器', '标签集合', '分支处理器', '兜底分支'], ['意图分类', '向量语义路由', '规则路由', '低置信度澄清', '路由日志回放'], '客服分流、代码助手分工、研究任务按查询类型派发', '路由错一次，后面整条链都可能建立在错前提上。', '先判路，再出手。'],
@@ -473,12 +677,22 @@
           id: 2,
           title: '状态、学习与控制',
           range: '8-11',
-          color: '#0ea5e9',
-          x: 980,
-          y: 1140,
+          mnemonic: '记、学、接、盯',
+          palette: {
+            trunk: '#0284c7',
+            branch: '#0ea5e9',
+            soft: '#e0f2fe',
+            softer: '#f0f9ff',
+            border: '#7dd3fc',
+            text: '#075985',
+            accent: '#38bdf8'
+          },
+          zone: { x: 48, y: 946, width: 1520, height: 890 },
+          x: 1220,
+          y: 1480,
           direction: -1,
-          chapterX: 450,
-          leafX: 210,
+          chapterX: 880,
+          groupX: 390,
           chapters: [
             [8, '记忆管理', '让 Agent 管理会话内短期状态与跨会话长期知识。', ['Session', 'State', 'Long-term Memory', '检索器', '命名空间'], ['短期/长期分层', 'session.state', 'user/app/temp 作用域', '事件驱动更新', '摘要压缩', '语义检索'], '记住用户偏好、跨多轮跟踪任务、复用过往成功策略', '记忆不等于真相，过期事实和错误偏好会污染后续决策。', '短期保上下文，长期存经验。'],
             [9, '学习和适应', '让 Agent 因过去经验而改变策略、结构或代码，形成持续改进。', ['经验档案库', '评估器', '更新器', '监督者', '变异与选择机制'], ['PPO', 'DPO', '在线学习', '自我改进编码 Agent', '进化搜索', '隔离自修改执行'], '个性化助手持续调优、编码 Agent 自我进化、推荐 / 交易系统在线适应', '评估器设计差会让系统学会刷分，而非真正变好。', '先评再改，优胜迭代。'],
@@ -490,12 +704,22 @@
           id: 3,
           title: '可靠性、人在回路与知识接地',
           range: '12-14',
-          color: '#f59e0b',
-          x: 1790,
-          y: 320,
+          mnemonic: '稳、审、证',
+          palette: {
+            trunk: '#d97706',
+            branch: '#f59e0b',
+            soft: '#ffedd5',
+            softer: '#fffbeb',
+            border: '#fbbf24',
+            text: '#78350f',
+            accent: '#f59e0b'
+          },
+          zone: { x: 2032, y: 54, width: 1520, height: 820 },
+          x: 2380,
+          y: 440,
           direction: 1,
-          chapterX: 2340,
-          leafX: 2340,
+          chapterX: 2720,
+          groupX: 3210,
           chapters: [
             [12, '异常处理和恢复', '让 Agent 在工具失败、超时、数据损坏或外部依赖失效时仍能识错、降级、恢复。', ['异常探测器', '故障分类器', '重试/回退器', '状态恢复器', '升级器'], ['超时/错误码/告警', '瞬时重试', 'fallback handler', '优雅降级', '状态回滚', '结构化异常日志'], '主工具失败时切备用工具，数据库挂了就先返回缓存或简化答案', '只吞错不留痕，系统会长期静默失败而不自知。', '先识错，再降级，最后升级。'],
             [13, '人机协同（HITL）', '在高风险、强模糊、强责任场景里，把人类判断纳入系统闭环。', ['升级规则', '人工工作台', '证据包', '人工裁决', '反馈沉淀器'], ['human-in/on-the-loop', '风险分级阈值', '升级摘要', '脱敏隐私', '审批点', '人工反馈写回'], '法律 / 医疗 / 金融辅助、复杂客服、敏感内容审核、关键动作审批', '人越多吞吐越低；升级太晚时人接手可能已难以补救。', '高风险交给人。'],
@@ -506,12 +730,22 @@
           id: 4,
           title: '协议、优化与高级智能',
           range: '15-21',
-          color: '#10b981',
-          x: 1790,
-          y: 1130,
+          mnemonic: '连、优、想、守、量、排、探',
+          palette: {
+            trunk: '#059669',
+            branch: '#10b981',
+            soft: '#dcfce7',
+            softer: '#ecfdf5',
+            border: '#6ee7b7',
+            text: '#064e3b',
+            accent: '#34d399'
+          },
+          zone: { x: 2032, y: 946, width: 1520, height: 890 },
+          x: 2380,
+          y: 1480,
           direction: 1,
-          chapterX: 2340,
-          leafX: 2358,
+          chapterX: 2720,
+          groupX: 3210,
           chapters: [
             [15, 'Agent 间通信（A2A）', '让不同框架、不同服务、不同团队发布的 Agent 按统一协议协作。', ['Agent Card', '发现机制', '任务模型', '消息/工件模型', '上下文关联器'], ['well-known URI', '同步/异步/SSE/webhook', '任务状态机', '远程认证', '工件流式返回', 'A2A vs MCP'], '研究 Agent 调分析 Agent、企业多团队发布独立 Agent 服务', '协议统一不代表质量统一，远程 Agent 的可靠性仍需评估与监控。', 'Agent 找 Agent，按协议协作。'],
             [16, '资源感知优化', '让 Agent 在成本、时延、模型强度、上下文长度和算力之间动态平衡。', ['复杂度分类器', '模型路由器', '预算管理器', '回退链', '反馈器'], ['请求分类', '强/轻模型分工', '上下文裁剪', '成本/token/时延观测', '优雅降级', 'critic 复盘'], '高价值任务走强模型，轻问答走便宜模型，最新事实问题自动接搜索', '分类器误判会省了钱却错了答案。', '难题配强模，简单走轻模。'],
@@ -535,10 +769,25 @@
     };
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
-    const canvas = { width: 2860, height: 1480 };
-    const center = { x: 1370, y: 740, rx: 184, ry: 80 };
-    const state = { query: '', selected: { type: 'center' }, zoom: 0.88 };
+    const canvas = { width: 3600, height: 1900 };
+    const center = { x: 1800, y: 950, rx: 210, ry: 88 };
+    const chapterCard = { width: 340, height: 142 };
+    const groupCard = { width: 320, baseHeight: 66, lineHeight: 17 };
+    const chapterYRanges = {
+      1: [148, 802],
+      2: [1088, 1460],
+      3: [192, 700],
+      4: [1068, 1778]
+    };
+    const state = {
+      query: '',
+      selected: { type: 'center' },
+      zoom: 0.86,
+      viewMode: 'overview'
+    };
+
     const svg = document.getElementById('mindmapSvg');
+    const zonesLayer = document.getElementById('zonesLayer');
     const linksLayer = document.getElementById('linksLayer');
     const nodesLayer = document.getElementById('nodesLayer');
     const inspector = document.getElementById('inspector');
@@ -548,46 +797,85 @@
     const svgWrap = document.getElementById('svgWrap');
     const zoomLevel = document.getElementById('zoomLevel');
 
-    const chapterYRanges = {
-      1: [100, 700],
-      2: [920, 1290],
-      3: [140, 500],
-      4: [670, 1395]
-    };
-
-    const leafLayouts = {
-      1: { outsideDistances: [298, 320], insideDistances: [240, 258], yOffsets: [-30, -6, 12, 30], chapterWave: 18, staggerSides: true },
-      2: { outsideDistances: [282, 302], insideDistances: [218, 238], yOffsets: [-34, -8, 16, 40], chapterWave: 14, staggerSides: true },
-      3: { outsideDistances: [272, 296], insideDistances: [214, 236], yOffsets: [-36, -10, 14, 42], chapterWave: 12, staggerSides: true },
-      4: { outsideDistances: [300, 324], insideDistances: [240, 262], yOffsets: [-42, -14, 16, 44], chapterWave: 24, staggerSides: true }
-    };
-
     function normalizeParts() {
+      const toneSteps = [0.14, 0.26, 0.18, 0.32, 0.22, 0.36, 0.28];
       mindmapData.parts.forEach(part => {
         const [startY, endY] = chapterYRanges[part.id];
         const gap = part.chapters.length === 1 ? 0 : (endY - startY) / (part.chapters.length - 1);
-        part.chapters = part.chapters.map((chapter, index) => ({
-          number: chapter[0],
-          title: chapter[1],
-          definition: chapter[2],
-          components: chapter[3],
-          techniques: chapter[4],
-          landing: chapter[5],
-          risk: chapter[6],
-          motto: chapter[7],
-          part,
-          index,
-          x: part.chapterX,
-          y: startY + gap * index
-        }));
+        part.color = part.palette.trunk;
+        part.chapters = part.chapters.map((chapter, index) => {
+          const y = startY + gap * index + (index % 2 === 0 ? -10 : 10);
+          const tone = chapterTone(part.palette, toneSteps[index % toneSteps.length], index);
+          return {
+            number: chapter[0],
+            title: chapter[1],
+            definition: chapter[2],
+            components: chapter[3],
+            techniques: chapter[4],
+            landing: chapter[5],
+            risk: chapter[6],
+            motto: chapter[7],
+            shortDefinition: shortenText(chapter[2], 28),
+            shortRisk: shortenText(chapter[6], 22),
+            part,
+            index,
+            x: part.chapterX,
+            y,
+            groupX: part.groupX,
+            riskX: part.chapterX + part.direction * 220,
+            tone
+          };
+        });
       });
+    }
+
+    function hexToRgb(hex) {
+      const normalized = hex.replace('#', '');
+      const size = normalized.length === 3 ? 1 : 2;
+      const expand = size === 1 ? normalized.split('').map(item => item + item).join('') : normalized;
+      return {
+        r: parseInt(expand.slice(0, 2), 16),
+        g: parseInt(expand.slice(2, 4), 16),
+        b: parseInt(expand.slice(4, 6), 16)
+      };
+    }
+
+    function rgbToHex({ r, g, b }) {
+      return `#${[r, g, b].map(value => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, '0')).join('')}`;
+    }
+
+    function blend(colorA, colorB, ratio) {
+      const left = hexToRgb(colorA);
+      const right = hexToRgb(colorB);
+      return rgbToHex({
+        r: left.r + (right.r - left.r) * ratio,
+        g: left.g + (right.g - left.g) * ratio,
+        b: left.b + (right.b - left.b) * ratio
+      });
+    }
+
+    function chapterTone(palette, ratio, index) {
+      const alternate = index % 2 === 0 ? 0.06 : 0.14;
+      return {
+        fill: blend(palette.soft, '#ffffff', 0.25 + ratio / 2),
+        header: blend(palette.trunk, '#ffffff', ratio / 2),
+        accent: blend(palette.accent, '#ffffff', alternate),
+        border: blend(palette.border, '#ffffff', ratio / 3),
+        badge: blend(palette.trunk, '#111827', 0.08)
+      };
+    }
+
+    function shortenText(value, maxChars) {
+      const cleaned = String(value).replace(/[。！!]+$/, '').split(/[；;。]/)[0].trim();
+      if (cleaned.length <= maxChars) return cleaned;
+      return `${cleaned.slice(0, maxChars - 1)}…`;
     }
 
     function nodeText(item) {
       if (item.type === 'center') return [mindmapData.center.theme, mindmapData.center.mainline, mindmapData.center.motto, mindmapData.memory.summary].join(' ');
-      if (item.type === 'part') return [`Part ${item.part.id}`, item.part.title, item.part.range, ...item.part.chapters.map(ch => ch.title)].join(' ');
+      if (item.type === 'part') return [`Part ${item.part.id}`, item.part.title, item.part.range, item.part.mnemonic, ...item.part.chapters.map(ch => ch.title)].join(' ');
       if (item.type === 'chapter') return [item.chapter.number, item.chapter.title, item.chapter.definition, item.chapter.landing, item.chapter.risk, item.chapter.motto, ...item.chapter.components, ...item.chapter.techniques].join(' ');
-      return [item.label, item.kind, item.chapter.title, item.chapter.definition].join(' ');
+      return [item.label, item.kind, item.chapter.title, ...item.items].join(' ');
     }
 
     function matches(item) {
@@ -612,50 +900,156 @@
       return safe.replace(new RegExp(escaped, 'gi'), match => `<mark>${match}</mark>`);
     }
 
-    function textLines(value, maxChars = 12, maxLines = 2) {
-      const tokens = String(value).split(/(\s+|\/|→|、|，|：|（|）)/).filter(Boolean);
+    function wrapText(value, maxChars = 20, maxLines = 2) {
+      const chars = String(value).replace(/\s+/g, ' ').trim();
       const lines = [];
       let current = '';
-      tokens.forEach(token => {
-        const compact = token.trim();
-        if (!compact) return;
-        if ((current + compact).length > maxChars && current) {
+      for (const char of chars) {
+        current += char;
+        if (current.length >= maxChars) {
           lines.push(current);
-          current = compact;
-        } else {
-          current += compact;
+          current = '';
         }
-      });
+      }
       if (current) lines.push(current);
       const clipped = lines.slice(0, maxLines);
-      if (lines.length > maxLines) clipped[maxLines - 1] = clipped[maxLines - 1].replace(/[。,.，、]+$/, '') + '…';
-      return clipped;
+      if (lines.length > maxLines) clipped[maxLines - 1] = `${clipped[maxLines - 1].slice(0, Math.max(0, maxChars - 1))}…`;
+      return clipped.length ? clipped : [''];
+    }
+
+    function wrapItems(items, maxChars = 27) {
+      const lines = [];
+      let current = '';
+      items.forEach(item => {
+        const segment = current ? ` · ${item}` : item;
+        if ((current + segment).length > maxChars && current) {
+          lines.push(current);
+          current = item;
+          return;
+        }
+        current += segment;
+      });
+      if (current) lines.push(current);
+      return lines;
+    }
+
+    function toHint(label) {
+      if (/[A-Za-z]/.test(label)) {
+        const letters = label.match(/[A-Za-z]+/g) || [];
+        const initials = letters.map(word => word[0].toUpperCase()).join('');
+        return initials || label.slice(0, 3);
+      }
+      const compact = label.replace(/[（）()\/\s]/g, '');
+      return compact.length <= 2 ? compact : `${compact.slice(0, 2)}·`;
+    }
+
+    function visibleItems(items) {
+      if (state.viewMode !== 'memory') return items;
+      return items.map(toHint);
+    }
+
+    function allChapters() {
+      return mindmapData.parts.flatMap(part => part.chapters);
+    }
+
+    function selectionPartId() {
+      if (state.selected.type === 'part') return state.selected.part.id;
+      if (state.selected.type === 'chapter') return state.selected.chapter.part.id;
+      return null;
+    }
+
+    function selectionChapterNumber() {
+      return state.selected.type === 'chapter' ? state.selected.chapter.number : null;
+    }
+
+    function nodeRelation(item) {
+      if (state.selected.type === 'center') {
+        return item.type === 'center' ? 'active' : 'normal';
+      }
+
+      const activePartId = selectionPartId();
+      const activeChapter = selectionChapterNumber();
+
+      if (item.type === 'center') return 'active';
+      if (item.type === 'part') return item.part.id === activePartId ? 'active' : 'dim';
+      if (item.type === 'chapter') {
+        if (activeChapter && item.chapter.number === activeChapter) return 'active';
+        return item.chapter.part.id === activePartId ? 'context' : 'dim';
+      }
+      if (activeChapter) {
+        return item.chapter.number === activeChapter ? 'active' : 'dim';
+      }
+      return item.chapter.part.id === activePartId ? 'context' : 'dim';
+    }
+
+    function pathRelation(meta) {
+      if (state.selected.type === 'center') return 'normal';
+
+      const activePartId = selectionPartId();
+      const activeChapter = selectionChapterNumber();
+
+      if (meta.type === 'trunk') {
+        return meta.part.id === activePartId ? 'active' : 'dim';
+      }
+      if (meta.type === 'branch') {
+        if (activeChapter && meta.chapter.number === activeChapter) return 'active';
+        return meta.part.id === activePartId ? 'context' : 'dim';
+      }
+      if (meta.type === 'twig') {
+        if (activeChapter && meta.chapter.number === activeChapter) return 'active';
+        return state.selected.type === 'part' && meta.part.id === activePartId ? 'context' : 'dim';
+      }
+      return 'normal';
+    }
+
+    function nodeClasses(item, base = '') {
+      const relation = nodeRelation(item);
+      const hit = state.query && matches(item) ? ' node-hit' : '';
+      const relationClass = relation === 'active'
+        ? ' node-active'
+        : relation === 'context'
+          ? ' node-context'
+          : relation === 'dim'
+            ? ' node-dim'
+            : '';
+      return `${base}${relationClass}${hit}`.trim();
+    }
+
+    function pathClasses(meta, base = '') {
+      const relation = pathRelation(meta);
+      const relationClass = relation === 'active'
+        ? ' path-active'
+        : relation === 'context'
+          ? ' path-context'
+          : relation === 'dim'
+            ? ' path-dim'
+            : '';
+      return `${base}${relationClass}`.trim();
     }
 
     function pathBetween(from, to, direction) {
-      const bend = Math.max(120, Math.abs(to.x - from.x) * .48);
+      const bend = Math.max(120, Math.abs(to.x - from.x) * 0.48);
       const c1x = from.x + bend * direction;
       const c2x = to.x - bend * direction;
       return `M ${from.x} ${from.y} C ${c1x} ${from.y}, ${c2x} ${to.y}, ${to.x} ${to.y}`;
     }
 
-    function addPath(from, to, className, color, direction) {
+    function addPath(from, to, baseClass, color, direction, meta) {
       el('path', {
         d: pathBetween(from, to, direction),
-        class: className,
+        class: pathClasses(meta, baseClass),
         stroke: color
       }, linksLayer);
     }
 
-    function addLabel(group, lines, x, y, options = {}) {
+    function addTextLines(group, lines, x, y, className, size, lineHeight, anchor = 'start') {
       const text = el('text', {
         x,
         y,
-        class: options.className || 'node-title',
-        'font-size': options.size || 18,
-        'text-anchor': options.anchor || 'middle'
+        class: className,
+        'font-size': size,
+        'text-anchor': anchor
       }, group);
-      const lineHeight = options.lineHeight || 20;
       lines.forEach((line, index) => {
         const tspan = el('tspan', {
           x,
@@ -666,187 +1060,355 @@
       return text;
     }
 
-    function addRoundedNode({ x, y, width, height, fill, stroke, className, lines, subtitle, onClick }) {
-      const group = el('g', { class: className, transform: `translate(${x - width / 2} ${y - height / 2})` }, nodesLayer);
+    function addInteractiveHandlers(group, onClick) {
+      group.setAttribute('tabindex', '0');
+      group.addEventListener('click', onClick);
+      group.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      });
+    }
+
+    function drawZone(part) {
+      const zoneGroup = el('g', { class: 'part-zone' }, zonesLayer);
       el('rect', {
-        class: 'node-rect',
-        x: 0,
-        y: 0,
+        class: 'zone-panel',
+        x: part.zone.x,
+        y: part.zone.y,
+        width: part.zone.width,
+        height: part.zone.height,
+        rx: 42,
+        fill: part.palette.softer,
+        stroke: part.palette.border,
+        'stroke-opacity': 0.28
+      }, zoneGroup);
+      addTextLines(zoneGroup, [`PART ${part.id} · ${part.title}`], part.zone.x + 30, part.zone.y + 56, 'zone-watermark', 28, 30);
+      addTextLines(zoneGroup, [`第 ${part.range} 章 · ${part.mnemonic}`], part.zone.x + 30, part.zone.y + 84, 'zone-subtitle', 14, 18);
+    }
+
+    function drawCenterNode() {
+      el('ellipse', { class: 'root-halo', cx: center.x, cy: center.y, rx: center.rx, ry: center.ry }, nodesLayer);
+      el('ellipse', { class: 'root-ring', cx: center.x, cy: center.y, rx: center.rx - 14, ry: center.ry - 14 }, nodesLayer);
+      const rootGroup = el('g', { class: nodeClasses({ type: 'center' }), tabindex: '0' }, nodesLayer);
+      addInteractiveHandlers(rootGroup, () => selectCenter(true));
+      addTextLines(rootGroup, ['Agentic Design', 'Patterns'], center.x, center.y - 18, 'root-text', 35, 38, 'middle');
+      addTextLines(rootGroup, ['流程 → 状态 → 可靠 → 高级智能'], center.x, center.y + 54, 'root-text', 16, 18, 'middle');
+    }
+
+    function drawPartNode(part) {
+      const width = 360;
+      const height = 116;
+      const x = part.x - width / 2;
+      const y = part.y - height / 2;
+      const group = el('g', { class: nodeClasses({ type: 'part', part }, 'part-node') }, nodesLayer);
+      addInteractiveHandlers(group, () => selectPart(part, true));
+
+      el('rect', {
+        class: 'part-shell hit-frame',
+        x,
+        y,
         width,
         height,
-        rx: Math.min(22, height / 2),
-        fill,
-        stroke
+        rx: 28,
+        fill: '#fffefb',
+        stroke: part.palette.border
       }, group);
-      addLabel(group, lines, width / 2, subtitle ? 27 : height / 2 + 6, { size: width > 210 ? 19 : 14, lineHeight: width > 210 ? 21 : 16 });
-      if (subtitle) {
-        addLabel(group, [subtitle], width / 2, height - 16, { className: 'node-subtitle', size: 12, lineHeight: 14 });
-      }
-      if (onClick) {
-        group.setAttribute('tabindex', '0');
-        group.addEventListener('click', onClick);
-        group.addEventListener('keydown', event => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onClick();
-          }
-        });
-      }
-      return group;
+      el('rect', {
+        x,
+        y,
+        width,
+        height: 40,
+        rx: 28,
+        fill: part.palette.trunk
+      }, group);
+      el('rect', {
+        x,
+        y: y + 16,
+        width,
+        height: 24,
+        fill: part.palette.trunk
+      }, group);
+      addTextLines(group, [`Part ${part.id} · ${part.title}`], x + 22, y + 26, 'chapter-head-text', 15, 18);
+      addTextLines(group, [`第 ${part.range} 章 · ${part.chapters.length} 章`], x + 22, y + 58, 'part-range', 12, 14);
+      addTextLines(group, [part.mnemonic], x + 22, y + 86, 'part-mnemonic', 14, 17);
+      addTextLines(group, [mindmapData.memory.parts[part.id - 1]], x + 22, y + 104, 'part-mnemonic', 13, 16);
     }
 
-    function leafItems(chapter) {
+    function chapterAnchorLines(chapter) {
+      if (state.viewMode === 'risk') {
+        return [
+          { label: '风险', text: chapter.shortRisk, fill: '#b45309' },
+          { label: '口诀', text: shortenText(chapter.motto, 18), fill: chapter.part.palette.text }
+        ];
+      }
       return [
-        ...chapter.components.slice(0, 2).map(label => ({ kind: '组件', label, className: 'component' })),
-        ...chapter.techniques.slice(0, 2).map(label => ({ kind: '技术', label, className: 'tech' }))
-      ].slice(0, 4);
+        { label: '口诀', text: shortenText(chapter.motto, 18), fill: chapter.part.palette.text },
+        { label: '风险', text: chapter.shortRisk, fill: '#b45309' }
+      ];
     }
 
-    function positionedLeaves(chapter) {
-      const layout = leafLayouts[chapter.part.id] || {
-        outsideDistances: [280, 300],
-        insideDistances: [220, 240],
-        yOffsets: [-34, -10, 14, 38],
-        chapterWave: 0,
-        staggerSides: false
-      };
-      const chapterWave = layout.chapterWave ? (chapter.index % 2 === 0 ? -layout.chapterWave : layout.chapterWave) : 0;
-      const leaves = leafItems(chapter);
-      return leaves.map((leaf, index) => {
-        const useOutside = layout.staggerSides
-          ? ((index + chapter.index) % 2 === 0)
-          : leaf.className === 'component';
-        const sideDirection = useOutside ? chapter.part.direction : -chapter.part.direction;
-        const distancePool = useOutside ? layout.outsideDistances : layout.insideDistances;
-        const distance = distancePool[index % distancePool.length] + chapterWave;
-        return {
-          ...leaf,
-          direction: sideDirection,
-          x: chapter.x + sideDirection * distance,
-          y: chapter.y + (layout.yOffsets[index] ?? ((index - 1.5) * 28))
-        };
-      });
+    function drawChapterCard(chapter) {
+      const width = chapterCard.width;
+      const height = chapterCard.height;
+      const x = chapter.x - width / 2;
+      const y = chapter.y - height / 2;
+      const group = el('g', { class: nodeClasses({ type: 'chapter', chapter }, 'chapter-node') }, nodesLayer);
+      addInteractiveHandlers(group, () => selectChapter(chapter, true));
+
+      el('rect', {
+        class: 'chapter-shell hit-frame',
+        x,
+        y,
+        width,
+        height,
+        rx: 26,
+        fill: chapter.tone.fill,
+        stroke: chapter.tone.border
+      }, group);
+      el('rect', {
+        x,
+        y,
+        width,
+        height: 38,
+        rx: 26,
+        fill: chapter.tone.header
+      }, group);
+      el('rect', {
+        x,
+        y: y + 14,
+        width,
+        height: 24,
+        fill: chapter.tone.header
+      }, group);
+
+      el('circle', {
+        cx: x + 28,
+        cy: y + 20,
+        r: 18,
+        fill: chapter.tone.badge,
+        stroke: '#fff',
+        'stroke-width': 1.2
+      }, group);
+      addTextLines(group, [String(chapter.number)], x + 28, y + 25, 'chapter-badge-text', 16, 18, 'middle');
+      addTextLines(group, [chapter.title], x + 56, y + 24, 'chapter-head-text', 15, 18);
+
+      const definitionLines = wrapText(chapter.shortDefinition, 23, 2);
+      addTextLines(group, definitionLines, x + 20, y + 58, 'chapter-definition', 13, 17);
+
+      const anchors = chapterAnchorLines(chapter);
+      addTextLines(group, [`${anchors[0].label}：${anchors[0].text}`], x + 20, y + 102, 'chapter-anchor-text', 12, 15);
+      addTextLines(group, [`${anchors[1].label}：${anchors[1].text}`], x + 20, y + 121, 'chapter-anchor-text', 12, 15);
+      group.querySelectorAll('.chapter-anchor-text').forEach((node, index) => node.setAttribute('fill', anchors[index].fill));
+
+      el('rect', {
+        x: x + width - 82,
+        y: y + 94,
+        width: 64,
+        height: 18,
+        rx: 9,
+        fill: blend(chapter.part.palette.softer, '#ffffff', 0.2),
+        stroke: chapter.part.palette.border,
+        'stroke-width': 1
+      }, group);
+      el('rect', {
+        x: x + width - 82,
+        y: y + 117,
+        width: 64,
+        height: 18,
+        rx: 9,
+        fill: blend(chapter.part.palette.softer, '#ffffff', 0.2),
+        stroke: chapter.part.palette.border,
+        'stroke-width': 1
+      }, group);
+      addTextLines(group, [`组件 ${chapter.components.length}`], x + width - 50, y + 107, 'chapter-count', 11, 12, 'middle');
+      addTextLines(group, [`技术 ${chapter.techniques.length}`], x + width - 50, y + 130, 'chapter-count', 11, 12, 'middle');
+    }
+
+    function leafGroups(chapter) {
+      const chapterWave = chapter.index % 2 === 0 ? -8 : 8;
+      const visibleComponents = visibleItems(chapter.components);
+      const visibleTechniques = visibleItems(chapter.techniques);
+      const componentLines = wrapItems(visibleComponents, state.viewMode === 'memory' ? 30 : 24);
+      const techniqueLines = wrapItems(visibleTechniques, state.viewMode === 'memory' ? 30 : 24);
+      return [
+        {
+          type: 'group',
+          kind: '组件组',
+          label: '核心组件',
+          items: visibleComponents,
+          rawItems: chapter.components,
+          x: chapter.groupX,
+          y: chapter.y - 42 + chapterWave,
+          width: groupCard.width,
+          height: groupCard.baseHeight + Math.max(0, componentLines.length - 2) * groupCard.lineHeight,
+          lines: componentLines,
+          className: 'component',
+          stroke: chapter.part.palette.border,
+          fill: blend(chapter.tone.fill, '#ffffff', 0.08),
+          headFill: chapter.tone.header
+        },
+        {
+          type: 'group',
+          kind: '技术组',
+          label: '关键技术',
+          items: visibleTechniques,
+          rawItems: chapter.techniques,
+          x: chapter.groupX,
+          y: chapter.y + 52 + chapterWave,
+          width: groupCard.width,
+          height: groupCard.baseHeight + Math.max(0, techniqueLines.length - 2) * groupCard.lineHeight,
+          lines: techniqueLines,
+          className: 'tech',
+          stroke: blend(chapter.part.palette.accent, '#ffffff', 0.12),
+          fill: '#ffffff',
+          headFill: blend(chapter.part.palette.branch, '#ffffff', 0.12)
+        },
+        {
+          type: 'group',
+          kind: '风险锚点',
+          label: '风险短锚点',
+          items: [chapter.shortRisk],
+          rawItems: [chapter.shortRisk],
+          x: chapter.riskX,
+          y: chapter.y + 98,
+          width: 236,
+          height: 52,
+          lines: wrapText(chapter.shortRisk, 18, 2),
+          className: 'risk',
+          stroke: '#f59e0b',
+          fill: '#ffedd5',
+          headFill: '#f59e0b'
+        }
+      ];
+    }
+
+    function drawGroupNode(groupData, chapter) {
+      const group = el('g', {
+        class: nodeClasses({ type: 'group', chapter, label: groupData.label, kind: groupData.kind, items: groupData.rawItems }, 'group-node')
+      }, nodesLayer);
+      addInteractiveHandlers(group, () => selectChapter(chapter, true));
+
+      const x = groupData.x - groupData.width / 2;
+      const y = groupData.y - groupData.height / 2;
+      const isRisk = groupData.className === 'risk';
+
+      el('rect', {
+        class: `${isRisk ? 'risk-frame' : `group-frame ${groupData.className}`} hit-frame`,
+        x,
+        y,
+        width: groupData.width,
+        height: groupData.height,
+        rx: isRisk ? 20 : 24,
+        fill: groupData.fill,
+        stroke: groupData.stroke
+      }, group);
+      el('rect', {
+        x,
+        y,
+        width: groupData.width,
+        height: 28,
+        rx: isRisk ? 20 : 24,
+        fill: groupData.headFill
+      }, group);
+      el('rect', {
+        x,
+        y: y + 10,
+        width: groupData.width,
+        height: 18,
+        fill: groupData.headFill
+      }, group);
+
+      addTextLines(group, [groupData.label], x + 16, y + 18, 'group-title', 12, 14);
+      addTextLines(group, [isRisk ? '!' : `${groupData.items.length} 项`], x + groupData.width - 18, y + 18, isRisk ? 'group-title' : 'group-tag', 11, 12, 'end');
+
+      if (isRisk) {
+        addTextLines(group, groupData.lines, x + 16, y + 40, 'risk-line', 12, 15);
+        return;
+      }
+
+      addTextLines(group, groupData.lines, x + 16, y + 46, 'group-line', 12, 17);
     }
 
     function renderSvg() {
+      zonesLayer.innerHTML = '';
       linksLayer.innerHTML = '';
       nodesLayer.innerHTML = '';
 
-      mindmapData.parts.forEach(part => {
-        addPath({ x: center.x + part.direction * center.rx, y: center.y }, { x: part.x - part.direction * 132, y: part.y }, 'trunk', part.color, part.direction);
-        part.chapters.forEach(chapter => {
-          addPath({ x: part.x + part.direction * 156, y: part.y }, { x: chapter.x - part.direction * 126, y: chapter.y }, 'branch', part.color, part.direction);
-          const leaves = positionedLeaves(chapter);
-          leaves.forEach(leaf => {
-            addPath({ x: chapter.x + leaf.direction * 130, y: chapter.y }, { x: leaf.x - leaf.direction * 102, y: leaf.y }, `twig ${leaf.className === 'tech' ? 'tech' : ''}`, part.color, leaf.direction);
-          });
-        });
-      });
-
-      el('ellipse', { class: 'root-halo', cx: center.x, cy: center.y, rx: center.rx, ry: center.ry }, nodesLayer);
-      el('ellipse', { class: 'root-ring', cx: center.x, cy: center.y, rx: center.rx - 12, ry: center.ry - 12 }, nodesLayer);
-      const rootGroup = el('g', { class: nodeClasses({ type: 'center' }), tabindex: '0' }, nodesLayer);
-      rootGroup.addEventListener('click', () => selectCenter());
-      rootGroup.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') selectCenter();
-      });
-      addLabel(rootGroup, ['Agentic Design', 'Patterns'], center.x, center.y - 16, { className: 'root-text', size: 34, lineHeight: 38 });
-      addLabel(rootGroup, ['先流程 · 再状态 · 后可靠 · 深智能'], center.x, center.y + 54, { className: 'root-text', size: 16, lineHeight: 18 });
+      mindmapData.parts.forEach(drawZone);
 
       mindmapData.parts.forEach(part => {
-        const partGroup = addRoundedNode({
-          x: part.x,
-          y: part.y,
-          width: 318,
-          height: 96,
-          fill: part.color,
-          stroke: part.color,
-          className: nodeClasses({ type: 'part', part }, 'part-node'),
-          lines: [`Part ${part.id}`, part.title],
-          subtitle: `第 ${part.range} 章 · ${part.chapters.length} 章`,
-          onClick: () => selectPart(part)
-        });
-        partGroup.querySelectorAll('text').forEach(text => text.setAttribute('fill', '#fff'));
+        addPath(
+          { x: center.x + part.direction * center.rx, y: center.y },
+          { x: part.x - part.direction * 182, y: part.y },
+          'trunk',
+          part.palette.trunk,
+          part.direction,
+          { type: 'trunk', part }
+        );
 
         part.chapters.forEach(chapter => {
-          addRoundedNode({
-            x: chapter.x,
-            y: chapter.y,
-            width: 248,
-            height: 72,
-            fill: '#fffefb',
-            stroke: part.color,
-            className: nodeClasses({ type: 'chapter', chapter }, 'chapter-node'),
-            lines: textLines(`第${chapter.number}章 ${chapter.title}`, 12, 2),
-            subtitle: chapter.motto.replace(/。$/, ''),
-            onClick: () => selectChapter(chapter)
-          });
-          const leaves = positionedLeaves(chapter);
-          leaves.forEach(leaf => {
-            addRoundedNode({
-              x: leaf.x,
-              y: leaf.y,
-              width: 194,
-              height: 30,
-              fill: leaf.className === 'tech' ? '#ecfeff' : '#f7f0ff',
-              stroke: leaf.className === 'tech' ? '#0ea5e9' : part.color,
-              className: nodeClasses({ type: 'leaf', chapter, label: leaf.label, kind: leaf.kind }, `leaf-node ${leaf.className}`),
-              lines: textLines(`${leaf.kind}：${leaf.label}`, 17, 1),
-              onClick: () => selectChapter(chapter)
-            });
+          addPath(
+            { x: part.x + part.direction * 180, y: part.y },
+            { x: chapter.x - part.direction * (chapterCard.width / 2 - 6), y: chapter.y },
+            'branch',
+            part.palette.branch,
+            part.direction,
+            { type: 'branch', part, chapter }
+          );
+
+          leafGroups(chapter).forEach(groupData => {
+            const branchDirection = groupData.x >= chapter.x ? 1 : -1;
+            addPath(
+              { x: chapter.x + branchDirection * (chapterCard.width / 2 - 10), y: chapter.y + (groupData.className === 'component' ? -18 : groupData.className === 'tech' ? 24 : 60) },
+              { x: groupData.x - branchDirection * (groupData.width / 2 - 12), y: groupData.y },
+              `twig${groupData.className === 'tech' ? ' tech' : groupData.className === 'risk' ? ' risk' : ''}`,
+              groupData.className === 'risk' ? '#f59e0b' : part.palette.branch,
+              branchDirection,
+              { type: 'twig', part, chapter }
+            );
           });
         });
       });
-    }
 
-    function nodeClasses(item, base = '') {
-      const active = isActive(item) ? ' is-active' : '';
-      const hit = state.query && matches(item) ? ' is-hit' : '';
-      const dim = state.query && !matches(item) ? ' is-dim' : '';
-      return `${base}${active}${hit}${dim}`.trim();
-    }
-
-    function isActive(item) {
-      if (state.selected.type === 'center') return item.type === 'center';
-      if (state.selected.type === 'part') return item.type === 'part' && item.part.id === state.selected.part.id;
-      if (state.selected.type === 'chapter') return item.type === 'chapter' && item.chapter.number === state.selected.chapter.number;
-      return false;
-    }
-
-    function allChapters() {
-      return mindmapData.parts.flatMap(part => part.chapters);
-    }
-
-    function selectCenter() {
-      state.selected = { type: 'center' };
-      renderSvg();
-      renderInspector();
-    }
-
-    function selectPart(part) {
-      state.selected = { type: 'part', part };
-      renderSvg();
-      renderInspector();
-    }
-
-    function selectChapter(chapter) {
-      state.selected = { type: 'chapter', chapter };
-      renderSvg();
-      renderInspector();
+      drawCenterNode();
+      mindmapData.parts.forEach(drawPartNode);
+      mindmapData.parts.forEach(part => {
+        part.chapters.forEach(chapter => {
+          drawChapterCard(chapter);
+          leafGroups(chapter).forEach(groupData => drawGroupNode(groupData, chapter));
+        });
+      });
     }
 
     function renderInspector() {
       if (state.selected.type === 'part') {
         const { part } = state.selected;
         inspector.innerHTML = `
-          <div class="eyebrow"><span class="dot" style="background:${part.color}"></span>Part ${part.id}</div>
+          <div class="eyebrow"><span class="dot" style="background:${part.palette.trunk}"></span>Part ${part.id}</div>
           <h2>${highlight(part.title)}</h2>
-          <p>覆盖第 ${part.range} 章，共 ${part.chapters.length} 个章节分支。点击任一章节节点可查看完整组件、技术、落地与风险。</p>
-          <div class="section"><h3>章节分支</h3><div class="pills">${part.chapters.map(ch => `<button class="pill" data-chapter="${ch.number}">第 ${ch.number} 章：${highlight(ch.title)}</button>`).join('')}</div></div>
-          <div class="section"><h3>Part 速记</h3><p>${highlight(mindmapData.memory.parts[part.id - 1])}</p></div>
+          <p>这一块负责建立稳定分块记忆：先记阶段动词，再按章节顺序回背章卡、组件组、技术组。</p>
+          <div class="section">
+            <h3>Part 速记</h3>
+            <div class="checklist">
+              <div class="check-item"><strong>阶段口诀</strong><span>${highlight(part.mnemonic)}</span></div>
+              <div class="check-item"><strong>阶段定位</strong><span>${highlight(mindmapData.memory.parts[part.id - 1])}</span></div>
+              <div class="check-item"><strong>看图方法</strong><span>先背同色分区，再沿中心 → Part → 章节路径，最后校验组件组与技术组。</span></div>
+            </div>
+          </div>
+          <div class="section">
+            <h3>章节背诵顺序</h3>
+            <div class="jump-grid">
+              ${part.chapters.map(ch => `<button class="secondary" type="button" data-chapter="${ch.number}">第 ${ch.number} 章 · ${highlight(ch.title)}</button>`).join('')}
+            </div>
+          </div>
         `;
         inspector.querySelectorAll('[data-chapter]').forEach(button => {
-          button.addEventListener('click', () => selectChapter(allChapters().find(ch => ch.number === Number(button.dataset.chapter))));
+          button.addEventListener('click', () => {
+            const chapter = allChapters().find(item => item.number === Number(button.dataset.chapter));
+            if (chapter) selectChapter(chapter, true);
+          });
         });
         return;
       }
@@ -855,15 +1417,24 @@
         const { chapter } = state.selected;
         const part = chapter.part;
         inspector.innerHTML = `
-          <div class="eyebrow"><span class="dot" style="background:${part.color}"></span>Part ${part.id} · 第 ${chapter.number} 章</div>
+          <div class="eyebrow"><span class="dot" style="background:${part.palette.trunk}"></span>Part ${part.id} · 第 ${chapter.number} 章</div>
           <h2>${highlight(chapter.title)}</h2>
           <p>${highlight(chapter.definition)}</p>
-          <div class="section"><h3>核心组件</h3><div class="pills">${chapter.components.map(item => `<span class="pill">${highlight(item)}</span>`).join('')}</div></div>
-          <div class="section"><h3>关键技术节点</h3><div class="pills">${chapter.techniques.map(item => `<span class="pill tech">${highlight(item)}</span>`).join('')}</div></div>
-          <div class="section"><h3>典型落地</h3><p>${highlight(chapter.landing)}</p></div>
-          <div class="section"><h3>风险边界</h3><p>${highlight(chapter.risk)}</p></div>
-          <div class="section"><h3>记忆口诀</h3><p><strong>${highlight(chapter.motto)}</strong></p></div>
+          <button class="secondary focus-btn" type="button" id="focusSelection">在图中聚焦本章</button>
+          <div class="section">
+            <h3>背诵检查</h3>
+            <div class="checklist">
+              <div class="check-item"><strong>P0 编号徽章</strong><span>先认出大号章号 ${chapter.number}，再背章名与所属 Part。</span></div>
+              <div class="check-item"><strong>定义短句</strong><span>${highlight(chapter.shortDefinition)}</span></div>
+              <div class="check-item"><strong>图上组件组</strong><span>${chapter.components.map(item => highlight(item)).join(' / ')}</span></div>
+              <div class="check-item"><strong>图上技术组</strong><span>${chapter.techniques.map(item => highlight(item)).join(' / ')}</span></div>
+              <div class="check-item"><strong>口诀与风险</strong><span>${highlight(chapter.motto)} ｜ ${highlight(chapter.shortRisk)}</span></div>
+            </div>
+          </div>
+          <div class="section"><h3>解释详情：典型落地</h3><p>${highlight(chapter.landing)}</p></div>
+          <div class="section"><h3>解释详情：风险边界</h3><p>${highlight(chapter.risk)}</p></div>
         `;
+        inspector.querySelector('#focusSelection').addEventListener('click', () => focusChapter(chapter));
         return;
       }
 
@@ -871,8 +1442,16 @@
         <div class="eyebrow">Center Topic</div>
         <h2>${highlight(mindmapData.center.theme)}</h2>
         <p>${highlight(mindmapData.center.mainline)}</p>
+        <div class="section">
+          <h3>读图方法</h3>
+          <div class="checklist">
+            <div class="check-item"><strong>第一步</strong><span>先认 4 个 Part 分区色块，建立整本书四段结构。</span></div>
+            <div class="check-item"><strong>第二步</strong><span>按章节编号徽章背顺序，再读章卡里的定义、口诀、风险锚点。</span></div>
+            <div class="check-item"><strong>第三步</strong><span>直接在图上核对组件组与技术组；右侧只做检查与解释，不是唯一信息入口。</span></div>
+          </div>
+        </div>
         <div class="section"><h3>总口诀</h3><p><strong>${highlight(mindmapData.center.motto)}</strong></p></div>
-        <div class="section"><h3>全书总记忆</h3><p>${highlight(mindmapData.memory.summary)}</p></div>
+        <div class="section"><h3>四段主线</h3><div class="pills">${mindmapData.parts.map(part => `<span class="pill">${highlight(`Part ${part.id}：${part.mnemonic}`)}</span>`).join('')}</div></div>
         <div class="section"><h3>附录工具箱</h3><div class="pills">${mindmapData.appendix.map(item => `<span class="pill tech">${highlight(item)}</span>`).join('')}</div></div>
       `;
     }
@@ -881,19 +1460,37 @@
       const chapters = allChapters();
       const componentCount = chapters.reduce((sum, chapter) => sum + chapter.components.length, 0);
       const techniqueCount = chapters.reduce((sum, chapter) => sum + chapter.techniques.length, 0);
+      const modeLabel = state.viewMode === 'memory' ? '背诵模式' : state.viewMode === 'risk' ? '风险模式' : '总览模式';
       mapMeta.innerHTML = [
-        `${mindmapData.parts.length} 个 Part 主干`,
-        `${chapters.length} 个章节分支`,
-        `${componentCount} 个核心组件`,
-        `${techniqueCount} 个技术节点`,
-        '100% 内联 SVG / CSS / JS'
+        `${mindmapData.parts.length} 个 Part 色块`,
+        `${chapters.length} 个章节记忆卡`,
+        `${componentCount} 个完整组件`,
+        `${techniqueCount} 个完整技术`,
+        modeLabel
       ].map(item => `<span class="chip">${item}</span>`).join('');
     }
 
     function renderLegend() {
       legend.innerHTML = mindmapData.parts.map(part => `
-        <div class="legend-item"><span class="dot" style="background:${part.color}"></span><span>Part ${part.id}：${part.title}</span></div>
+        <div class="legend-item">
+          <span class="dot" style="background:${part.palette.trunk}"></span>
+          <span class="legend-text">
+            <span>Part ${part.id}：${part.title}</span>
+            <span class="legend-small">${part.mnemonic}</span>
+          </span>
+        </div>
       `).join('');
+    }
+
+    function renderViewButtons() {
+      const mapping = {
+        overview: document.getElementById('viewOverview'),
+        memory: document.getElementById('viewMemory'),
+        risk: document.getElementById('viewRisk')
+      };
+      Object.entries(mapping).forEach(([mode, button]) => {
+        button.classList.toggle('is-current', state.viewMode === mode);
+      });
     }
 
     function applyZoom(keepScrollPosition = false) {
@@ -914,42 +1511,106 @@
     }
 
     function adjustZoom(delta) {
-      const nextZoom = Math.min(1.36, Math.max(0.72, Number((state.zoom + delta).toFixed(2))));
+      const nextZoom = Math.min(1.34, Math.max(0.7, Number((state.zoom + delta).toFixed(2))));
       if (nextZoom === state.zoom) return;
       state.zoom = nextZoom;
       applyZoom(true);
     }
 
     function resetZoom() {
-      state.zoom = 0.88;
+      state.zoom = 0.86;
       applyZoom(true);
     }
 
-    function centerViewport() {
+    function focusPoint(x, y) {
       requestAnimationFrame(() => {
         const scale = svg.clientWidth / canvas.width;
-        svgWrap.scrollLeft = Math.max(center.x * scale - svgWrap.clientWidth / 2, 0);
-        svgWrap.scrollTop = Math.max(center.y * scale - svgWrap.clientHeight / 2, 0);
+        svgWrap.scrollTo({
+          left: Math.max(x * scale - svgWrap.clientWidth / 2, 0),
+          top: Math.max(y * scale - svgWrap.clientHeight / 2, 0),
+          behavior: 'smooth'
+        });
       });
+    }
+
+    function focusChapter(chapter) {
+      focusPoint(chapter.x + chapter.part.direction * 40, chapter.y);
+    }
+
+    function focusPart(part) {
+      focusPoint(part.x, part.y);
+    }
+
+    function centerViewport() {
+      focusPoint(center.x, center.y);
+    }
+
+    function rerender() {
+      renderMeta();
+      renderLegend();
+      renderViewButtons();
+      renderSvg();
+      renderInspector();
+    }
+
+    function selectCenter(shouldFocus = false) {
+      state.selected = { type: 'center' };
+      rerender();
+      if (shouldFocus) centerViewport();
+    }
+
+    function selectPart(part, shouldFocus = false) {
+      state.selected = { type: 'part', part };
+      rerender();
+      if (shouldFocus) focusPart(part);
+    }
+
+    function selectChapter(chapter, shouldFocus = false) {
+      state.selected = { type: 'chapter', chapter };
+      rerender();
+      if (shouldFocus) focusChapter(chapter);
+    }
+
+    function firstSearchHit() {
+      if (matches({ type: 'center' })) return { type: 'center' };
+      for (const part of mindmapData.parts) {
+        if (matches({ type: 'part', part })) return { type: 'part', part };
+        for (const chapter of part.chapters) {
+          if (matches({ type: 'chapter', chapter })) return { type: 'chapter', chapter };
+        }
+      }
+      return null;
     }
 
     function applySearch() {
       state.query = searchInput.value.trim().toLowerCase();
-      const firstHit = allChapters().find(chapter => matches({ type: 'chapter', chapter }));
-      if (state.query && firstHit) state.selected = { type: 'chapter', chapter: firstHit };
-      if (!state.query) state.selected = { type: 'center' };
-      renderSvg();
-      renderInspector();
+      if (!state.query) {
+        state.selected = { type: 'center' };
+        rerender();
+        return;
+      }
+      const hit = firstSearchHit();
+      if (!hit) {
+        rerender();
+        return;
+      }
+      if (hit.type === 'part') state.selected = hit;
+      if (hit.type === 'chapter') state.selected = hit;
+      if (hit.type === 'center') state.selected = hit;
+      rerender();
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      rerender();
     }
 
     function init() {
       normalizeParts();
-      renderMeta();
-      renderLegend();
-      renderSvg();
-      renderInspector();
+      rerender();
       applyZoom();
       centerViewport();
+
       searchInput.addEventListener('input', applySearch);
       document.getElementById('clearSearch').addEventListener('click', () => {
         searchInput.value = '';
@@ -958,9 +1619,13 @@
       document.getElementById('showAll').addEventListener('click', () => {
         state.query = '';
         searchInput.value = '';
-        selectCenter();
+        state.viewMode = 'overview';
+        selectCenter(true);
       });
-      document.getElementById('focusMemory').addEventListener('click', selectCenter);
+      document.getElementById('focusMemory').addEventListener('click', () => selectCenter(true));
+      document.getElementById('viewOverview').addEventListener('click', () => setViewMode('overview'));
+      document.getElementById('viewMemory').addEventListener('click', () => setViewMode('memory'));
+      document.getElementById('viewRisk').addEventListener('click', () => setViewMode('risk'));
       document.getElementById('zoomOut').addEventListener('click', () => adjustZoom(-0.1));
       document.getElementById('zoomIn').addEventListener('click', () => adjustZoom(0.1));
       document.getElementById('zoomReset').addEventListener('click', resetZoom);

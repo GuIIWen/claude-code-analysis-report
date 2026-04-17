@@ -1,0 +1,26 @@
+# P8 Mindmap Redesign Review
+- Verdict: PASS
+- Findings:
+  - `mindmap.html` 仍是原生 SVG 脑图而非卡片墙：主视图保留 `mindmapSvg`、`zonesLayer`、`linksLayer`、`nodesLayer`，说明中心主题→Part→章节→组节点仍在 SVG 内组织，且备注明确要求通过 `<path>` 曲线连接；见 `agentic-design-patterns-book-analysis/mindmap.html:601`, `agentic-design-patterns-book-analysis/mindmap.html:621`, `agentic-design-patterns-book-analysis/mindmap.html:628`。
+  - 结构数量符合目标：`mindmapData.parts` 含 4 个 Part，章节编号完整覆盖 1–21；见 `agentic-design-patterns-book-analysis/mindmap.html:645`, `agentic-design-patterns-book-analysis/mindmap.html:666`, `agentic-design-patterns-book-analysis/mindmap.html:696`, `agentic-design-patterns-book-analysis/mindmap.html:723`, `agentic-design-patterns-book-analysis/mindmap.html:749`。
+  - Part 色块分区已落地：每个 Part 有独立 `palette` 与 `zone`，并在 `drawZone` 里绘制半透明分区底板；见 `agentic-design-patterns-book-analysis/mindmap.html:651`, `agentic-design-patterns-book-analysis/mindmap.html:660`, `agentic-design-patterns-book-analysis/mindmap.html:1074`。
+  - 主干/支线/叶线层级已落地：`.trunk` / `.branch` / `.twig` 使用不同线宽；技术叶线为虚线、风险叶线为点划线；见 `agentic-design-patterns-book-analysis/mindmap.html:254`, `agentic-design-patterns-book-analysis/mindmap.html:255`, `agentic-design-patterns-book-analysis/mindmap.html:256`, `agentic-design-patterns-book-analysis/mindmap.html:257`, `agentic-design-patterns-book-analysis/mindmap.html:258`。
+  - 章节编号徽章已醒目存在：章节卡左上绘制圆形 badge 和独立章号文字，不是混在标题里；见 `agentic-design-patterns-book-analysis/mindmap.html:1186`, `agentic-design-patterns-book-analysis/mindmap.html:1194`。方案文件也补入了编号徽章的验收与 P0 实施项；见 `agentic-design-patterns-book-analysis/mindmap_redesign_plan.md:650`, `agentic-design-patterns-book-analysis/mindmap_redesign_plan.md:681`, `agentic-design-patterns-book-analysis/mindmap_redesign_plan.md:724`。
+  - 点击章节高亮完整路径、其余分支降灰已落地：`pathRelation` 对 trunk/branch/twig 区分 active/context/dim，`pathClasses` 和节点透明度把其他 Part/分支压暗；见 `agentic-design-patterns-book-analysis/mindmap.html:985`, `agentic-design-patterns-book-analysis/mindmap.html:1018`, `agentic-design-patterns-book-analysis/mindmap.html:1334`。
+  - 组件/技术不只靠颜色区分，且不再只显示前两个：技术连接线与技术组边框都用了虚线；`leafGroups` 直接使用 `chapter.components` / `chapter.techniques` 全量生成组节点，代码中已无 `components.slice(0, 2)` / `techniques.slice(0, 2)` / `leafItems()`；见 `agentic-design-patterns-book-analysis/mindmap.html:257`, `agentic-design-patterns-book-analysis/mindmap.html:367`, `agentic-design-patterns-book-analysis/mindmap.html:1229`, `agentic-design-patterns-book-analysis/mindmap.html:1241`, `agentic-design-patterns-book-analysis/mindmap.html:1257`。
+  - 同 Part 相邻章节已做 tone 差异：`normalizeParts()` 给每章分配 `tone`，`chapterTone()` 基于索引和比例混色，保证同色系但不同明度/边框/徽章色；见 `agentic-design-patterns-book-analysis/mindmap.html:800`, `agentic-design-patterns-book-analysis/mindmap.html:857`。
+  - 图上已承载完整组件/技术骨架，右侧已转成“背诵检查 + 解释详情”：图上 `leafGroups()` 生成组件组/技术组/风险锚点，右侧章节面板先给“背诵检查”，再给“解释详情”；见 `agentic-design-patterns-book-analysis/mindmap.html:1229`, `agentic-design-patterns-book-analysis/mindmap.html:1416`, `agentic-design-patterns-book-analysis/mindmap.html:1425`, `agentic-design-patterns-book-analysis/mindmap.html:1434`。
+  - 搜索、缩放、横向滚动、总览/背诵/风险模式均保留且已绑定：搜索框与按钮存在，`applyZoom` / `adjustZoom` / `resetZoom` / `centerViewport` 仍在，三种模式按钮与事件绑定齐全；见 `agentic-design-patterns-book-analysis/mindmap.html:574`, `agentic-design-patterns-book-analysis/mindmap.html:594`, `agentic-design-patterns-book-analysis/mindmap.html:600`, `agentic-design-patterns-book-analysis/mindmap.html:1496`, `agentic-design-patterns-book-analysis/mindmap.html:1520`, `agentic-design-patterns-book-analysis/mindmap.html:1544`, `agentic-design-patterns-book-analysis/mindmap.html:1603`, `agentic-design-patterns-book-analysis/mindmap.html:1625`。
+  - 改动范围未跑偏：`git diff --name-only` 只出现 `agentic-design-patterns-book-analysis/mindmap.html` 与 `agentic-design-patterns-book-analysis/mindmap_redesign_plan.md`；报告文件之外无额外实现改动。
+- Risks:
+  - 静态审查能确认结构、数据、绑定和样式声明；但对实际浏览器中的可读性、遮挡和滚动手感，仍建议做一次人工打开页面的像素级目视验收。
+  - 当前实现是“组节点全量展示”，未做 P1 的章节展开为独立叶节点；这不影响本次验收目标，但若后续要强化“逐条叶路径”训练，应按方案继续做 P1。
+- Commands:
+  - `git -C /tmp/claude-code-analysis-report diff --name-only` → 输出仅有 `agentic-design-patterns-book-analysis/mindmap.html`、`agentic-design-patterns-book-analysis/mindmap_redesign_plan.md`。
+  - `git -C /tmp/claude-code-analysis-report status --short` → 显示 `mindmap.html` 已修改、`mindmap_redesign_plan.md` 新增，未见其他目标外实现文件。
+  - `node --check /tmp/claude-code-analysis-report/agentic-design-patterns-book-analysis/mindmap.html` → 失败，原因是 Node 不支持直接对 `.html` 做语法检查（`ERR_UNKNOWN_FILE_EXTENSION`）；不计为实现缺陷。
+  - `sed -n '/<script>/,/<\/script>/p' /tmp/claude-code-analysis-report/agentic-design-patterns-book-analysis/mindmap.html | head -n -1 | tail -n +2 | node --check` → 通过，内联 JS 语法有效。
+  - `rg -N "^[[:space:]]+id: [1-4]," -c /tmp/claude-code-analysis-report/agentic-design-patterns-book-analysis/mindmap.html` → `4`。
+  - `rg -o "\[[0-9]+, '" /tmp/claude-code-analysis-report/agentic-design-patterns-book-analysis/mindmap.html` → 命中完整章节编号 `1` 到 `21`。
+  - `rg -n "components\.slice\(0, 2\)|techniques\.slice\(0, 2\)|leafItems\(" /tmp/claude-code-analysis-report/agentic-design-patterns-book-analysis/mindmap.html` → 无命中，确认未保留“只取前两个”的旧逻辑。
+  - `rg -c "el\('path'|<path" /tmp/claude-code-analysis-report/agentic-design-patterns-book-analysis/mindmap.html` → `2`，对应 SVG `<path>` 定义与 `addPath()` 的路径创建逻辑。
