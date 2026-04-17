@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agentic Design Patterns 中文交互脑图</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f3ee;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-solid: #ffffff;
+      --ink: #172033;
+      --muted: #647084;
+      --line: #d9cfc0;
+      --brand: #6d5dfc;
+      --brand-2: #15aabf;
+      --accent: #f59f00;
+      --danger: #e03131;
+      --ok: #2f9e44;
+      --shadow: 0 20px 60px rgba(37, 32, 25, 0.13);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(109,93,252,.16), transparent 28%),
+        radial-gradient(circle at 85% 18%, rgba(21,170,191,.14), transparent 25%),
+        linear-gradient(135deg, #fbf8f1 0%, var(--bg) 48%, #eef4ff 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(246,243,238,.82);
+      border-bottom: 1px solid rgba(217,207,192,.8);
+    }
+    .topbar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(260px, 480px) auto;
+      gap: 14px;
+      align-items: center;
+    }
+    h1 { margin: 0; font-size: clamp(20px, 2.3vw, 34px); letter-spacing: -.04em; }
+    .subtitle { color: var(--muted); margin-top: 4px; font-size: 13px; }
+    .searchbox { position: relative; }
+    .searchbox input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 13px 46px 13px 18px;
+      font-size: 15px;
+      outline: none;
+      box-shadow: 0 10px 28px rgba(50, 45, 37, .07);
+      background: rgba(255,255,255,.92);
+    }
+    .searchbox span { position: absolute; right: 16px; top: 11px; color: var(--muted); }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: var(--ink);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 10px 22px rgba(23,32,51,.16);
+    }
+    button.secondary { background: white; color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+    button:hover { transform: translateY(-1px); }
+    main { max-width: 1440px; margin: 0 auto; padding: 24px 20px 44px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+    .stat { background: var(--panel); border: 1px solid rgba(217,207,192,.72); border-radius: 18px; padding: 14px; box-shadow: 0 8px 24px rgba(37,32,25,.06); }
+    .stat strong { display: block; font-size: 24px; }
+    .stat span { color: var(--muted); font-size: 13px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; align-items: start; }
+    .map {
+      position: relative;
+      background: rgba(255,255,255,.56);
+      border: 1px solid rgba(217,207,192,.78);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      overflow: hidden;
+    }
+    .map::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(23,32,51,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(23,32,51,.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at center, black, transparent 76%);
+      pointer-events: none;
+    }
+    .center-node {
+      position: relative;
+      margin: 0 auto 26px;
+      max-width: 720px;
+      text-align: center;
+      border-radius: 28px;
+      padding: 24px;
+      color: white;
+      background: linear-gradient(135deg, var(--brand), #3b82f6 48%, var(--brand-2));
+      box-shadow: 0 24px 55px rgba(74,89,211,.34);
+    }
+    .center-node h2 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 42px); }
+    .center-node p { margin: 6px 0; line-height: 1.65; }
+    .motto { display: inline-block; margin-top: 10px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.18); font-weight: 800; }
+    .parts { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    .parts::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -24px;
+      bottom: 12px;
+      width: 2px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(109,93,252,.36), rgba(21,170,191,.18));
+      pointer-events: none;
+    }
+    .part {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid rgba(217,207,192,.84);
+      border-radius: 22px;
+      box-shadow: 0 12px 34px rgba(37,32,25,.09);
+      overflow: hidden;
+    }
+    .part::before {
+      content: "";
+      position: absolute;
+      top: 34px;
+      width: 22px;
+      height: 2px;
+      background: rgba(109,93,252,.28);
+      pointer-events: none;
+    }
+    .part:nth-child(odd)::before { right: -22px; }
+    .part:nth-child(even)::before { left: -22px; }
+    .part.hidden-by-search, .chapter.hidden-by-search { display: none; }
+    .part-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 16px;
+      background: linear-gradient(90deg, rgba(109,93,252,.12), rgba(21,170,191,.08));
+      cursor: pointer;
+      border-bottom: 1px solid rgba(217,207,192,.7);
+    }
+    .part-title { display: flex; gap: 10px; align-items: center; }
+    .badge { min-width: 34px; height: 34px; display: inline-grid; place-items: center; border-radius: 12px; color: white; background: var(--brand); font-weight: 900; }
+    .part h3 { margin: 0; font-size: 17px; }
+    .part small { color: var(--muted); display: block; margin-top: 3px; }
+    .toggle { background: white; color: var(--ink); border: 1px solid var(--line); padding: 8px 10px; box-shadow: none; }
+    .chapters { position: relative; padding: 14px 14px 14px 26px; display: grid; gap: 12px; }
+    .chapters::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      bottom: 18px;
+      width: 2px;
+      background: rgba(21,170,191,.18);
+    }
+    .part.collapsed .chapters { display: none; }
+    .chapter {
+      position: relative;
+      border: 1px solid rgba(217,207,192,.84);
+      border-radius: 18px;
+      background: rgba(255,255,255,.84);
+      overflow: hidden;
+      transition: .18s ease;
+    }
+    .chapter::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 24px;
+      width: 10px;
+      height: 2px;
+      background: rgba(21,170,191,.28);
+    }
+    .chapter.is-active { border-color: rgba(109,93,252,.8); box-shadow: 0 0 0 4px rgba(109,93,252,.13); }
+    .chapter-head {
+      width: 100%; display: flex; align-items: center; gap: 10px; justify-content: space-between;
+      padding: 13px 14px; cursor: pointer;
+    }
+    .chapter-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .num { background: #f1f3f5; color: var(--brand); border-radius: 999px; padding: 5px 9px; font-weight: 900; white-space: nowrap; }
+    .chapter h4 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+    .chapter-body { display: none; padding: 0 14px 14px 44px; }
+    .chapter.open .chapter-body { display: block; }
+    .node-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .node {
+      border: 1px solid rgba(109,93,252,.18);
+      background: rgba(109,93,252,.08);
+      color: #34306f;
+      padding: 7px 9px;
+      border-radius: 999px;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .tech { border-color: rgba(21,170,191,.22); background: rgba(21,170,191,.1); color: #075463; }
+    .mini { color: var(--muted); line-height: 1.65; margin: 8px 0; font-size: 14px; }
+    .mini strong { color: var(--ink); }
+    .detail {
+      position: sticky;
+      top: 104px;
+      background: var(--panel-solid);
+      border: 1px solid rgba(217,207,192,.84);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      max-height: calc(100vh - 124px);
+      overflow: auto;
+    }
+    .detail h2 { margin: 0 0 6px; font-size: 24px; }
+    .detail .part-label { color: var(--brand); font-weight: 900; }
+    .detail-section { border-top: 1px solid #edf0f4; padding-top: 14px; margin-top: 14px; }
+    .detail-section h3 { margin: 0 0 8px; font-size: 15px; color: var(--muted); }
+    .detail-section ul { margin: 0; padding-left: 19px; line-height: 1.72; }
+    .pill { display: inline-block; margin: 3px 5px 3px 0; padding: 7px 9px; border-radius: 999px; background: #f1f3f5; font-size: 13px; }
+    mark { background: #fff3bf; color: inherit; border-radius: 5px; padding: 0 2px; }
+    .empty { display: none; margin: 18px 0 0; padding: 18px; text-align: center; color: var(--muted); background: var(--panel); border-radius: 18px; border: 1px dashed var(--line); }
+    .appendix { margin-top: 18px; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .appendix div { padding: 12px; border-radius: 16px; background: rgba(255,255,255,.78); border: 1px solid rgba(217,207,192,.75); color: var(--muted); line-height: 1.55; }
+    @media (max-width: 1080px) {
+      .topbar { grid-template-columns: 1fr; }
+      .actions { justify-content: flex-start; }
+      .workspace { grid-template-columns: 1fr; }
+      .detail { position: static; max-height: none; }
+    }
+    @media (max-width: 720px) {
+      main { padding: 16px 12px 32px; }
+      .topbar { padding: 13px 12px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .parts { grid-template-columns: 1fr; }
+      .map { padding: 14px; }
+      .chapter-body { padding-left: 14px; }
+      .appendix { grid-template-columns: 1fr; }
+      button { padding: 9px 11px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Agentic Design Patterns 脑图</h1>
+        <div class="subtitle">中心主题 → 4 Part → 21 章 → 组件 / 技术节点</div>
+      </div>
+      <label class="searchbox" aria-label="搜索章节或节点">
+        <input id="searchInput" type="search" placeholder="搜索章节、组件、技术节点、口诀..." autocomplete="off" />
+        <span>⌕</span>
+      </label>
+      <div class="actions">
+        <button id="expandAll">展开全部</button>
+        <button id="collapseAll" class="secondary">收起全部</button>
+        <button id="resetView" class="secondary">重置</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="stats" id="stats" aria-label="覆盖统计"></section>
+    <section class="workspace">
+      <div class="map">
+        <section class="center-node" id="centerNode"></section>
+        <section class="parts" id="parts"></section>
+        <div class="empty" id="emptyState">没有匹配的章节或节点，请换个关键词。</div>
+        <section class="appendix" id="appendix"></section>
+      </div>
+      <aside class="detail" id="detail" aria-live="polite"></aside>
+    </section>
+  </main>
+  <script>
+    const mindmapData = {
+  "center": {
+    "theme": "Agentic Design Patterns",
+    "mainline": "从基础工作流，到状态与学习，再到可靠性与接地，最后进入协议、优化与高级智能。",
+    "motto": "先把流程跑通，再把状态管住；先把系统做稳，再把智能做深。"
+  },
+  "parts": [
+    {
+      "id": 1,
+      "title": "基础工作流与协作",
+      "range": "1-7",
+      "chapters": [
+        {
+          "number": 1,
+          "title": "提示词链",
+          "definition": "把复杂任务拆成多个顺序步骤，让上一步输出成为下一步输入，用链式结构替代“一次性大提示”。",
+          "components": [
+            "任务拆分器：把大目标切成若干可控小步。",
+            "提示契约：为每一步定义输入、角色、输出格式。",
+            "中间结果载体：把步骤产物稳定传递给下游。",
+            "校验关口：在进入下一步前检查格式和质量。"
+          ],
+          "techniques": [
+            "顺序执行而非一次生成。",
+            "JSON / XML / 表格等结构化输出。",
+            "中间变量传递与上下文拼装。",
+            "步骤级日志与断点检查。",
+            "链尾可接工具、反思或路由。"
+          ],
+          "landing": "抽取信息 → 转结构化数据 → 生成报告 / 邮件 / 代码说明。",
+          "risk": "链越长，错误传播越明显；步骤切太碎会让编排复杂度飙升。",
+          "motto": "先拆后传，步步验算。"
+        },
+        {
+          "number": 2,
+          "title": "路由",
+          "definition": "根据输入意图、语义或规则，把请求送到最合适的分支、工具或子 Agent。",
+          "components": [
+            "路由器：负责“该走哪条路”的决策。",
+            "标签集合：稳定、有限、可解释的分类结果。",
+            "分支处理器：每条路径的专用执行单元。",
+            "兜底分支：处理低置信度、模糊输入与澄清。"
+          ],
+          "techniques": [
+            "意图分类与标签输出。",
+            "向量语义路由。",
+            "规则路由与条件分支。",
+            "低置信度澄清机制。",
+            "路由日志与混淆样本回放。"
+          ],
+          "landing": "客服分流、代码助手分工、研究任务按查询类型派发。",
+          "risk": "路由错一次，后面整条链都可能建立在错前提上。",
+          "motto": "先判路，再出手。"
+        },
+        {
+          "number": 3,
+          "title": "并行化",
+          "definition": "把互不依赖的子任务同时执行，以换取更低总延迟和更高吞吐。",
+          "components": [
+            "子任务切分器：识别哪些任务可以并发。",
+            "并行工作单元：独立运行的多个分支。",
+            "汇聚器：收集并合并并行结果。",
+            "超时与预算控制器：限制慢分支拖累整体。"
+          ],
+          "techniques": [
+            "fan-out / fan-in 并发模式。",
+            "Map-Reduce 式结果聚合。",
+            "分支隔离与状态分槽。",
+            "部分失败占位与重试。",
+            "限流、超时、速率控制。"
+          ],
+          "landing": "并行搜集新闻 / 财报 / 社媒，再统一综合。",
+          "risk": "表面独立、实际共享前提的任务，盲目并发会造成冲突答案。",
+          "motto": "能并不串，先分后合。"
+        },
+        {
+          "number": 4,
+          "title": "反思",
+          "definition": "把执行过程改造成“生成 → 评审 → 修正”的闭环，让初稿不是终稿。",
+          "components": [
+            "生成器：先给出第一版结果。",
+            "审查器：按标准找缺陷、提修改点。",
+            "缺陷清单：结构化记录问题与建议。",
+            "停止条件：定义何时收敛、何时退出。"
+          ],
+          "techniques": [
+            "generator / reviewer 角色分离。",
+            "结构化批评输出。",
+            "多轮迭代修正。",
+            "迭代上限控制。",
+            "历史批评累积进下一轮上下文。"
+          ],
+          "landing": "代码修复、文案润色、规划优化、长答案打磨。",
+          "risk": "若评审标准不清，系统会反复重写却不真正收敛。",
+          "motto": "先做后审，错了再改。"
+        },
+        {
+          "number": 5,
+          "title": "工具使用（函数调用）",
+          "definition": "让模型在需要真实数据、精确计算或外部动作时调用工具，而不是只靠语言猜测。",
+          "components": [
+            "工具定义：名称、参数、说明、返回值。",
+            "决策器：判断何时该调用哪个工具。",
+            "执行器：真正发起 API / DB / 代码运行。",
+            "观察回灌器：把工具结果重新送回模型。",
+            "权限边界：控制副作用和安全范围。"
+          ],
+          "techniques": [
+            "函数调用 schema。",
+            "参数校验与默认值处理。",
+            "工具结果标准化。",
+            "副作用确认与鉴权。",
+            "工具错误重试与异常承接。",
+            "Agent as Tool 抽象。"
+          ],
+          "landing": "查库存、执行脚本、发邮件、查天气、访问企业知识系统。",
+          "risk": "工具越强，副作用越大；如果权限模型混乱，真实业务会暴露风险。",
+          "motto": "模型定意，工具落地。"
+        },
+        {
+          "number": 6,
+          "title": "规划",
+          "definition": "在目标明确但路径未知时，先生成计划，再按计划执行或边执行边重规划。",
+          "components": [
+            "目标定义器：说明想达到的终态。",
+            "计划图：把目标拆成子目标和顺序。",
+            "执行器：逐步落地计划动作。",
+            "重规划器：在环境变化时改路线。",
+            "检查点：用于复盘当前进度与偏差。"
+          ],
+          "techniques": [
+            "目标分解与依赖排序。",
+            "状态建模与约束表达。",
+            "中途信息回流后的重规划。",
+            "长时任务状态持久化。",
+            "暴露中间步骤供审计与修正。"
+          ],
+          "landing": "深度研究、复杂采购、长链路客服诊断、项目型任务执行。",
+          "risk": "计划看起来合理，不代表执行一定可靠；过度规划会拖慢行动。",
+          "motto": "先定终，再排程。"
+        },
+        {
+          "number": 7,
+          "title": "多 Agent 协作",
+          "definition": "用多个角色清晰、边界明确的 Agent 共同完成复杂任务，而不是把所有能力压进一个 Agent。",
+          "components": [
+            "角色集合：研究员、执行者、评审者、管理者等。",
+            "通信拓扑：顺序、并行、监督者、层级或网络结构。",
+            "共享状态：统一字段、统一语义、统一交接格式。",
+            "委派规则：谁可分派、谁只执行、谁可审查。",
+            "审计轨迹：记录交接与决策链。"
+          ],
+          "techniques": [
+            "manager / specialist 分工。",
+            "Sequential / Parallel / Loop 编排。",
+            "AgentTool 与 Agent 嵌套调用。",
+            "共享本体与状态键约定。",
+            "交接契约与产物格式。",
+            "管理者 Agent 日志化。"
+          ],
+          "landing": "研究-写作-审校、生成-测试-文档、供应链多角色协同。",
+          "risk": "角色拆太细会让系统变成“踢皮球网络”，调试和通信成本陡增。",
+          "motto": "分工清，交接明。"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "状态、学习与控制",
+      "range": "8-11",
+      "chapters": [
+        {
+          "number": 8,
+          "title": "记忆管理",
+          "definition": "让 Agent 不再每轮都“失忆”，同时管理会话内短期状态与跨会话长期知识。",
+          "components": [
+            "Session：一条会话线程的容器。",
+            "State：会话中的动态草稿本。",
+            "Long-term Memory：持久存储的经验或知识。",
+            "检索器：把长期记忆召回进当前上下文。",
+            "命名空间：组织 user / app / temp 等不同作用域。"
+          ],
+          "techniques": [
+            "短期记忆 vs 长期记忆分层。",
+            "session.state 键值化管理。",
+            "user: / app: / temp: 作用域。",
+            "事件驱动状态更新。",
+            "长对话摘要压缩。",
+            "语义检索 + 元数据过滤。"
+          ],
+          "landing": "记住用户偏好、跨多轮跟踪任务、复用过往成功策略。",
+          "risk": "记忆不等于真相，过期事实和错误偏好会污染后续决策。",
+          "motto": "短期保上下文，长期存经验。"
+        },
+        {
+          "number": 9,
+          "title": "学习和适应",
+          "definition": "让 Agent 因过去经验而改变策略、结构或代码，形成跨周期的持续改进。",
+          "components": [
+            "经验档案库：保存历史版本、轨迹与评分。",
+            "评估器：外部度量“改得是否更好”。",
+            "更新器：按经验修改策略 / 参数 / 代码。",
+            "监督者：观察并在失控时中止。",
+            "变异与选择机制：保留优解、淘汰劣解。"
+          ],
+          "techniques": [
+            "PPO 稳定策略更新。",
+            "DPO 基于偏好的直接优化。",
+            "在线学习与增量适应。",
+            "自我改进编码 Agent。",
+            "进化搜索与候选版本竞争。",
+            "隔离环境中的自修改执行。"
+          ],
+          "landing": "个性化助手持续调优、编码 Agent 自我进化、推荐 / 交易系统在线适应。",
+          "risk": "如果评估器设计差，系统会学会“刷分”，而不是学会真正变好。",
+          "motto": "先评再改，优胜迭代。"
+        },
+        {
+          "number": 10,
+          "title": "模型上下文协议（MCP）",
+          "definition": "把工具和数据源按统一协议暴露给模型，让接入能力从“定制胶水”升级为“标准接口”。",
+          "components": [
+            "MCP Server：暴露资源、工具、提示。",
+            "MCP Client：发现并调用远端能力。",
+            "能力目录：资源 / 工具 / 提示三分法。",
+            "传输层：STDIO、HTTP、SSE 等连接方式。",
+            "访问控制：白名单、授权、过滤。"
+          ],
+          "techniques": [
+            "动态发现“服务器会什么”。",
+            "资源 / 工具 / 提示的边界区分。",
+            "本地 STDIO 与远程 HTTP / SSE。",
+            "工具过滤与最小可见集。",
+            "FastMCP 自动 schema 生成。",
+            "Agent 友好 API 设计。"
+          ],
+          "landing": "统一接入文件系统、数据库、企业服务、表格与内容平台。",
+          "risk": "MCP 只解决“接得上”，不解决“底层 API 是否好用、是否安全、是否可维护”。",
+          "motto": "接口标准化，能力可发现。"
+        },
+        {
+          "number": 11,
+          "title": "目标设定和监控",
+          "definition": "把目标、成功标准和过程监控显式化，让 Agent 不只是“在忙”，而是“朝目标推进并可验证”。",
+          "components": [
+            "目标列表：明确系统要达成什么。",
+            "成功标准：定义“完成”的判据。",
+            "监控器：持续比较当前状态与目标差距。",
+            "Judge：评估是否达标。",
+            "停止器：决定继续、修正还是结束。"
+          ],
+          "techniques": [
+            "目标显式写入状态。",
+            "成功 / 失败二值或分级判定。",
+            "外部测试与指标化验收。",
+            "里程碑与迭代次数上限。",
+            "executor / judge 角色分离。",
+            "反馈轨迹存档。"
+          ],
+          "landing": "代码生成闭环、项目里程碑推进、客服问题闭环处理。",
+          "risk": "同一个模型既写答案又判答案，很容易产生“自我放过”的错觉。",
+          "motto": "目标可验，过程可盯。"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "可靠性、人在回路与知识接地",
+      "range": "12-14",
+      "chapters": [
+        {
+          "number": 12,
+          "title": "异常处理和恢复",
+          "definition": "让 Agent 在工具失败、超时、数据损坏或外部依赖失效时仍能识错、降级、恢复，而不是直接崩掉。",
+          "components": [
+            "异常探测器：识别错误、超时、脏输出。",
+            "故障分类器：区分瞬时故障与持久故障。",
+            "重试 / 回退器：尝试修复或切换备选路径。",
+            "状态恢复器：清理坏状态并回到稳定点。",
+            "升级器：把无法恢复的问题上抛给更高层或人工。"
+          ],
+          "techniques": [
+            "超时、错误码、监控告警。",
+            "瞬时错误重试策略。",
+            "fallback handler 兜底方案。",
+            "优雅降级返回部分价值。",
+            "状态回滚与脏数据清理。",
+            "结构化异常日志。"
+          ],
+          "landing": "主工具失败时切备用工具，数据库挂了就先返回缓存或简化答案。",
+          "risk": "如果只吞错不留痕，系统会长期静默失败而不自知。",
+          "motto": "先识错，再降级，最后升级。"
+        },
+        {
+          "number": 13,
+          "title": "人机协同（HITL）",
+          "definition": "在高风险、强模糊、强责任场景里，把人类判断纳入系统闭环，而不是追求全自动。",
+          "components": [
+            "升级规则：定义何时必须转人。",
+            "人工工作台：查看上下文、证据和历史。",
+            "证据包：给人类最小理解成本的摘要材料。",
+            "人工裁决：给出最终批准、修改或驳回。",
+            "反馈沉淀器：把人工修正变成后续优化素材。"
+          ],
+          "techniques": [
+            "human-in-the-loop 与 on-the-loop。",
+            "风险分级与审批阈值。",
+            "升级前自动摘要整理。",
+            "脱敏与隐私保护。",
+            "审批点 / 确认点插入工作流。",
+            "人工反馈写回记忆或训练集。"
+          ],
+          "landing": "法律 / 医疗 / 金融辅助、复杂客服、敏感内容审核、关键动作审批。",
+          "risk": "人越多，吞吐越低；若升级太晚，人接手时可能已经难以补救。",
+          "motto": "高风险交给人。"
+        },
+        {
+          "number": 14,
+          "title": "知识检索（RAG）",
+          "definition": "先检索外部知识，再基于证据生成答案，让模型从“闭卷作答”变成“开卷作答”。",
+          "components": [
+            "文档切块器：把知识拆成可检索单元。",
+            "向量 / 混合检索器：找最相关证据。",
+            "上下文注入器：把检索结果送入提示。",
+            "生成器：根据证据组织最终答案。",
+            "引用器：把依据和来源绑定到回答。"
+          ],
+          "techniques": [
+            "Embedding 与向量数据库。",
+            "BM25 + 语义检索混合策略。",
+            "分块大小、重叠、元数据过滤。",
+            "rerank 与来源可信度判断。",
+            "GraphRAG 的关系增强。",
+            "Agentic RAG 的检索后推理。"
+          ],
+          "landing": "企业知识问答、事实型客服、政策 / 法律检索、可溯源报告生成。",
+          "risk": "检索差时，生成再强也只是“基于错误上下文的流畅回答”。",
+          "motto": "先找证，再作答。"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "协议、优化与高级智能",
+      "range": "15-21",
+      "chapters": [
+        {
+          "number": 15,
+          "title": "Agent 间通信（A2A）",
+          "definition": "让不同框架、不同服务、不同团队发布的 Agent 按统一协议彼此发现、调用和协作。",
+          "components": [
+            "Agent Card：描述能力、端点、认证和用法。",
+            "发现机制：找到可用 Agent。",
+            "任务模型：提交、处理中、完成等生命周期。",
+            "消息 / 工件模型：区分交流内容与最终产物。",
+            "上下文关联器：用 contextId 串起多轮协作。"
+          ],
+          "techniques": [
+            "well-known URI / 注册表 / 直连发现。",
+            "同步、异步、SSE、webhook 模式。",
+            "submitted / working / completed 状态机。",
+            "远程认证与权限控制。",
+            "工件流式返回与任务轮询。",
+            "A2A 与 MCP 的职责分离。"
+          ],
+          "landing": "研究 Agent 调分析 Agent、企业多团队发布独立 Agent 服务。",
+          "risk": "协议统一不代表质量统一，远程 Agent 的真实可靠性仍需评估与监控。",
+          "motto": "Agent 找 Agent，按协议协作。"
+        },
+        {
+          "number": 16,
+          "title": "资源感知优化",
+          "definition": "让 Agent 在成本、时延、模型强度、上下文长度和可用算力之间动态平衡。",
+          "components": [
+            "复杂度分类器：判断问题值不值得“重兵出击”。",
+            "模型路由器：给不同任务分配不同模型。",
+            "预算管理器：控制 token、时延与花费。",
+            "回退链：主模型失败时切备用路径。",
+            "反馈器：根据质量和成本调整路由策略。"
+          ],
+          "techniques": [
+            "简单 / 推理 / 搜索型请求分类。",
+            "强模型与轻模型分工。",
+            "上下文裁剪与摘要压缩。",
+            "成本、token、时延统一观测。",
+            "优雅降级与备用模型。",
+            "critic 对路由结果做复盘。"
+          ],
+          "landing": "高价值任务走强模型，轻问答走便宜模型，最新事实问题自动接搜索。",
+          "risk": "若分类器误判，系统会“省了钱，却错了答案”。",
+          "motto": "难题配强模，简单走轻模。"
+        },
+        {
+          "number": 17,
+          "title": "推理技术",
+          "definition": "为 Agent 提供多步思考、分支探索、代码验证和外部行动结合的推理骨架。",
+          "components": [
+            "推理脚手架：规定思考步骤。",
+            "分支搜索器：尝试多条候选路径。",
+            "工具 / 代码验证器：用外部执行验证推理。",
+            "反思循环：在错误后修正路径。",
+            "推理预算器：限制轮次、时间和成本。"
+          ],
+          "techniques": [
+            "CoT：逐步链式思考。",
+            "ToT：多路径树搜索与回溯。",
+            "ReAct：思考-行动-观察回路。",
+            "PALM：程序辅助求解。",
+            "RLVR：可验证奖励强化。",
+            "MASS：多 Agent 系统搜索。",
+            "Deep Research：长链研究式推理。"
+          ],
+          "landing": "复杂问答、数学证明、代码修复、研究分析、策略推演。",
+          "risk": "更长推理不等于更正确，很多时候只是把幻觉包装得更像“认真想过”。",
+          "motto": "想、试、验、收。"
+        },
+        {
+          "number": 18,
+          "title": "Guardrails / 安全模式",
+          "definition": "在输入、推理、工具调用和输出的全链路上加边界，让 Agent 既能做事，也不会越界做错事。",
+          "components": [
+            "输入守卫：过滤恶意请求和越狱尝试。",
+            "策略执行器：判断是否合规。",
+            "输出校验器：验证返回格式与内容边界。",
+            "工具权限层：最小权限控制副作用。",
+            "审计 / 人工接管通道：处理高风险情况。"
+          ],
+          "techniques": [
+            "prompt injection / jailbreak 检测。",
+            "合规 JSON 输出。",
+            "Pydantic 或 schema 校验。",
+            "allow / deny / escalate 三态策略。",
+            "工具白名单与最小权限。",
+            "对抗样本回归测试。"
+          ],
+          "landing": "客服合规回复、HR 去偏见、法律 / 科研场景风险拦截、危险操作阻断。",
+          "risk": "过严会误伤正常任务，过松则等于没防；只守输入不守工具和输出，会留下大洞。",
+          "motto": "先守边界，再放执行。"
+        },
+        {
+          "number": 19,
+          "title": "评估和监控",
+          "definition": "让 Agent 从“演示能跑”升级到“上线可观测、可度量、可复盘”。",
+          "components": [
+            "离线评估集：测固定任务质量。",
+            "在线轨迹系统：记录真实运行过程。",
+            "Judge 模块：对主观质量给结构化评分。",
+            "运营面板：看质量、时延、token、成本。",
+            "漂移 / 异常告警器：发现行为变化。"
+          ],
+          "techniques": [
+            "结果指标与轨迹指标双轨评估。",
+            "token / latency / error 监控。",
+            "LLM-as-a-Judge。",
+            "合约式任务成功条件。",
+            "A/B 测试与基线对比。",
+            "异常检测与漂移预警。"
+          ],
+          "landing": "客服解决率看板、多 Agent 交接质量评估、线上任务质量抽检。",
+          "risk": "只看单一分数会诱导系统“优化指标”而非“优化真实价值”。",
+          "motto": "不上监控，不算上线。"
+        },
+        {
+          "number": 20,
+          "title": "优先级排序",
+          "definition": "当 Agent 同时面对多个任务、多个目标和多个约束时，决定“先做什么、后做什么”。",
+          "components": [
+            "任务模型：描述截止时间、影响、依赖与资源。",
+            "评分规则：把任务优先级显式化。",
+            "调度器：选择下一步执行项。",
+            "重排器：在新事件出现时动态改顺序。",
+            "防饥饿机制：避免低优任务永远得不到处理。"
+          ],
+          "techniques": [
+            "紧急性 / 重要性 / 依赖打分。",
+            "用户偏好权重。",
+            "动态重新优先级排序。",
+            "默认值与缺失信息填补。",
+            "优先级变化原因日志。",
+            "队列策略与任务老化。"
+          ],
+          "landing": "项目管理、客服队列、网络安全告警、个人助理排程。",
+          "risk": "只看“急”不看“重”，系统会被噪音事件牵着走。",
+          "motto": "先急后重，还看依赖。"
+        },
+        {
+          "number": 21,
+          "title": "探索和发现",
+          "definition": "让 Agent 不只是执行既定流程，而是主动提出假设、设计实验、比较候选方向并拓展未知空间。",
+          "components": [
+            "假设生成器：提出新思路或研究方向。",
+            "辩论 / 排名器：比较候选假设优劣。",
+            "进化器：对高分方案改写、重组、扩展。",
+            "实验回路：验证假设是否成立。",
+            "人类科学家：负责方向校正与伦理把关。"
+          ],
+          "techniques": [
+            "文献驱动的假设提出。",
+            "Elo 风格排名与竞争。",
+            "相似假设聚类与接近度图。",
+            "多 Agent 研究实验室结构。",
+            "结果解释与外部证据验证。",
+            "前置安全审查与伦理边界。"
+          ],
+          "landing": "药物发现、算法搜索、开放式研究、漏洞探索、创意生成。",
+          "risk": "开放式探索极易把“新颖”误当“正确”，若无外部实验就只是语言层面的漂亮猜测。",
+          "motto": "先提假设，再做实验。"
+        }
+      ]
+    }
+  ],
+  "appendix": [
+    "附录 A：高级提示技术 —— 记住“提示是接口设计”，关键词：few-shot、结构化输出、上下文工程、step-back。",
+    "附录 B：Agentic 交互 —— 记住“从 API 走向 GUI / 现实环境”，关键词：视觉接地、动作回路、多模态感知。",
+    "附录 C：框架概览 —— 记住“框架是脚手架，不是能力本身”，关键词：LangChain、LangGraph、ADK、CrewAI。",
+    "附录 D：AgentSpace —— 记住“托管式 Agent 平台”，关键词：部署、集成、平台化。",
+    "附录 E：CLI Agent —— 记住“终端是高权限执行面”，关键词：命令执行、可观测、Terminal-Bench。",
+    "附录 F：推理引擎内部 —— 记住“思考预算如何变成系统能力”，关键词：推理堆栈、控制流、内部机制。",
+    "附录 G：编码 Agent —— 记住“代码任务是工具、测试、沙箱、反馈的综合战场”，关键词：编辑、运行、验证、修复。"
+  ],
+  "bookMemory": {
+    "summary": "工作流组织行动，状态管理连续性，可靠性保证上线，协议与推理拉高上限。",
+    "parts": [
+      "把活拆开并分配。",
+      "把状态记住并调控。",
+      "把系统做稳并接地。",
+      "把能力连通、优化、推到高级智能。"
+    ]
+  }
+};
+
+    const state = { activeChapter: null, query: '' };
+    const partsEl = document.getElementById('parts');
+    const detailEl = document.getElementById('detail');
+    const emptyEl = document.getElementById('emptyState');
+    const searchInput = document.getElementById('searchInput');
+
+    const allChapters = () => mindmapData.parts.flatMap(part => part.chapters.map(chapter => ({ ...chapter, part })));
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const chapterText = chapter => [chapter.number, chapter.title, chapter.definition, chapter.landing, chapter.risk, chapter.motto, ...chapter.components, ...chapter.techniques].join(' ').toLowerCase();
+    const highlight = value => {
+      const safe = escapeHtml(value);
+      if (!state.query) return safe;
+      const escapedQuery = state.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return safe.replace(new RegExp(escapedQuery, 'gi'), match => `<mark>${match}</mark>`);
+    };
+
+    function renderStats() {
+      const chapters = allChapters();
+      const nodes = chapters.reduce((sum, chapter) => sum + chapter.components.length + chapter.techniques.length, 0);
+      document.getElementById('stats').innerHTML = [
+        ['4', 'Part 全覆盖'],
+        [String(chapters.length), '章节全覆盖'],
+        [String(nodes), '组件 / 技术节点'],
+        ['6', '每章固定字段'],
+      ].map(([num, label]) => `<div class="stat"><strong>${num}</strong><span>${label}</span></div>`).join('');
+    }
+
+    function renderCenter() {
+      document.getElementById('centerNode').innerHTML = `
+        <h2>${escapeHtml(mindmapData.center.theme)}</h2>
+        <p>${escapeHtml(mindmapData.center.mainline)}</p>
+        <span class="motto">${escapeHtml(mindmapData.center.motto)}</span>
+      `;
+    }
+
+    function renderParts() {
+      partsEl.innerHTML = mindmapData.parts.map(part => `
+        <article class="part" data-part="${part.id}">
+          <div class="part-head" role="button" tabindex="0" aria-label="折叠或展开 Part ${part.id}">
+            <div class="part-title">
+              <span class="badge">P${part.id}</span>
+              <div><h3>Part ${part.id}：${escapeHtml(part.title)}</h3><small>第 ${part.range} 章 · ${part.chapters.length} 章</small></div>
+            </div>
+            <button class="toggle secondary" type="button">折叠</button>
+          </div>
+          <div class="chapters">
+            ${part.chapters.map(chapter => renderChapter(part, chapter)).join('')}
+          </div>
+        </article>
+      `).join('');
+      attachHandlers();
+    }
+
+    function renderChapter(part, chapter) {
+      return `
+        <article class="chapter" data-part="${part.id}" data-chapter="${chapter.number}">
+          <div class="chapter-head" role="button" tabindex="0" aria-label="聚焦第 ${chapter.number} 章">
+            <div class="chapter-name"><span class="num">第 ${chapter.number} 章</span><h4>${highlight(chapter.title)}</h4></div>
+            <span>›</span>
+          </div>
+          <div class="chapter-body">
+            <p class="mini"><strong>章节定义：</strong>${highlight(chapter.definition)}</p>
+            <div class="node-row">${chapter.components.map(item => `<span class="node">${highlight(item)}</span>`).join('')}</div>
+            <div class="node-row">${chapter.techniques.map(item => `<span class="node tech">${highlight(item)}</span>`).join('')}</div>
+            <p class="mini"><strong>典型落地：</strong>${highlight(chapter.landing)}</p>
+            <p class="mini"><strong>记忆锚点 / 口诀：</strong>${highlight(chapter.motto)}</p>
+          </div>
+        </article>`;
+    }
+
+    function attachHandlers() {
+      document.querySelectorAll('.part-head').forEach(head => {
+        const toggle = () => {
+          const part = head.closest('.part');
+          part.classList.toggle('collapsed');
+          head.querySelector('.toggle').textContent = part.classList.contains('collapsed') ? '展开' : '折叠';
+        };
+        head.addEventListener('click', event => { if (!event.target.closest('.toggle')) toggle(); });
+        head.querySelector('.toggle').addEventListener('click', toggle);
+        head.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); } });
+      });
+      document.querySelectorAll('.chapter-head').forEach(head => {
+        const focus = () => selectChapter(Number(head.closest('.chapter').dataset.chapter));
+        head.addEventListener('click', focus);
+        head.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); focus(); } });
+      });
+    }
+
+    function selectChapter(number) {
+      const found = allChapters().find(item => item.number === number);
+      if (!found) return;
+      state.activeChapter = number;
+      document.querySelectorAll('.chapter').forEach(el => {
+        const active = Number(el.dataset.chapter) === number;
+        el.classList.toggle('is-active', active);
+        el.classList.toggle('open', active || state.query.length > 0);
+        if (active) el.closest('.part').classList.remove('collapsed');
+      });
+      renderDetail(found.part, found);
+    }
+
+    function renderDetail(part, chapter) {
+      detailEl.innerHTML = `
+        <div class="part-label">Part ${part.id}：${escapeHtml(part.title)}</div>
+        <h2>第 ${chapter.number} 章：${highlight(chapter.title)}</h2>
+        <p class="mini">${highlight(chapter.definition)}</p>
+        <div class="detail-section"><h3>核心组件</h3><ul>${chapter.components.map(item => `<li>${highlight(item)}</li>`).join('')}</ul></div>
+        <div class="detail-section"><h3>关键技术节点</h3><ul>${chapter.techniques.map(item => `<li>${highlight(item)}</li>`).join('')}</ul></div>
+        <div class="detail-section"><h3>典型落地</h3><span class="pill">${highlight(chapter.landing)}</span></div>
+        <div class="detail-section"><h3>风险边界</h3><p class="mini">${highlight(chapter.risk)}</p></div>
+        <div class="detail-section"><h3>记忆锚点 / 口诀</h3><span class="pill">${highlight(chapter.motto)}</span></div>
+      `;
+    }
+
+    function applySearch() {
+      state.query = searchInput.value.trim().toLowerCase();
+      renderParts();
+      let visibleCount = 0;
+      mindmapData.parts.forEach(part => {
+        const partEl = document.querySelector(`.part[data-part="${part.id}"]`);
+        let partVisible = false;
+        part.chapters.forEach(chapter => {
+          const chapterEl = document.querySelector(`.chapter[data-chapter="${chapter.number}"]`);
+          const visible = !state.query || chapterText(chapter).includes(state.query) || part.title.toLowerCase().includes(state.query);
+          chapterEl.classList.toggle('hidden-by-search', !visible);
+          chapterEl.classList.toggle('open', Boolean(state.query));
+          if (visible) { partVisible = true; visibleCount += 1; }
+        });
+        partEl.classList.toggle('hidden-by-search', !partVisible);
+        if (state.query && partVisible) partEl.classList.remove('collapsed');
+      });
+      emptyEl.style.display = visibleCount ? 'none' : 'block';
+      const firstVisible = document.querySelector('.chapter:not(.hidden-by-search)');
+      if (firstVisible) selectChapter(Number(firstVisible.dataset.chapter));
+    }
+
+    function expandAll() {
+      document.querySelectorAll('.part').forEach(part => part.classList.remove('collapsed'));
+      document.querySelectorAll('.toggle').forEach(button => button.textContent = '折叠');
+      document.querySelectorAll('.chapter').forEach(chapter => chapter.classList.add('open'));
+    }
+    function collapseAll() {
+      document.querySelectorAll('.part').forEach(part => part.classList.add('collapsed'));
+      document.querySelectorAll('.toggle').forEach(button => button.textContent = '展开');
+      document.querySelectorAll('.chapter').forEach(chapter => chapter.classList.remove('open', 'is-active'));
+      state.activeChapter = null;
+      detailEl.innerHTML = `
+        <div class="part-label">已收起全部</div>
+        <h2>选择一个章节查看详情</h2>
+        <p class="mini">当前所有 Part 和章节都已收起；点击左侧 Part 展开，再点击章节可重新聚焦详情。</p>
+      `;
+    }
+    function resetView() {
+      searchInput.value = '';
+      state.query = '';
+      renderParts();
+      emptyEl.style.display = 'none';
+      selectChapter(1);
+    }
+
+    function renderAppendix() {
+      document.getElementById('appendix').innerHTML = mindmapData.appendix.map(item => `<div>${escapeHtml(item)}</div>`).join('');
+    }
+
+    searchInput.addEventListener('input', applySearch);
+    document.getElementById('expandAll').addEventListener('click', expandAll);
+    document.getElementById('collapseAll').addEventListener('click', collapseAll);
+    document.getElementById('resetView').addEventListener('click', resetView);
+
+    renderStats();
+    renderCenter();
+    renderParts();
+    renderAppendix();
+    selectChapter(1);
+  </script>
+</body>
+</html>
