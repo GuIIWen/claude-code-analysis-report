@@ -135,7 +135,7 @@
     .map-shell {
       position: relative;
       overflow: hidden;
-      min-height: 760px;
+      min-height: 720px;
     }
 
     .map-shell::before {
@@ -152,13 +152,16 @@
 
     .map-meta {
       position: absolute;
-      left: 18px;
+      left: 50%;
       top: 18px;
       z-index: 2;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      max-width: min(680px, calc(100% - 36px));
+      justify-content: center;
+      transform: translateX(-50%);
+      max-width: min(880px, calc(100% - 36px));
+      pointer-events: none;
     }
 
     .chip {
@@ -175,24 +178,24 @@
     .svg-wrap {
       position: relative;
       width: 100%;
-      height: min(78vh, 930px);
-      min-height: 760px;
+      height: min(78vh, 880px);
+      min-height: 720px;
       overflow: auto;
     }
 
     svg {
       display: block;
-      width: max(100%, 1480px);
-      height: max(100%, 900px);
-      min-width: 1480px;
-      min-height: 900px;
+      width: 100%;
+      height: 100%;
+      min-width: 1180px;
+      min-height: 760px;
     }
 
     .root-halo { fill: url(#rootGlow); opacity: .95; }
     .root-ring { fill: none; stroke: rgba(255, 255, 255, .65); stroke-width: 2; }
-    .trunk { fill: none; stroke-linecap: round; stroke-width: 12; opacity: .32; }
-    .branch { fill: none; stroke-linecap: round; stroke-width: 5; opacity: .5; }
-    .twig { fill: none; stroke-linecap: round; stroke-width: 2.4; opacity: .44; }
+    .trunk { fill: none; stroke-linecap: round; stroke-width: 13; opacity: .42; }
+    .branch { fill: none; stroke-linecap: round; stroke-width: 5.2; opacity: .58; }
+    .twig { fill: none; stroke-linecap: round; stroke-width: 2.3; opacity: .54; }
     .twig.tech { stroke-dasharray: 5 7; }
     .node-rect { stroke-width: 1.4; filter: url(#nodeShadow); }
     .root-text { fill: #fff; text-anchor: middle; font-weight: 900; letter-spacing: -.035em; }
@@ -328,7 +331,9 @@
     @media (max-width: 620px) {
       main, .topbar { padding-left: 14px; padding-right: 14px; }
       .legend { grid-template-columns: 1fr; }
-      svg { min-width: 1320px; }
+      .map-shell { min-height: 620px; }
+      .svg-wrap { min-height: 620px; }
+      svg { min-width: 1080px; min-height: 680px; }
     }
   </style>
 </head>
@@ -357,7 +362,7 @@
         <section class="map-shell" aria-label="SVG 发散式脑图">
           <div class="map-meta" id="mapMeta"></div>
           <div class="svg-wrap" id="svgWrap">
-            <svg id="mindmapSvg" viewBox="0 0 2800 1800" role="img" aria-labelledby="svgTitle svgDesc">
+            <svg id="mindmapSvg" viewBox="0 0 1800 1260" role="img" aria-labelledby="svgTitle svgDesc">
               <title id="svgTitle">Agentic Design Patterns SVG mind map</title>
               <desc id="svgDesc">一个从中心主题向四个 Part、章节、组件和技术节点发散的 SVG 脑图。</desc>
               <defs>
@@ -376,7 +381,7 @@
                   <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#182033" stroke-opacity=".045" stroke-width="1" />
                 </pattern>
               </defs>
-              <rect width="2800" height="1800" fill="url(#microGrid)" opacity=".9"></rect>
+              <rect width="1800" height="1260" fill="url(#microGrid)" opacity=".9"></rect>
               <g id="linksLayer"></g>
               <g id="nodesLayer"></g>
             </svg>
@@ -406,11 +411,11 @@
           title: '基础工作流与协作',
           range: '1-7',
           color: '#7c3aed',
-          x: 900,
+          x: 600,
           y: 360,
           direction: -1,
-          chapterX: 535,
-          leafX: 220,
+          chapterX: 350,
+          leafX: 125,
           chapters: [
             [1, '提示词链', '把复杂任务拆成多个顺序步骤，让上一步输出成为下一步输入。', ['任务拆分器', '提示契约', '中间结果载体', '校验关口'], ['顺序执行', '结构化输出', '中间变量传递', '步骤级日志', '链尾接工具/反思/路由'], '抽取信息 → 转结构化数据 → 生成报告 / 邮件 / 代码说明', '链越长，错误传播越明显；步骤切太碎会让编排复杂度飙升。', '先拆后传，步步验算。'],
             [2, '路由', '根据输入意图、语义或规则，把请求送到最合适的分支、工具或子 Agent。', ['路由器', '标签集合', '分支处理器', '兜底分支'], ['意图分类', '向量语义路由', '规则路由', '低置信度澄清', '路由日志回放'], '客服分流、代码助手分工、研究任务按查询类型派发', '路由错一次，后面整条链都可能建立在错前提上。', '先判路，再出手。'],
@@ -426,11 +431,11 @@
           title: '状态、学习与控制',
           range: '8-11',
           color: '#0ea5e9',
-          x: 900,
-          y: 1440,
+          x: 600,
+          y: 940,
           direction: -1,
-          chapterX: 535,
-          leafX: 220,
+          chapterX: 350,
+          leafX: 125,
           chapters: [
             [8, '记忆管理', '让 Agent 管理会话内短期状态与跨会话长期知识。', ['Session', 'State', 'Long-term Memory', '检索器', '命名空间'], ['短期/长期分层', 'session.state', 'user/app/temp 作用域', '事件驱动更新', '摘要压缩', '语义检索'], '记住用户偏好、跨多轮跟踪任务、复用过往成功策略', '记忆不等于真相，过期事实和错误偏好会污染后续决策。', '短期保上下文，长期存经验。'],
             [9, '学习和适应', '让 Agent 因过去经验而改变策略、结构或代码，形成持续改进。', ['经验档案库', '评估器', '更新器', '监督者', '变异与选择机制'], ['PPO', 'DPO', '在线学习', '自我改进编码 Agent', '进化搜索', '隔离自修改执行'], '个性化助手持续调优、编码 Agent 自我进化、推荐 / 交易系统在线适应', '评估器设计差会让系统学会刷分，而非真正变好。', '先评再改，优胜迭代。'],
@@ -443,11 +448,11 @@
           title: '可靠性、人在回路与知识接地',
           range: '12-14',
           color: '#f59e0b',
-          x: 1900,
+          x: 1200,
           y: 360,
           direction: 1,
-          chapterX: 2265,
-          leafX: 2580,
+          chapterX: 1450,
+          leafX: 1675,
           chapters: [
             [12, '异常处理和恢复', '让 Agent 在工具失败、超时、数据损坏或外部依赖失效时仍能识错、降级、恢复。', ['异常探测器', '故障分类器', '重试/回退器', '状态恢复器', '升级器'], ['超时/错误码/告警', '瞬时重试', 'fallback handler', '优雅降级', '状态回滚', '结构化异常日志'], '主工具失败时切备用工具，数据库挂了就先返回缓存或简化答案', '只吞错不留痕，系统会长期静默失败而不自知。', '先识错，再降级，最后升级。'],
             [13, '人机协同（HITL）', '在高风险、强模糊、强责任场景里，把人类判断纳入系统闭环。', ['升级规则', '人工工作台', '证据包', '人工裁决', '反馈沉淀器'], ['human-in/on-the-loop', '风险分级阈值', '升级摘要', '脱敏隐私', '审批点', '人工反馈写回'], '法律 / 医疗 / 金融辅助、复杂客服、敏感内容审核、关键动作审批', '人越多吞吐越低；升级太晚时人接手可能已难以补救。', '高风险交给人。'],
@@ -459,11 +464,11 @@
           title: '协议、优化与高级智能',
           range: '15-21',
           color: '#10b981',
-          x: 1900,
-          y: 1440,
+          x: 1200,
+          y: 940,
           direction: 1,
-          chapterX: 2265,
-          leafX: 2580,
+          chapterX: 1450,
+          leafX: 1675,
           chapters: [
             [15, 'Agent 间通信（A2A）', '让不同框架、不同服务、不同团队发布的 Agent 按统一协议协作。', ['Agent Card', '发现机制', '任务模型', '消息/工件模型', '上下文关联器'], ['well-known URI', '同步/异步/SSE/webhook', '任务状态机', '远程认证', '工件流式返回', 'A2A vs MCP'], '研究 Agent 调分析 Agent、企业多团队发布独立 Agent 服务', '协议统一不代表质量统一，远程 Agent 的可靠性仍需评估与监控。', 'Agent 找 Agent，按协议协作。'],
             [16, '资源感知优化', '让 Agent 在成本、时延、模型强度、上下文长度和算力之间动态平衡。', ['复杂度分类器', '模型路由器', '预算管理器', '回退链', '反馈器'], ['请求分类', '强/轻模型分工', '上下文裁剪', '成本/token/时延观测', '优雅降级', 'critic 复盘'], '高价值任务走强模型，轻问答走便宜模型，最新事实问题自动接搜索', '分类器误判会省了钱却错了答案。', '难题配强模，简单走轻模。'],
@@ -487,7 +492,7 @@
     };
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
-    const center = { x: 1400, y: 900, rx: 250, ry: 96 };
+    const center = { x: 900, y: 630, rx: 178, ry: 76 };
     const state = { query: '', selected: { type: 'center' } };
     const svg = document.getElementById('mindmapSvg');
     const linksLayer = document.getElementById('linksLayer');
@@ -498,10 +503,10 @@
     const legend = document.getElementById('legend');
 
     const chapterYRanges = {
-      1: [110, 630],
-      2: [1215, 1665],
-      3: [150, 570],
-      4: [1120, 1700]
+      1: [150, 620],
+      2: [800, 1050],
+      3: [220, 510],
+      4: [700, 1160]
     };
 
     function normalizeParts() {
@@ -638,9 +643,9 @@
 
     function leafItems(chapter) {
       return [
-        ...chapter.components.slice(0, 3).map(label => ({ kind: '组件', label, className: 'component' })),
-        ...chapter.techniques.slice(0, 3).map(label => ({ kind: '技术', label, className: 'tech' }))
-      ].slice(0, 5);
+        ...chapter.components.slice(0, 2).map(label => ({ kind: '组件', label, className: 'component' })),
+        ...chapter.techniques.slice(0, 2).map(label => ({ kind: '技术', label, className: 'tech' }))
+      ].slice(0, 4);
     }
 
     function renderSvg() {
@@ -652,7 +657,7 @@
         part.chapters.forEach(chapter => {
           addPath({ x: part.x + part.direction * 146, y: part.y }, { x: chapter.x - part.direction * 118, y: chapter.y }, 'branch', part.color, part.direction);
           const leaves = leafItems(chapter);
-          const leafGap = 34;
+          const leafGap = 26;
           const firstLeafY = chapter.y - ((leaves.length - 1) * leafGap) / 2;
           leaves.forEach((leaf, index) => {
             const leafY = firstLeafY + leafGap * index;
@@ -700,19 +705,19 @@
             onClick: () => selectChapter(chapter)
           });
           const leaves = leafItems(chapter);
-          const leafGap = 34;
+          const leafGap = 26;
           const firstLeafY = chapter.y - ((leaves.length - 1) * leafGap) / 2;
           leaves.forEach((leaf, index) => {
             const leafY = firstLeafY + leafGap * index;
             addRoundedNode({
               x: part.leafX,
               y: leafY,
-              width: 174,
+              width: 182,
               height: 28,
               fill: leaf.className === 'tech' ? '#ecfeff' : '#f7f0ff',
               stroke: leaf.className === 'tech' ? '#0ea5e9' : part.color,
               className: nodeClasses({ type: 'leaf', chapter, label: leaf.label, kind: leaf.kind }, `leaf-node ${leaf.className}`),
-              lines: textLines(`${leaf.kind}：${leaf.label}`, 16, 1),
+              lines: textLines(`${leaf.kind}：${leaf.label}`, 17, 1),
               onClick: () => selectChapter(chapter)
             });
           });
