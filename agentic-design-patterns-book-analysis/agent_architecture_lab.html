@@ -680,14 +680,14 @@
                     drawFlow(310, 300, 340, 300, "Mutate");
                     drawFlow(460, 300, 500, 300, "Select");
                     drawFlow(600, 300, 715, 300, "Keep", "cond");
-                    drawFlow(550, 335, 400, 450, "Drop", "cond");
+                    drawFlow(550, 335, 400, 425, "Drop", "cond");
                     
                     const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     loop.setAttribute("d", "M 750 335 C 750 450, 100 450, 100 335");
                     loop.setAttribute("class", "loop-path");
                     loop.setAttribute("style", "stroke: var(--success); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-success);");
                     svgContent.appendChild(loop);
-                    drawLabel(400, 460, "Feedback & Iterate", "cond");
+                    drawLabel(400, 430, "Feedback & Iterate", "cond");
                 }
                 else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
@@ -1013,11 +1013,12 @@
                     drawNode(500, 150, "Tool Registry", "rect", "List");
                     drawNode(500, 300, "Worker Pool", "rect", "Idle");
                     drawNode(750, 300, "Execution", "rect");
-                    drawFlow(140, 300, 215, 300);
-                    drawFlow(285, 265, 435, 150, "Lookup");
-                    drawFlow(435, 150, 285, 265);
-                    drawFlow(285, 300, 435, 300, "Allocate");
-                    drawFlow(565, 300, 685, 300, "Dispatch");
+                    
+                    drawFlow(135, 300, 190, 300);
+                    drawFlow(250, 265, 440, 150, "Lookup");
+                    drawFlow(440, 150, 310, 265);
+                    drawFlow(310, 300, 440, 300, "Allocate");
+                    drawFlow(560, 300, 690, 300, "Dispatch");
                 }
                 else if (type === 'state-eval') {
                     drawNode(100, 300, "Workflow", "rect", "Running");
@@ -1040,20 +1041,20 @@
                     drawNode(450, 370, "Worker 3", "rect", "Async");
                     drawNode(450, 500, "Worker 4", "rect", "Async");
                     drawNode(650, 300, "Join", "diamond", "Sync");
-                    drawNode(750, 300, "Result", "circle");
+                    drawNode(800, 300, "Result", "circle");
                     
-                    drawFlow(140, 300, 215, 300);
-                    drawFlow(285, 280, 385, 100);
-                    drawFlow(285, 290, 385, 230);
-                    drawFlow(285, 310, 385, 370);
-                    drawFlow(285, 320, 385, 500);
+                    drawFlow(135, 300, 190, 300);
+                    drawFlow(310, 300, 390, 100);
+                    drawFlow(310, 300, 390, 230);
+                    drawFlow(310, 300, 390, 370);
+                    drawFlow(310, 300, 390, 500);
                     
-                    drawFlow(515, 100, 615, 280);
-                    drawFlow(515, 230, 615, 290);
-                    drawFlow(515, 370, 615, 310);
-                    drawFlow(515, 500, 615, 320);
+                    drawFlow(510, 100, 590, 300);
+                    drawFlow(510, 230, 590, 300);
+                    drawFlow(510, 370, 590, 300);
+                    drawFlow(510, 500, 590, 300);
                     
-                    drawFlow(685, 300, 715, 300);
+                    drawFlow(710, 300, 765, 300);
                 }
                 else if (type === 'sica') {
                     drawNode(80, 300, "Source Code", "rect");
@@ -1120,10 +1121,28 @@
                     drawFlow(640, 450, 720, 320);
                 }
                 else if (type === 'audit') {
-                    // ... (no changes)
+                    drawNode(100, 300, "Input/Output", "circle");
+                    drawNode(300, 300, "Scanner", "rect", "Regex/ML");
+                    drawNode(500, 300, "Policy Check", "diamond", "Compliance");
+                    drawNode(700, 150, "Block & Log", "rect", "Reject");
+                    drawNode(700, 450, "Pass", "rect", "Approve");
+                    
+                    drawFlow(135, 300, 240, 300);
+                    drawFlow(360, 300, 440, 300);
+                    drawFlow(500, 265, 640, 150, "Violation", "cond");
+                    drawFlow(500, 335, 640, 450, "Safe");
                 }
                 else if (type === 'prioritization') {
-                    // ... (no changes)
+                    drawNode(100, 300, "Task Stream", "circle");
+                    drawNode(250, 300, "Scorer", "rect", "Urgency/Impact");
+                    drawNode(450, 300, "Priority Queue", "rect", "Heap");
+                    drawNode(650, 150, "High Priority", "rect", "Preempt");
+                    drawNode(650, 450, "Low Priority", "rect", "Background");
+                    
+                    drawFlow(135, 300, 190, 300);
+                    drawFlow(310, 300, 390, 300);
+                    drawFlow(450, 275, 590, 150, "Pop High");
+                    drawFlow(450, 325, 590, 450, "Pop Low");
                 }
                 else if (type === 'diagnosis') {
                     drawNode(100, 300, "Exception", "circle", "Crash");
@@ -1138,7 +1157,21 @@
                     drawFlow(450, 335, 590, 450, "Unknown");
                 }
                 else if (type === 'mcp') {
-                    // ... (no changes)
+                    drawNode(100, 300, "LLM Client", "circle");
+                    drawNode(300, 300, "MCP Client", "rect", "Protocol");
+                    drawNode(550, 150, "MCP Server A", "rect", "Local File");
+                    drawNode(550, 300, "MCP Server B", "rect", "DB Query");
+                    drawNode(550, 450, "MCP Server C", "rect", "Web API");
+                    drawNode(750, 300, "Context", "circle", "Mounted");
+                    
+                    drawFlow(135, 300, 240, 300, "Intent");
+                    drawFlow(360, 275, 490, 150, "Discover");
+                    drawFlow(360, 300, 490, 300, "Call");
+                    drawFlow(360, 325, 490, 450, "List");
+                    
+                    drawFlow(610, 150, 715, 280);
+                    drawFlow(610, 300, 715, 300);
+                    drawFlow(610, 450, 715, 320);
                 }
                 else if (type === 'goal-setting') {
                     drawNode(100, 300, "Vague Goal", "circle", "Ambition");
