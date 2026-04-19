@@ -276,12 +276,13 @@
 
         /* SVG Components */
         .node { cursor: default; }
-        .node-rect { fill: var(--panel); stroke: var(--panel-border); stroke-width: 1.5; transition: all 0.3s; }
+        .node-rect { fill: var(--panel); stroke: var(--accent); stroke-opacity: 0.5; stroke-width: 1.5; transition: all 0.3s; }
         .node-diamond { fill: var(--panel); stroke: var(--warning); stroke-width: 1.5; transition: all 0.3s; }
         .node-circle { fill: var(--panel); stroke: var(--success); stroke-width: 1.5; transition: all 0.3s; }
         
-        .node:hover .node-rect { stroke: var(--accent); stroke-width: 2.5; }
-        .node:hover .node-diamond { stroke: #fff; stroke-width: 2.5; }
+        .node:hover .node-rect { stroke-opacity: 1; stroke-width: 2.5; filter: url(#glow); }
+        .node:hover .node-diamond { stroke-width: 2.5; filter: url(#glow); }
+        .node:hover .node-circle { stroke-width: 2.5; filter: url(#glow); }
         
         .node-text { fill: var(--text-primary); font-size: 11px; font-weight: 600; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
         .node-subtext { fill: var(--text-muted); font-size: 9px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
@@ -790,13 +791,13 @@
                     drawFlow(460, 240, 520, 240);
                     drawFlow(460, 360, 520, 240);
 
-                    drawFlow(640, 240, 710, 120, "Draft");
-                    drawFlow(670, 120, 640, 210, "Refine");
+                    drawFlow(640, 240, 740, 155, "Draft");
+                    drawFlow(680, 120, 580, 215, "Refine");
                     
-                    drawFlow(640, 240, 710, 300, "Best");
+                    drawFlow(640, 240, 740, 265, "Best");
                     drawFlow(740, 335, 740, 415, "Approve");
                     
-                    drawFlow(640, 240, 680, 270, "Reject", "cond");
+                    drawFlow(680, 300, 580, 265, "Reject");
                 }
                 else if (type === 'rag') {
                     // RAG Pipeline with Re-ranker
