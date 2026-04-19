@@ -1,0 +1,1050 @@
+﻿﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Design Patterns - 智能体架构实验室</title>
+    <style>
+        :root {
+            --bg: #050a14;
+            --panel: rgba(13, 25, 45, 0.75);
+            --panel-border: rgba(145, 190, 255, 0.15);
+            --accent: #64d2ff;
+            --accent-glow: rgba(100, 210, 255, 0.4);
+            --text-primary: #eaf2ff;
+            --text-muted: #97a8c6;
+            --success: #78f0c8;
+            --warning: #ffd666;
+            --danger: #ff7875;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(100, 210, 255, 0.05), transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(120, 240, 200, 0.05), transparent 40%);
+        }
+
+        /* Top Header & Scores */
+        header {
+            height: 80px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            background: rgba(7, 17, 31, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-right: 40px;
+        }
+
+        .scores {
+            display: flex;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .score-card {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            padding: 8px 16px;
+            border-radius: 12px;
+            min-width: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .score-value .unit { font-size: 12px; color: var(--text-muted); }
+
+        /* Main Content Layout */
+        .container {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 320px;
+            border-right: 1px solid var(--panel-border);
+            background: rgba(10, 20, 38, 0.6);
+            overflow-y: auto;
+            padding: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--panel-border) transparent;
+        }
+
+        .category {
+            margin-bottom: 30px;
+        }
+
+        .category-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-title::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: var(--panel-border);
+        }
+
+        .agent-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .agent-item:hover {
+            background: rgba(100, 210, 255, 0.05);
+            border-color: rgba(100, 210, 255, 0.1);
+        }
+
+        .agent-item.active {
+            background: rgba(100, 210, 255, 0.12);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .agent-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .agent-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Architecture Lab */
+        main {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                linear-gradient(var(--panel-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--panel-border) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        #canvas {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #svg-canvas {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            width: 360px;
+            background: var(--panel);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .info-panel.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .info-chapter {
+            font-size: 12px;
+            background: rgba(100, 210, 255, 0.1);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(100, 210, 255, 0.2);
+        }
+
+        .info-desc {
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .info-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            font-size: 12px;
+        }
+
+        .detail-label { color: var(--text-muted); margin-bottom: 4px; }
+        .detail-value { font-weight: 600; }
+
+        .btn-link {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: var(--accent);
+            color: var(--bg);
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-link:hover { opacity: 0.9; }
+
+        /* SVG Components */
+        .node { cursor: default; }
+        .node-rect { fill: var(--panel); stroke: var(--panel-border); stroke-width: 1.5; transition: all 0.3s; }
+        .node-diamond { fill: var(--panel); stroke: var(--warning); stroke-width: 1.5; transition: all 0.3s; }
+        .node-circle { fill: var(--panel); stroke: var(--success); stroke-width: 1.5; transition: all 0.3s; }
+        
+        .node:hover .node-rect { stroke: var(--accent); filter: drop-shadow(0 0 8px var(--accent-glow)); }
+        .node:hover .node-diamond { stroke: #fff; filter: drop-shadow(0 0 8px var(--warning)); }
+        
+        .node-text { fill: var(--text-primary); font-size: 11px; font-weight: 600; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+        .node-subtext { fill: var(--text-muted); font-size: 9px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+        
+        .arrow { fill: none; stroke: var(--text-muted); stroke-width: 1.2; marker-end: url(#arrowhead); }
+        .flow-line { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5, 5; animation: dash 20s linear infinite; marker-end: url(#arrowhead-accent); }
+        
+        @keyframes dash {
+            from { stroke-dashoffset: 500; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .loop-path { fill: none; stroke: var(--success); stroke-width: 1.5; stroke-dasharray: 4 2; marker-end: url(#arrowhead-success); }
+        .label-bg { fill: rgba(5, 10, 20, 0.9); }
+        .label-text { fill: var(--accent); font-size: 9px; font-weight: 500; text-anchor: middle; }
+        .cond-text { fill: var(--warning); font-size: 9px; font-weight: bold; text-anchor: middle; }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; stroke-width: 1.5; }
+            50% { opacity: 1; stroke-width: 2.5; }
+            100% { opacity: 0.6; stroke-width: 1.5; }
+        }
+        .active-path { animation: pulse 2s infinite ease-in-out; stroke: var(--accent); }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">AGENTIC ARCHITECTURE LAB</div>
+        <div class="scores">
+            <div class="score-card">
+                <div class="score-label">系统智能评分</div>
+                <div class="score-value" id="score-iq">85<span class="unit">pts</span></div>
+            </div>
+            <div class="score-card">
+                <div class="score-label">预期响应延迟</div>
+                <div class="score-value" id="score-latency">1.2<span class="unit">s</span></div>
+            </div>
+            <div class="score-card">
+                <div class="score-label">资源消耗估算</div>
+                <div class="score-value" id="score-cost">Mid</div>
+            </div>
+            <div class="score-card">
+                <div class="score-label">架构健壮性</div>
+                <div class="score-value" id="score-robustness">High</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside id="agent-list">
+            <!-- Categories and Agents will be injected here -->
+        </aside>
+
+        <main>
+            <div id="canvas">
+                <svg id="svg-canvas" width="800" height="600" viewBox="0 0 800 600">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#5c6b84" />
+                        </marker>
+                        <marker id="arrowhead-success" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--success)" />
+                        </marker>
+                        <marker id="arrowhead-accent" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent)" />
+                        </marker>
+                        <marker id="arrowhead-warning" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--warning)" />
+                        </marker>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g id="svg-content"></g>
+                </svg>
+            </div>
+
+            <div class="info-panel" id="info-panel">
+                <div class="info-header">
+                    <div class="info-title" id="info-title">Agent Name</div>
+                    <div class="info-chapter" id="info-chapter">Chapter 1</div>
+                </div>
+                <div class="info-desc" id="info-desc">
+                    Description of the agent's core responsibility and architectural role.
+                </div>
+                <div class="info-details">
+                    <div class="detail-item">
+                        <div class="detail-label">预期成本</div>
+                        <div class="detail-value" id="info-cost">Mid</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">典型场景</div>
+                        <div class="detail-value" id="info-case">Case Study</div>
+                    </div>
+                </div>
+                <a href="#" class="btn-link" id="info-link" target="_blank">查看原著分析报告</a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const agents = [
+            {
+                id: "enterprise-qa",
+                name: "企业级知识问答 Agent",
+                category: "FullArch",
+                role: "结合路由、记忆、安全护栏和 RAG 的完整系统",
+                case: "企业内部知识库问答",
+                chapter: "N/A",
+                cost: "High",
+                scores: { iq: 92, latency: 1.5, cost: "High", robustness: "High" },
+                diagram: "full-qa"
+            },
+            {
+                id: "coding-agent",
+                name: "自主软件开发 Agent",
+                category: "FullArch",
+                role: "结合规划、工具调用、裁判和提示词链的循环系统",
+                case: "自动化编码助手",
+                chapter: "N/A",
+                cost: "High",
+                scores: { iq: 95, latency: 5.0, cost: "High", robustness: "High" },
+                diagram: "full-coding"
+            },
+            {
+                id: "research-team",
+                name: "多智能体科研团队",
+                category: "FullArch",
+                role: "结合多智能体并行、ToT 推理与人机协同的宏大架构",
+                case: "深度科研、新药研发报告",
+                chapter: "N/A",
+                cost: "Ultra",
+                scores: { iq: 98, latency: 15.0, cost: "Ultra", robustness: "Ultra" },
+                diagram: "full-research"
+            },
+            {
+                id: "market-analyst",
+                name: "市场分析师 (Market Analyst)",
+                category: "Thinking",
+                role: "总结市场报告、识别趋势并提取关键数据",
+                case: "市场调研报告处理工作流",
+                chapter: 1,
+                cost: "Mid",
+                scores: { iq: 78, latency: 2.5, cost: "Mid", robustness: "Mid" },
+                diagram: "chain"
+            },
+            {
+                id: "reviewer",
+                name: "校对员/评审员 (Proofreader/Reviewer)",
+                category: "Thinking",
+                role: "检查内容质量、语气 and 逻辑，提供改进建议",
+                case: "代码审核、高质量内容创作",
+                chapter: 4,
+                cost: "High",
+                scores: { iq: 82, latency: 1.8, cost: "High", robustness: "High" },
+                diagram: "reflection"
+            },
+            {
+                id: "router",
+                name: "路由智能体 (Router Agent)",
+                category: "Input",
+                role: "根据意图、语义或资源约束分发请求",
+                case: "智能客服意图识别",
+                chapter: 2,
+                cost: "Low",
+                scores: { iq: 75, latency: 0.3, cost: "Low", robustness: "High" },
+                diagram: "router"
+            },
+            {
+                id: "state-eval",
+                name: "状态评估器 (State Evaluator)",
+                category: "Perception",
+                role: "监控系统累积状态并指导流程流向",
+                case: "复杂动态工作流决策",
+                chapter: 2,
+                cost: "Mid",
+                scores: { iq: 80, latency: 0.5, cost: "Mid", robustness: "High" },
+                diagram: "monitoring"
+            },
+            {
+                id: "dispatcher",
+                name: "总调度器 (Main Dispatcher)",
+                category: "Input",
+                role: "在拥有多个专业工具的系统中选择最合适工具",
+                case: "动态工具选择场景",
+                chapter: 2,
+                cost: "Mid",
+                scores: { iq: 85, latency: 0.8, cost: "Mid", robustness: "Mid" },
+                diagram: "router"
+            },
+            {
+                id: "concurrency",
+                name: "并发控制器 (Concurrency Controller)",
+                category: "Input",
+                role: "协调多个独立子任务的启动、执行和结果收集",
+                case: "多源信息搜集、多维度并行分析",
+                chapter: 3,
+                cost: "Mid",
+                scores: { iq: 70, latency: 0.2, cost: "Mid", robustness: "High" },
+                diagram: "parallel"
+            },
+            {
+                id: "producer",
+                name: "生产者/生成器 (Producer/Generator)",
+                category: "Execution",
+                role: "执行初始任务（如编写代码、撰写文章）",
+                case: "代码生成、内容创作",
+                chapter: 4,
+                cost: "Mid",
+                scores: { iq: 88, latency: 5.0, cost: "High", robustness: "Low" },
+                diagram: "chain"
+            },
+            {
+                id: "researcher",
+                name: "深度研究助手 (Deep Research Assistant)",
+                category: "Thinking",
+                role: "自主生成研究计划、执行搜索、分析网页并动态修正",
+                case: "深度行业调研、学术背景搜索",
+                chapter: 6,
+                cost: "High",
+                scores: { iq: 95, latency: 15.0, cost: "High", robustness: "Mid" },
+                diagram: "planning"
+            },
+            {
+                id: "supervisor",
+                name: "管理者/中心调度员 (Supervisor)",
+                category: "Input",
+                role: "决定任务委派顺序，管理专家 Agent 团队",
+                case: "复杂项目编排、多 Agent 协作系统",
+                chapter: 7,
+                cost: "High",
+                scores: { iq: 92, latency: 2.0, cost: "High", robustness: "High" },
+                diagram: "multi-agent"
+            },
+            {
+                id: "memory",
+                name: "记忆服务 Agent (Memory Service)",
+                category: "Perception",
+                role: "捕获、存储、检索并管理长期记忆与用户偏好",
+                case: "个性化客服、多轮任务追踪",
+                chapter: 8,
+                cost: "Mid",
+                scores: { iq: 75, latency: 0.4, cost: "Mid", robustness: "High" },
+                diagram: "memory"
+            },
+            {
+                id: "judge",
+                name: "判定者/裁判 (Judge)",
+                category: "Thinking",
+                role: "对输出结果进行二值判定或多维评分",
+                case: "任务停止条件判定、LLM-as-a-Judge",
+                chapter: 11,
+                cost: "Low",
+                scores: { iq: 80, latency: 1.2, cost: "Low", robustness: "High" },
+                diagram: "reflection"
+            },
+            {
+                id: "diagnosis",
+                name: "诊断智能体 (Diagnosis Agent)",
+                category: "Thinking",
+                role: "分析系统失败原因并生成修正提示词",
+                case: "自动异常恢复、系统自愈",
+                chapter: 12,
+                cost: "Mid",
+                scores: { iq: 84, latency: 2.2, cost: "Mid", robustness: "Mid" },
+                diagram: "monitoring"
+            },
+            {
+                id: "human",
+                name: "人类监督员 (Human Overseer)",
+                category: "Perception",
+                role: "监控 Agent 行为，在关键环节介入决策",
+                case: "医疗/金融 Agent、内容审核",
+                chapter: 13,
+                cost: "High",
+                scores: { iq: 100, latency: "Human", cost: "High", robustness: "Ultra" },
+                diagram: "hitl"
+            },
+            {
+                id: "reasoning-tot",
+                name: "推理架构 (Reasoning - ToT)",
+                category: "Thinking",
+                role: "通过 Tree of Thoughts 进行多路径搜索与回溯，解决复杂逻辑问题",
+                case: "数学证明、复杂决策规划",
+                chapter: 17,
+                cost: "High",
+                scores: { iq: 96, latency: 8.0, cost: "High", robustness: "High" },
+                diagram: "reflection"
+            },
+            {
+                id: "reasoning",
+                name: "推理 Agent (Reasoning Agent)",
+                category: "Thinking",
+                role: "评估检索质量、解决信息冲突并执行逻辑推演",
+                case: "Agentic RAG、复杂决策支持",
+                chapter: 14,
+                cost: "High",
+                scores: { iq: 90, latency: 3.5, cost: "High", robustness: "High" },
+                diagram: "rag"
+            },
+            {
+                id: "audit",
+                name: "防护栏/审计 (Guardrails)",
+                category: "Perception",
+                role: "在输入与输出阶段强制执行安全策略与合规性检查",
+                case: "企业级安全网关、内容合规审计",
+                chapter: 18,
+                cost: "Low",
+                scores: { iq: 82, latency: 0.2, cost: "Low", robustness: "High" },
+                diagram: "monitoring"
+            },
+            {
+                id: "hypothesis",
+                name: "假设生成器 (Hypothesis Generator)",
+                category: "Thinking",
+                role: "在未知解空间中生成科学假设或创新思路",
+                case: "自主科学研究、新药研发",
+                chapter: 21,
+                cost: "High",
+                scores: { iq: 98, latency: 10.0, cost: "High", robustness: "Low" },
+                diagram: "exploration"
+            }
+        ];
+
+        const categories = {
+            FullArch: "🔥 完整工业级架构 (Full Architectures)",
+            Perception: "感知与监控 (Perception)",
+            Input: "输入与调度 (Input/Scheduling)",
+            Thinking: "思考与推理 (Logic/Thinking)",
+            Execution: "工具与动作 (Execution)"
+        };
+
+        const listContainer = document.getElementById('agent-list');
+        const infoPanel = document.getElementById('info-panel');
+        const svgContent = document.getElementById('svg-content');
+
+        // Initialize List
+        let globalIndex = 1;
+        Object.entries(categories).forEach(([key, label]) => {
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category';
+            catDiv.innerHTML = `<div class="category-title">${label}</div>`;
+            
+            const catAgents = agents.filter(a => a.category === key);
+            catAgents.forEach(agent => {
+                const item = document.createElement('div');
+                item.className = 'agent-item';
+                item.innerHTML = `
+                    <div class="agent-name">${globalIndex}. ${agent.name}</div>
+                    <div class="agent-meta">
+                        <span>Cost: ${agent.cost}</span>
+                    </div>
+                `;
+                item.onclick = () => selectAgent(agent, item);
+                catDiv.appendChild(item);
+                globalIndex++;
+            });
+            
+            listContainer.appendChild(catDiv);
+        });
+
+        function selectAgent(agent, element) {
+            document.querySelectorAll('.agent-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Update Scores
+            document.getElementById('score-iq').innerHTML = `${agent.scores.iq}<span class="unit">pts</span>`;
+            document.getElementById('score-latency').innerHTML = `${agent.scores.latency}<span class="unit">s</span>`;
+            document.getElementById('score-cost').innerText = agent.scores.cost;
+            document.getElementById('score-robustness').innerText = agent.scores.robustness;
+
+            // Update Info Panel
+            document.getElementById('info-title').innerText = agent.name;
+            document.getElementById('info-chapter').innerText = `Chapter ${agent.chapter}`;
+            document.getElementById('info-desc').innerText = agent.role;
+            document.getElementById('info-cost').innerText = agent.cost;
+            document.getElementById('info-case').innerText = agent.case;
+            document.getElementById('info-link').href = `chapter_${agent.chapter}_analysis.md`;
+            infoPanel.classList.add('visible');
+
+            drawDiagram(agent.diagram);
+        }
+
+        function drawDiagram(type) {
+            const canvas = document.getElementById('svg-canvas');
+            canvas.style.opacity = '0';
+            
+            setTimeout(() => {
+                svgContent.innerHTML = '';
+                
+                                if (type === 'full-qa') {
+                    drawNode(80, 300, "User Input", "circle", "Query");
+                    drawNode(220, 300, "Input Guard", "diamond", "Security");
+                    drawNode(380, 300, "Router", "diamond", "Intent");
+                    drawNode(380, 150, "Memory", "rect", "DB");
+                    drawNode(550, 150, "RAG/Re-ranker", "rect", "Knowledge");
+                    drawNode(550, 300, "Core LLM", "rect", "Reasoning");
+                    drawNode(720, 300, "Output Guard", "diamond", "Security");
+                    drawNode(720, 450, "Final Output", "circle", "Response");
+
+                    drawFlow(120, 300, 155, 300);
+                    drawFlow(285, 300, 315, 300, "Safe");
+                    drawFlow(380, 265, 380, 180, "Context");
+                    drawFlow(445, 150, 485, 150, "Query");
+                    drawFlow(550, 180, 550, 270, "Augment");
+                    drawFlow(445, 300, 485, 300, "Direct");
+                    drawFlow(615, 300, 655, 300, "Draft");
+                    drawFlow(720, 335, 720, 410, "Clean");
+                }
+                else if (type === 'full-coding') {
+                    drawNode(80, 300, "Task", "circle", "Issue");
+                    drawNode(220, 300, "Planner", "rect", "Decompose");
+                    drawNode(220, 150, "Task Queue", "rect", "State");
+                    drawNode(420, 300, "Executor", "rect", "Code Gen");
+                    drawNode(420, 450, "Tools", "rect", "Terminal/IDE");
+                    drawNode(600, 300, "Judge", "diamond", "Review");
+                    drawNode(750, 300, "Output", "circle", "PR/Commit");
+
+                    drawFlow(120, 300, 155, 300);
+                    drawFlow(220, 270, 220, 180, "Push");
+                    drawFlow(285, 150, 420, 270, "Pop Next");
+                    drawFlow(420, 330, 420, 420, "Run test");
+                    drawFlow(380, 420, 380, 330, "Stdout");
+                    drawFlow(485, 300, 535, 300, "Submit");
+                    drawFlow(665, 300, 710, 300, "Pass", "cond");
+
+                    const codeLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    codeLoop.setAttribute("d", "M 600 335 C 600 400, 460 400, 460 330");
+                    codeLoop.setAttribute("class", "loop-path");
+                    codeLoop.setAttribute("style", "stroke: var(--danger)");
+                    svgContent.appendChild(codeLoop);
+                    drawLabel(530, 380, "Fail (Fix)", "cond");
+                }
+                else if (type === 'full-research') {
+                    drawNode(60, 300, "Topic", "circle", "Research");
+                    drawNode(180, 300, "Supervisor", "rect", "Manager");
+                    
+                    drawNode(340, 120, "Expert A", "rect", "Data");
+                    drawNode(340, 240, "Expert B", "rect", "Lit Review");
+                    drawNode(340, 360, "Expert C", "rect", "Experiment");
+                    
+                    drawNode(520, 240, "Hypothesis", "rect", "Generator");
+                    drawNode(680, 120, "ToT Evaluator", "diamond", "Self-Reflect");
+                    drawNode(680, 300, "Human", "diamond", "Overseer");
+                    drawNode(680, 450, "Final Report", "circle", "Publish");
+
+                    drawFlow(100, 300, 115, 300);
+                    drawFlow(245, 290, 275, 130);
+                    drawFlow(245, 300, 275, 240);
+                    drawFlow(245, 310, 275, 360);
+
+                    drawFlow(405, 130, 455, 230);
+                    drawFlow(405, 240, 455, 240);
+                    drawFlow(405, 360, 455, 250);
+
+                    drawFlow(520, 210, 620, 120, "Draft");
+                    drawFlow(620, 140, 540, 220, "Refine");
+                    
+                    drawFlow(585, 250, 620, 290, "Best");
+                    drawFlow(680, 335, 680, 410, "Approve");
+                    
+                    drawFlow(620, 310, 560, 270, "Reject", "cond");
+                }
+                else if (type === 'rag') {
+                    // RAG Pipeline with Re-ranker
+                    drawNode(150, 150, "User Query", "circle", "Input");
+                    drawNode(350, 150, "Embedding", "rect", "Vectorization");
+                    drawNode(550, 150, "Vector Store", "rect", "Similarity Search");
+                    drawNode(750, 150, "Database", "rect", "External Source");
+                    
+                    drawNode(550, 300, "Re-ranker", "rect", "Score & Sort");
+                    drawNode(350, 300, "Context Injunction", "rect", "Prompt Augment");
+                    drawNode(150, 300, "LLM Gen", "rect", "Final Response");
+
+                    // Flows
+                    drawFlow(190, 150, 280, 150, "Raw Text");
+                    drawFlow(415, 150, 480, 150, "Vector Query");
+                    
+                    drawFlow(615, 140, 680, 140, "Index Lookup");
+                    drawFlow(680, 160, 615, 160, "Raw Chunks");
+                    
+                    drawFlow(550, 180, 550, 270, "Top-N");
+                    drawFlow(485, 300, 415, 300, "Top-K");
+                    
+                    drawFlow(150, 190, 310, 270, "Raw Query");
+                    drawFlow(285, 300, 215, 300, "Rich Prompt");
+                } 
+                else if (type === 'reflection') {
+                    // Reasoning / ToT (Chapter 17)
+                    drawNode(100, 300, "Initial Task", "rect", "Problem");
+                    drawNode(300, 150, "Thought A", "rect", "Branch 1");
+                    drawNode(300, 300, "Thought B", "rect", "Branch 2");
+                    drawNode(300, 450, "Thought C", "rect", "Branch 3");
+                    drawNode(500, 300, "Evaluator", "diamond", "Self-Correction");
+                    drawNode(700, 300, "Optimal Path", "rect", "Solution");
+
+                    drawFlow(170, 300, 230, 150, "Proposal 1");
+                    drawFlow(170, 300, 230, 300, "Proposal 2");
+                    drawFlow(170, 300, 230, 450, "Proposal 3");
+                    
+                    drawFlow(370, 150, 465, 270, "Logit Score");
+                    drawFlow(370, 300, 445, 300, "Consistency");
+                    drawFlow(370, 450, 465, 330, "Heuristic");
+
+                    drawFlow(535, 300, 630, 300, "Yes (Valid)", "cond");
+                    
+                    // Backtracking Loop
+                    const backPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    backPath.setAttribute("d", "M 500 265 C 500 50, 100 50, 100 275");
+                    backPath.setAttribute("class", "loop-path");
+                    backPath.setAttribute("style", "stroke: var(--danger)");
+                    svgContent.appendChild(backPath);
+                    drawLabel(300, 60, "No (Backtrack)", "cond");
+                }
+                else if (type === 'monitoring') {
+                    // Guardrails (Chapter 18)
+                    drawNode(80, 300, "User Input", "circle");
+                    drawNode(220, 300, "Input Guard", "diamond", "Policy Check");
+                    drawNode(400, 300, "Core LLM", "rect", "Agent Logic");
+                    drawNode(580, 300, "Output Guard", "diamond", "Policy Check");
+                    drawNode(720, 300, "Final Output", "rect");
+
+                    drawFlow(130, 300, 185, 300, "Raw Input");
+                    drawFlow(255, 300, 330, 300, "Safe Prompt", "cond");
+                    drawFlow(470, 300, 545, 300, "Draft Response");
+                    drawFlow(615, 300, 670, 300, "Filtered JSON", "cond");
+
+                    // Block paths
+                    drawFlow(220, 265, 220, 150, "Violations", "cond");
+                    drawNode(220, 120, "Block / Log", "rect", "Security API");
+                    drawFlow(580, 265, 580, 150, "Harmful Content", "cond");
+                    drawNode(580, 120, "Block / Log", "rect", "Security API");
+                }
+                else if (type === 'router') {
+                    drawNode(100, 300, "Request", "circle");
+                    drawNode(300, 300, "Router", "diamond", "Classifier");
+                    drawNode(550, 150, "Specialist A", "rect", "Finance");
+                    drawNode(550, 300, "Specialist B", "rect", "Code");
+                    drawNode(550, 450, "Specialist C", "rect", "Creative");
+                    drawNode(750, 300, "Response", "rect");
+
+                    drawFlow(150, 300, 265, 300, "User Intent");
+                    drawFlow(335, 300, 480, 150, "Vector Match");
+                    drawFlow(335, 300, 480, 300, "Direct Match");
+                    drawFlow(335, 300, 480, 455, "Fallback");
+                    
+                    drawFlow(620, 150, 700, 280);
+                    drawFlow(620, 300, 680, 300);
+                    drawFlow(620, 450, 700, 320);
+                }
+                else if (type === 'parallel') {
+                    drawNode(100, 300, "Task", "rect", "Decomposer");
+                    drawNode(350, 100, "Node 1", "rect", "Worker");
+                    drawNode(350, 230, "Node 2", "rect", "Worker");
+                    drawNode(350, 370, "Node 3", "rect", "Worker");
+                    drawNode(350, 500, "Node 4", "rect", "Worker");
+                    drawNode(600, 300, "Aggregator", "rect", "Reducer");
+                    drawNode(750, 300, "Final", "circle");
+
+                    drawFlow(170, 300, 280, 100);
+                    drawFlow(170, 300, 280, 230);
+                    drawFlow(170, 300, 280, 370);
+                    drawFlow(170, 300, 280, 500);
+
+                    drawFlow(420, 100, 530, 280, "Partial A");
+                    drawFlow(420, 230, 530, 295, "Partial B");
+                    drawFlow(420, 370, 530, 305, "Partial C");
+                    drawFlow(420, 500, 530, 320, "Partial D");
+                    
+                    drawFlow(670, 300, 715, 300);
+                }
+                else if (type === 'planning') {
+                    drawNode(100, 300, "Objective", "rect");
+                    drawNode(300, 300, "Planner", "rect", "LLM");
+                    drawNode(500, 300, "Executor", "rect", "Tool Use");
+                    drawNode(500, 500, "Environment", "rect", "External API");
+                    drawNode(700, 300, "Goal Met?", "diamond");
+
+                    drawFlow(170, 300, 230, 300, "Task Desc");
+                    drawFlow(370, 300, 430, 300, "Step [i]");
+                    drawFlow(500, 325, 500, 475, "Action");
+                    drawFlow(500, 475, 500, 325, "Observation");
+                    drawFlow(570, 300, 665, 300, "State");
+                    
+                    // Re-plan loop
+                    const replan = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    replan.setAttribute("d", "M 700 265 C 700 150, 300 150, 300 275");
+                    replan.setAttribute("class", "loop-path");
+                    svgContent.appendChild(replan);
+                    drawLabel(500, 160, "No (Re-plan)", "cond");
+                    drawFlow(735, 300, 780, 300, "Yes", "cond");
+                }
+                else if (type === 'chain') {
+                    drawNode(150, 300, "Task", "circle", "Input");
+                    drawNode(350, 300, "Step 1", "rect", "Process");
+                    drawNode(550, 300, "Step 2", "rect", "Process");
+                    drawNode(750, 300, "Output", "rect", "Result");
+
+                    drawFlow(190, 300, 285, 300, "Start");
+                    drawFlow(415, 300, 485, 300, "Intermediate");
+                    drawFlow(615, 300, 685, 300, "Final");
+                }
+                else if (type === 'memory') {
+                    drawNode(400, 300, "Agent Core", "rect", "Processor");
+                    drawNode(400, 150, "Session Context", "rect", "短期");
+                    drawNode(200, 450, "Vector DB", "rect", "长期知识");
+                    drawNode(600, 450, "User Profile", "rect", "偏好");
+
+                    drawFlow(415, 270, 415, 180, "Write");
+                    drawFlow(385, 180, 385, 270, "Read");
+
+                    drawFlow(370, 330, 240, 420, "Query");
+                    drawFlow(220, 410, 350, 320, "Retrieve");
+
+                    drawFlow(430, 330, 560, 420, "Update");
+                    drawFlow(580, 410, 450, 320, "Load");
+                }
+                else if (type === 'hitl') {
+                    drawNode(150, 300, "Agent Action", "rect", "Proposal");
+                    drawNode(350, 300, "Confidence Check", "diamond", "Threshold");
+                    drawNode(550, 150, "Human Supervisor", "rect", "Review");
+                    drawNode(650, 300, "System Execute", "rect", "Final");
+
+                    drawFlow(215, 300, 285, 300, "Draft");
+                    drawFlow(415, 300, 585, 300, "High Confidence", "cond");
+                    
+                    drawFlow(350, 260, 480, 160, "Low Confidence", "cond");
+                    drawFlow(550, 180, 620, 270, "Approve/Override", "cond");
+                }
+                else if (type === 'multi-agent') {
+                    drawNode(150, 300, "Task Input", "circle");
+                    drawNode(350, 300, "Supervisor", "rect", "Delegation");
+                    drawNode(550, 150, "Expert A", "rect", "Sub-task 1");
+                    drawNode(550, 450, "Expert B", "rect", "Sub-task 2");
+                    drawNode(750, 300, "Aggregation", "rect", "Result");
+
+                    drawFlow(190, 300, 285, 300);
+                    drawFlow(410, 270, 485, 175, "Delegate A");
+                    drawFlow(410, 330, 485, 425, "Delegate B");
+                    
+                    drawFlow(615, 175, 690, 270, "Result A");
+                    drawFlow(615, 425, 690, 330, "Result B");
+                }
+                else if (type === 'exploration') {
+                    drawNode(150, 300, "Hypothesis Gen", "rect", "Ideas");
+                    drawNode(400, 300, "Elo-style Debate", "diamond", "Scoring");
+                    drawNode(650, 300, "Evolution", "rect", "Refine");
+
+                    drawFlow(215, 300, 335, 300, "Generate");
+                    drawFlow(465, 300, 585, 300, "Top Scored", "cond");
+
+                    const evolveLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    evolveLoop.setAttribute("d", "M 650 265 C 650 100, 150 100, 150 265");
+                    evolveLoop.setAttribute("class", "loop-path");
+                    svgContent.appendChild(evolveLoop);
+                    drawLabel(400, 110, "Mutate & Evolve", "cond");
+                }
+                else {
+                    drawNode(150, 300, "Input");
+                    drawNode(400, 300, "Processing", "rect", "LLM Engine");
+                    drawNode(650, 300, "Output");
+                    drawFlow(220, 300, 330, 300, "Data Flow");
+                    drawFlow(470, 300, 580, 300, "Result");
+                }
+                canvas.style.opacity = '1';
+            }, 150);
+        }
+
+        function drawNode(x, y, text, shape = "rect", subtext = "") {
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.className.baseVal = "node";
+            
+            let nodeShape;
+            if (shape === "diamond") {
+                nodeShape = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                const points = `${x},${y-35} ${x+60},${y} ${x},${y+35} ${x-60},${y}`;
+                nodeShape.setAttribute("points", points);
+                nodeShape.setAttribute("class", "node-diamond");
+            } else if (shape === "circle") {
+                nodeShape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                nodeShape.setAttribute("cx", x);
+                nodeShape.setAttribute("cy", y);
+                nodeShape.setAttribute("r", 35);
+                nodeShape.setAttribute("class", "node-circle");
+            } else {
+                nodeShape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                nodeShape.setAttribute("x", x - 60);
+                nodeShape.setAttribute("y", y - 25);
+                nodeShape.setAttribute("width", 120);
+                nodeShape.setAttribute("height", 50);
+                nodeShape.setAttribute("rx", 6);
+                nodeShape.setAttribute("class", "node-rect");
+            }
+            
+            const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            txt.setAttribute("x", x);
+            txt.setAttribute("y", subtext ? y - 5 : y);
+            txt.setAttribute("class", "node-text");
+            txt.textContent = text;
+            
+            g.appendChild(nodeShape);
+            g.appendChild(txt);
+
+            if (subtext) {
+                const stxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                stxt.setAttribute("x", x);
+                stxt.setAttribute("y", y + 10);
+                stxt.setAttribute("class", "node-subtext");
+                stxt.textContent = subtext;
+                g.appendChild(stxt);
+            }
+            
+            svgContent.appendChild(g);
+        }
+
+        function drawFlow(x1, y1, x2, y2, label = "", type = "flow") {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x1);
+            line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2);
+            line.setAttribute("y2", y2);
+            line.setAttribute("class", type === "flow" ? "flow-line" : "arrow");
+            svgContent.appendChild(line);
+            
+            if (label) {
+                drawLabel((x1 + x2) / 2, (y1 + y2) / 2 - 8, label, type === "cond" ? "cond" : "label");
+            }
+        }
+
+        function drawLabel(x, y, text, type = "label") {
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            
+            const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            txt.setAttribute("x", x);
+            txt.setAttribute("y", y);
+            txt.setAttribute("class", type === "cond" ? "cond-text" : "label-text");
+            txt.textContent = text;
+            
+            if (type !== "cond") {
+                const bgWidth = text.length * 6 + 10;
+                const bgHeight = 14;
+                const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                bg.setAttribute("x", x - bgWidth / 2);
+                bg.setAttribute("y", y - 10);
+                bg.setAttribute("width", bgWidth);
+                bg.setAttribute("height", bgHeight);
+                bg.setAttribute("rx", 3);
+                bg.setAttribute("class", "label-bg");
+                g.appendChild(bg);
+            }
+            
+            g.appendChild(txt);
+            svgContent.appendChild(g);
+        }
+
+        // Initial state
+        window.onload = () => {
+            const firstAgent = document.querySelector('.agent-item');
+            if (firstAgent) firstAgent.click();
+        };
+
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿﻿﻿﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -316,13 +316,13 @@
 
     .chapter-title {
       fill: #182033;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 900;
     }
 
     .chapter-definition {
       fill: #425168;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 720;
     }
 
@@ -633,151 +633,596 @@
 
   <script>
     const mindmapData = {
-      center: {
-        theme: 'Agentic Design Patterns',
-        mainline: '从基础工作流，到状态与学习，再到可靠性与接地，最后进入协议、优化与高级智能。',
-        motto: '先把流程跑通，再把状态管住；先把系统做稳，再把智能做深。'
+  "center": {
+    "theme": "Agentic Design Patterns",
+    "mainline": "从基础工作流，到状态与学习，再到可靠性与接地，最后进入协议、优化与高级智能。",
+    "motto": "先把流程跑通，再把状态管住；先把系统做稳，再把智能做深。"
+  },
+  "memory": {
+    "summary": "工作流组织行动，状态管理连续性，可靠性保证上线，协议与推理拉高上限性能。",
+    "parts": [
+      "第一段：基础执行模式，确立 Agent 行为的基本骨架。",
+      "第二段：认知与控制层，通过记忆与学习实现长效智能。",
+      "第三段：可靠性保障，确保系统在复杂环境下的稳健运行。",
+      "第四段：高级演进，迈向标准互联与自主探索的深水区。"
+    ]
+  },
+  "parts": [
+    {
+      "id": 1,
+      "title": "基础工作流与协作",
+      "range": "1-7",
+      "mnemonic": "拆、判、并、审、用、规、协",
+      "palette": {
+        "trunk": "#7c3aed",
+        "branch": "#8b5cf6",
+        "soft": "#f3e8ff",
+        "softer": "#faf5ff",
+        "border": "#a78bfa",
+        "text": "#3b0764",
+        "accent": "#c084fc"
       },
-      memory: {
-        summary: '工作流组织行动，状态管理连续性，可靠性保证上线，协议与推理拉高上限。',
-        parts: ['拆、判、并、审、用、规、协。', '记、学、接、盯。', '稳、审、证。', '连、优、想、守、量、排、探。']
+      "zone": {
+        "x": 48,
+        "y": 54,
+        "width": 1620,
+        "height": 820
       },
-      parts: [
+      "x": 950,
+      "y": 440,
+      "direction": -1,
+      "chapterX": 550,
+      "groupX": 160,
+      "chapters": [
         {
-          id: 1,
-          title: '基础工作流与协作',
-          range: '1-7',
-          mnemonic: '拆、判、并、审、用、规、协',
-          palette: {
-            trunk: '#7c3aed',
-            branch: '#8b5cf6',
-            soft: '#f3e8ff',
-            softer: '#faf5ff',
-            border: '#a78bfa',
-            text: '#3b0764',
-            accent: '#c084fc'
-          },
-          zone: { x: 48, y: 54, width: 1520, height: 820 },
-          x: 1220,
-          y: 440,
-          direction: -1,
-          chapterX: 880,
-          groupX: 390,
-          chapters: [
-            [1, '提示词链', '把复杂任务拆成多个顺序步骤，让上一步输出成为下一步输入。', ['任务拆分器', '提示契约', '中间结果载体', '校验关口'], ['顺序执行', '结构化输出', '中间变量传递', '步骤级日志', '链尾接工具/反思/路由'], '抽取信息 → 转结构化数据 → 生成报告 / 邮件 / 代码说明', '链越长，错误传播越明显；步骤切太碎会让编排复杂度飙升。', '先拆后传，步步验算。'],
-            [2, '路由', '根据输入意图、语义或规则，把请求送到最合适的分支、工具或子 Agent。', ['路由器', '标签集合', '分支处理器', '兜底分支'], ['意图分类', '向量语义路由', '规则路由', '低置信度澄清', '路由日志回放'], '客服分流、代码助手分工、研究任务按查询类型派发', '路由错一次，后面整条链都可能建立在错前提上。', '先判路，再出手。'],
-            [3, '并行化', '把互不依赖的子任务同时执行，以换取更低总延迟和更高吞吐。', ['子任务切分器', '并行工作单元', '汇聚器', '超时与预算控制器'], ['fan-out / fan-in', 'Map-Reduce 聚合', '分支隔离', '部分失败重试', '限流/超时/速率控制'], '并行搜集新闻 / 财报 / 社媒，再统一综合', '表面独立、实际共享前提的任务，盲目并发会造成冲突答案。', '能并不串，先分后合。'],
-            [4, '反思', '把执行过程改造成“生成 → 评审 → 修正”的闭环。', ['生成器', '审查器', '缺陷清单', '停止条件'], ['generator/reviewer 分离', '结构化批评', '多轮修正', '迭代上限', '批评历史入上下文'], '代码修复、文案润色、规划优化、长答案打磨', '评审标准不清会反复重写却不真正收敛。', '先做后审，错了再改。'],
-            [5, '工具使用（函数调用）', '让模型在需要真实数据、精确计算或外部动作时调用工具。', ['工具定义', '决策器', '执行器', '观察回灌器', '权限边界'], ['函数调用 schema', '参数校验', '结果标准化', '副作用确认', '工具错误重试', 'Agent as Tool'], '查库存、执行脚本、发邮件、查天气、访问企业知识系统', '工具越强，副作用越大；权限模型混乱会暴露真实业务风险。', '模型定意，工具落地。'],
-            [6, '规划', '目标明确但路径未知时，先生成计划，再按计划执行或边执行边重规划。', ['目标定义器', '计划图', '执行器', '重规划器', '检查点'], ['目标分解', '依赖排序', '状态建模', '中途重规划', '长时状态持久化', '步骤审计'], '深度研究、复杂采购、长链路客服诊断、项目型任务执行', '计划看起来合理，不代表执行一定可靠；过度规划会拖慢行动。', '先定终，再排程。'],
-            [7, '多 Agent 协作', '多个角色清晰、边界明确的 Agent 共同完成复杂任务。', ['角色集合', '通信拓扑', '共享状态', '委派规则', '审计轨迹'], ['manager/specialist', 'Sequential/Parallel/Loop', 'AgentTool 嵌套', '共享本体', '交接契约', '管理者日志'], '研究-写作-审校、生成-测试-文档、供应链多角色协同', '角色拆太细会变成踢皮球网络，调试和通信成本陡增。', '分工清，交接明。']
-          ]
+          "number": 1,
+          "title": "提示词链",
+          "definition": "本章是全书最基础的执行模式之一，核心不是“怎么写一个更长的提示词”，而是把复杂任务拆成一串职责明确、前后依赖清晰的小步骤。它解决的是单次提示面对多目标、多约束、多阶段任务时容易失控的问题，因此是后续规划、反思、工具调用乃至多 Agent 工作流的底座。",
+          "components": [
+            "任务分解",
+            "把大问题切成可控子问题",
+            "输出传递",
+            "用上一步结果约束下一步输入空间",
+            "角色定制"
+          ],
+          "techniques": [
+            "先指出单一提示词在复杂任务下会出现指令忽略",
+            "上下文漂移",
+            "错误放大和幻觉等问题",
+            "再用市场报告总结—趋势抽取—邮件起草的例子说明顺序分解",
+            "接着强调结构化输出是链稳定运行的前提"
+          ],
+          "risk": "链式调用会增加总延迟和调用成本",
+          "motto": "复杂任务拆链走，结构输出稳如狗。"
         },
         {
-          id: 2,
-          title: '状态、学习与控制',
-          range: '8-11',
-          mnemonic: '记、学、接、盯',
-          palette: {
-            trunk: '#0284c7',
-            branch: '#0ea5e9',
-            soft: '#e0f2fe',
-            softer: '#f0f9ff',
-            border: '#7dd3fc',
-            text: '#075985',
-            accent: '#38bdf8'
-          },
-          zone: { x: 48, y: 946, width: 1520, height: 890 },
-          x: 1220,
-          y: 1480,
-          direction: -1,
-          chapterX: 880,
-          groupX: 390,
-          chapters: [
-            [8, '记忆管理', '让 Agent 管理会话内短期状态与跨会话长期知识。', ['Session', 'State', 'Long-term Memory', '检索器', '命名空间'], ['短期/长期分层', 'session.state', 'user/app/temp 作用域', '事件驱动更新', '摘要压缩', '语义检索'], '记住用户偏好、跨多轮跟踪任务、复用过往成功策略', '记忆不等于真相，过期事实和错误偏好会污染后续决策。', '短期保上下文，长期存经验。'],
-            [9, '学习和适应', '让 Agent 因过去经验而改变策略、结构或代码，形成持续改进。', ['经验档案库', '评估器', '更新器', '监督者', '变异与选择机制'], ['PPO', 'DPO', '在线学习', '自我改进编码 Agent', '进化搜索', '隔离自修改执行'], '个性化助手持续调优、编码 Agent 自我进化、推荐 / 交易系统在线适应', '评估器设计差会让系统学会刷分，而非真正变好。', '先评再改，优胜迭代。'],
-            [10, '模型上下文协议（MCP）', '把工具和数据源按统一协议暴露给模型。', ['MCP Server', 'MCP Client', '能力目录', '传输层', '访问控制'], ['动态能力发现', '资源/工具/提示边界', 'STDIO/HTTP/SSE', '工具过滤', 'FastMCP schema', 'Agent 友好 API'], '统一接入文件系统、数据库、企业服务、表格与内容平台', 'MCP 只解决接得上，不解决底层 API 是否好用、安全、可维护。', '接口标准化，能力可发现。'],
-            [11, '目标设定和监控', '把目标、成功标准和过程监控显式化。', ['目标列表', '成功标准', '监控器', 'Judge', '停止器'], ['目标写入状态', '成功/失败判定', '外部测试指标', '里程碑上限', 'executor/judge 分离', '反馈轨迹存档'], '代码生成闭环、项目里程碑推进、客服问题闭环处理', '同一个模型既写答案又判答案，容易产生自我放过的错觉。', '目标可验，过程可盯。']
-          ]
+          "number": 2,
+          "title": "路由",
+          "definition": "如果提示词链解决的是“步骤怎么串”，那么路由解决的就是“当前输入该走哪条路径”。它把 Agent 从固定流水线推进到条件驱动系统，使系统可以根据意图、上下文或语义相似度，将请求分派给最合适的处理流程、工具或子 Agent。",
+          "components": [
+            "意图分类",
+            "把自然语言压缩成可执行分支标签",
+            "语义匹配",
+            "用嵌入把“说法不同但意思相近”的请求路由到同一能力",
+            "默认兜底"
+          ],
+          "techniques": [
+            "先说明线性流程无法处理真实世界输入多样性",
+            "再以客户查询为例展示意图识别后转给订单",
+            "产品",
+            "技术支持或澄清流程",
+            "然后归纳四类路由方式——LLM 路由"
+          ],
+          "risk": "路由错一次，后续整个链可能都建立在错误前提上",
+          "motto": "意图识别分叉口，路由精准少绕路。"
         },
         {
-          id: 3,
-          title: '可靠性、人在回路与知识接地',
-          range: '12-14',
-          mnemonic: '稳、审、证',
-          palette: {
-            trunk: '#d97706',
-            branch: '#f59e0b',
-            soft: '#ffedd5',
-            softer: '#fffbeb',
-            border: '#fbbf24',
-            text: '#78350f',
-            accent: '#f59e0b'
-          },
-          zone: { x: 2032, y: 54, width: 1520, height: 820 },
-          x: 2380,
-          y: 440,
-          direction: 1,
-          chapterX: 2720,
-          groupX: 3210,
-          chapters: [
-            [12, '异常处理和恢复', '让 Agent 在工具失败、超时、数据损坏或外部依赖失效时仍能识错、降级、恢复。', ['异常探测器', '故障分类器', '重试/回退器', '状态恢复器', '升级器'], ['超时/错误码/告警', '瞬时重试', 'fallback handler', '优雅降级', '状态回滚', '结构化异常日志'], '主工具失败时切备用工具，数据库挂了就先返回缓存或简化答案', '只吞错不留痕，系统会长期静默失败而不自知。', '先识错，再降级，最后升级。'],
-            [13, '人机协同（HITL）', '在高风险、强模糊、强责任场景里，把人类判断纳入系统闭环。', ['升级规则', '人工工作台', '证据包', '人工裁决', '反馈沉淀器'], ['human-in/on-the-loop', '风险分级阈值', '升级摘要', '脱敏隐私', '审批点', '人工反馈写回'], '法律 / 医疗 / 金融辅助、复杂客服、敏感内容审核、关键动作审批', '人越多吞吐越低；升级太晚时人接手可能已难以补救。', '高风险交给人。'],
-            [14, '知识检索（RAG）', '先检索外部知识，再基于证据生成答案。', ['文档切块器', '向量/混合检索器', '上下文注入器', '生成器', '引用器'], ['Embedding/向量库', 'BM25 + 语义检索', '分块/重叠/元数据', 'rerank', 'GraphRAG', 'Agentic RAG'], '企业知识问答、事实型客服、政策 / 法律检索、可溯源报告生成', '检索差时，生成再强也只是基于错误上下文的流畅回答。', '先找证，再作答。']
-          ]
+          "number": 3,
+          "title": "并行化",
+          "definition": "本章讨论的不是“更多步骤”，而是“哪些步骤没必要等”。当任务包含多个彼此独立的子问题时，并行化能显著降低整体延迟，因此它是 Agent 系统性能优化的核心模式，也是把研究、搜索、分析等多源任务做快的关键手段。",
+          "components": [
+            "独立性判断",
+            "先识别哪些任务互不依赖",
+            "并发执行",
+            "用异步 I/O 或框架原语同时发起多个调用",
+            "结果汇聚"
+          ],
+          "techniques": [
+            "先对比顺序执行与并行执行在研究任务中的耗时结构",
+            "再强调并行化的前提是子任务之间不存在即时依赖",
+            "随后列出信息收集",
+            "数据分析",
+            "多 API 调用"
+          ],
+          "risk": "并行化会换来更高瞬时成本和更复杂的调试",
+          "motto": "任务独立莫等待，并行提效快如风。"
         },
         {
-          id: 4,
-          title: '协议、优化与高级智能',
-          range: '15-21',
-          mnemonic: '连、优、想、守、量、排、探',
-          palette: {
-            trunk: '#059669',
-            branch: '#10b981',
-            soft: '#dcfce7',
-            softer: '#ecfdf5',
-            border: '#6ee7b7',
-            text: '#064e3b',
-            accent: '#34d399'
-          },
-          zone: { x: 2032, y: 946, width: 1520, height: 890 },
-          x: 2380,
-          y: 1480,
-          direction: 1,
-          chapterX: 2720,
-          groupX: 3210,
-          chapters: [
-            [15, 'Agent 间通信（A2A）', '让不同框架、不同服务、不同团队发布的 Agent 按统一协议协作。', ['Agent Card', '发现机制', '任务模型', '消息/工件模型', '上下文关联器'], ['well-known URI', '同步/异步/SSE/webhook', '任务状态机', '远程认证', '工件流式返回', 'A2A vs MCP'], '研究 Agent 调分析 Agent、企业多团队发布独立 Agent 服务', '协议统一不代表质量统一，远程 Agent 的可靠性仍需评估与监控。', 'Agent 找 Agent，按协议协作。'],
-            [16, '资源感知优化', '让 Agent 在成本、时延、模型强度、上下文长度和算力之间动态平衡。', ['复杂度分类器', '模型路由器', '预算管理器', '回退链', '反馈器'], ['请求分类', '强/轻模型分工', '上下文裁剪', '成本/token/时延观测', '优雅降级', 'critic 复盘'], '高价值任务走强模型，轻问答走便宜模型，最新事实问题自动接搜索', '分类器误判会省了钱却错了答案。', '难题配强模，简单走轻模。'],
-            [17, '推理技术', '为 Agent 提供多步思考、分支探索、代码验证和外部行动结合的推理骨架。', ['推理脚手架', '分支搜索器', '工具/代码验证器', '反思循环', '推理预算器'], ['CoT', 'ToT', 'ReAct', 'PALM', 'RLVR', 'MASS', 'Deep Research'], '复杂问答、数学证明、代码修复、研究分析、策略推演', '更长推理不等于更正确，可能只是把幻觉包装得更像认真想过。', '想、试、验、收。'],
-            [18, 'Guardrails / 安全模式', '在输入、推理、工具调用和输出全链路上加边界。', ['输入守卫', '策略执行器', '输出校验器', '工具权限层', '审计/人工接管通道'], ['prompt injection 检测', '合规 JSON', 'Pydantic/schema', 'allow/deny/escalate', '工具白名单', '对抗样本回归'], '客服合规回复、HR 去偏见、法律 / 科研风险拦截、危险操作阻断', '过严会误伤，过松等于没防；只守输入会留下工具和输出漏洞。', '先守边界，再放执行。'],
-            [19, '评估和监控', '让 Agent 从演示能跑升级到上线可观测、可度量、可复盘。', ['离线评估集', '在线轨迹系统', 'Judge 模块', '运营面板', '漂移/异常告警器'], ['结果/轨迹双轨评估', 'token/latency/error', 'LLM-as-a-Judge', '合约式成功条件', 'A/B 测试', '漂移预警'], '客服解决率看板、多 Agent 交接质量评估、线上任务质量抽检', '只看单一分数会诱导系统优化指标而非真实价值。', '不上监控，不算上线。'],
-            [20, '优先级排序', '同时面对多个任务、目标和约束时，决定先做什么、后做什么。', ['任务模型', '评分规则', '调度器', '重排器', '防饥饿机制'], ['紧急/重要/依赖打分', '用户偏好权重', '动态重排', '缺失信息默认值', '变化原因日志', '队列策略/老化'], '项目管理、客服队列、网络安全告警、个人助理排程', '只看急不看重，系统会被噪音事件牵着走。', '先急后重，还看依赖。'],
-            [21, '探索和发现', '让 Agent 主动提出假设、设计实验、比较候选方向并拓展未知空间。', ['假设生成器', '辩论/排名器', '进化器', '实验回路', '人类科学家'], ['文献驱动假设', 'Elo 排名', '假设聚类图', '多 Agent 实验室', '外部证据验证', '安全审查'], '药物发现、算法搜索、开放式研究、漏洞探索、创意生成', '开放式探索容易把新颖误当正确，无外部实验只是漂亮猜测。', '先提假设，再做实验。']
-          ]
+          "number": 4,
+          "title": "反思",
+          "definition": "本章把 Agent 从“生成一次答案”提升到“生成—审查—修正”的闭环系统。它的重点不在多做一步生成，而在给系统引入自我纠错能力，让初稿不必直接成为终稿，特别适合对正确性、完整性、风格一致性要求较高的任务。",
+          "components": [
+            "生成器与评审者分工",
+            "把产出与判断拆开",
+            "批评契约",
+            "要求评审阶段给出结构化缺陷而不是模糊评价",
+            "停止条件"
+          ],
+          "techniques": [
+            "先指出链式",
+            "路由和并行虽能组织流程",
+            "但不能保证初始输出最好",
+            "再定义反思是一个执行",
+            "评估"
+          ],
+          "risk": "反思会显著增加调用成本和时延",
+          "motto": "自我审视加闭环，反思迭代出品精。"
+        },
+        {
+          "number": 5,
+          "title": "工具使用（函数调用）",
+          "definition": "前几章讨论的大多是模型之间或模型内部的编排，而本章真正把 Agent 拉进外部世界。它回答的是：模型何时需要停下文本推理，转而调用 API、数据库、代码执行器、搜索引擎乃至其他 Agent，以获得自身训练数据之外的能力。",
+          "components": [
+            "工具 schema",
+            "把名称",
+            "参数",
+            "描述暴露给模型",
+            "结构化参数生成"
+          ],
+          "techniques": [
+            "先定义工具使用的完整链路——工具定义",
+            "LLM 决策",
+            "生成结构化调用",
+            "编排层执行",
+            "返回观察结果"
+          ],
+          "risk": "模型可能幻觉出不存在的工具或错误参数",
+          "motto": "模型逻辑接外设，工具调用拓边界。"
+        },
+        {
+          "number": 6,
+          "title": "规划",
+          "definition": "如果提示链是开发者预先写好的步骤，那么规划模式关注的是让 Agent 自己发现“该怎么做”。它面向的是目标明确、路径不明确的任务，让系统先产出计划，再执行或边执行边修订，因此是 Agent 从反应式助手走向目标导向行动体的关键一步。",
+          "components": [
+            "目标分解",
+            "把高层意图拆成子目标",
+            "状态建模",
+            "明确起点",
+            "约束和终点"
+          ],
+          "techniques": [
+            "先用“组织团队外出活动”的例子说明目标状态与初始状态之间需要行动序列",
+            "再强调规划不是僵化脚本",
+            "而是遇到场地不可用",
+            "资源变化时能重规划",
+            "随后指出并非所有任务都需要动态规划"
+          ],
+          "risk": "规划容易让系统显得聪明，但不代表执行一定可靠",
+          "motto": "目标明确路自寻，动态规划应万变。"
+        },
+        {
+          "number": 7,
+          "title": "多 Agent 协作",
+          "definition": "本章把“一个 Agent 会很多事”升级成“很多 Agent 各干其长”。重点不只是拆任务，而是设计角色、边界、通信结构和协调方式，从而让系统用组织化分工代替单体提示词堆料。",
+          "components": [
+            "角色专业化",
+            "不同 Agent 拥有不同指令和工具",
+            "通信拓扑",
+            "决定是中心化调度还是网状协同",
+            "委派边界"
+          ],
+          "techniques": [
+            "先说明单体 Agent 在多领域复杂任务下容易成为瓶颈",
+            "再定义多 Agent 协作可以表现为顺序交接",
+            "并行处理",
+            "辩论共识",
+            "层级管理"
+          ],
+          "risk": "Agent 越多，通信与调试成本越高",
+          "motto": "专家协作各所长，拓扑清晰效倍增。"
         }
-      ],
-      appendix: [
-        '附录 A：高级提示技术 / few-shot / 结构化输出 / 上下文工程',
-        '附录 B：Agentic 交互 / GUI / 视觉接地 / 动作回路',
-        '附录 C：框架概览 / LangChain / LangGraph / ADK / CrewAI',
-        '附录 D：AgentSpace / 托管式 Agent 平台',
-        '附录 E：CLI Agent / 终端高权限执行面',
-        '附录 F：推理引擎内部 / 思考预算与控制流',
-        '附录 G：编码 Agent / 编辑 / 运行 / 验证 / 修复'
       ]
-    };
+    },
+    {
+      "id": 2,
+      "title": "状态、学习与控制",
+      "range": "8-11",
+      "mnemonic": "记、学、接、盯",
+      "palette": {
+        "trunk": "#0284c7",
+        "branch": "#0ea5e9",
+        "soft": "#e0f2fe",
+        "softer": "#f0f9ff",
+        "border": "#7dd3fc",
+        "text": "#075985",
+        "accent": "#38bdf8"
+      },
+      "zone": {
+        "x": 48,
+        "y": 946,
+        "width": 1520,
+        "height": 890
+      },
+      "x": 950,
+      "y": 1480,
+      "direction": -1,
+      "chapterX": 550,
+      "groupX": 240,
+      "chapters": [
+        {
+          "number": 8,
+          "title": "记忆管理",
+          "definition": "本章解决的是 Agent 如何“不再每轮都失忆”。它把记忆拆成短期上下文和长期知识两层，既关心当前会话中的状态连续性，也关心跨会话的持久化知识、用户偏好和可搜索经验库，是个性化、持续任务和长期学习的基础设施层。",
+          "components": [
+            "Session 生命周期",
+            "管理一条对话线程",
+            "State 作用域",
+            "用 user:/app:/temp: 划分数据归属和持久性",
+            "事件驱动更新"
+          ],
+          "techniques": [
+            "先区分短期记忆（上下文窗口中的近期消息",
+            "工具结果",
+            "反思结果）与长期记忆（数据库",
+            "向量库",
+            "知识库中的持久信息）"
+          ],
+          "risk": "记忆并不天然等于正确知识，旧偏好、过期事实、误提取内容都可能污染后续决策",
+          "motto": "短期长效分两层，记忆管理不失忆。"
+        },
+        {
+          "number": 9,
+          "title": "学习和适应",
+          "definition": "如果记忆解决“记住了什么”，那学习与适应解决“如何因为这些经验而改变”。本章关注 Agent 如何通过奖励、偏好、在线数据、自我修改或进化搜索持续提升表现，使系统不再只是执行预设逻辑，而是会在环境中演化。",
+          "components": [
+            "经验驱动更新",
+            "用新数据改变策略或知识",
+            "偏好优化",
+            "通过人类偏好直接调整输出分布",
+            "归档—评估—重写闭环"
+          ],
+          "techniques": [
+            "先从全局视角梳理强化学习",
+            "监督学习",
+            "无监督学习",
+            "零/少样本",
+            "在线学习"
+          ],
+          "risk": "自我改进很容易滑向不可控，尤其是代码修改与工具执行叠加后",
+          "motto": "经验驱动自进化，学习适应更智能。"
+        },
+        {
+          "number": 10,
+          "title": "模型上下文协议（MCP）",
+          "definition": "本章讨论的不是某个具体工具，而是“工具和数据如何以标准协议暴露给模型”。它试图把零散、供应商特定的函数调用能力，上升为一个可发现、可复用、可互操作的客户端—服务器生态，让 Agent 更像在接入标准化外设，而不是为每个集成都写一次胶水代码。",
+          "components": [
+            "资源/工具/提示三分法",
+            "区分静态数据",
+            "可执行能力与交互模板",
+            "动态发现",
+            "客户端先问服务器“你会什么”"
+          ],
+          "techniques": [
+            "先把 MCP 类比为通用适配器",
+            "说明它以资源",
+            "提示和工具为基本元素",
+            "再把 MCP 与普通函数调用对比",
+            "指出后者偏专有"
+          ],
+          "risk": "MCP 解决的是“接得上”，不是“接得好”",
+          "motto": "标准协议连工具，MCP 实现互联。"
+        },
+        {
+          "number": 11,
+          "title": "目标设定和监控",
+          "definition": "本章把“想做什么”和“做到没有”这两件事正式纳入 Agent 架构。很多系统会规划、会调用工具、会反思，但若没有显式目标和监控指标，就很容易陷入忙碌而无验证的状态。本章的价值在于给 Agent 加上目的性和自检机制。",
+          "components": [
+            "目标显式化",
+            "把“简单",
+            "正确",
+            "处理边界情况”之类要求写成约束",
+            "成功判定"
+          ],
+          "techniques": [
+            "先说明 Agent 不该只是处理输入",
+            "更要朝目标状态推进",
+            "再通过客户支持",
+            "个性化学习",
+            "项目管理"
+          ],
+          "risk": "由同一个模型既写代码又判好坏，客观性天然不足",
+          "motto": "目标显式加监控，进度透明控全局。"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "可靠性、人在回路与知识接地",
+      "range": "12-14",
+      "mnemonic": "稳、审、证",
+      "palette": {
+        "trunk": "#d97706",
+        "branch": "#f59e0b",
+        "soft": "#ffedd5",
+        "softer": "#fffbeb",
+        "border": "#fbbf24",
+        "text": "#78350f",
+        "accent": "#f59e0b"
+      },
+      "zone": {
+        "x": 2032,
+        "y": 54,
+        "width": 1520,
+        "height": 820
+      },
+      "x": 2650,
+      "y": 440,
+      "direction": 1,
+      "chapterX": 3050,
+      "groupX": 3360,
+      "chapters": [
+        {
+          "number": 12,
+          "title": "异常处理和恢复",
+          "definition": "本章讨论的不是“正常情况下如何更聪明”，而是“出错时如何不崩”。真实世界中的 Agent 不可避免会遇到工具失败、服务超时、数据损坏、网络问题或错误输入，因此韧性设计不是附加项，而是生产级 Agent 的生存条件。",
+          "components": [
+            "异常检测",
+            "及时识别工具输出异常",
+            "超时或不可用",
+            "故障分类",
+            "区分瞬时错误和持久错误"
+          ],
+          "techniques": [
+            "先从可靠运行需求出发",
+            "说明异常处理与恢复的必要性",
+            "再把模式拆成三层：错误检测",
+            "错误处理和恢复",
+            "其中错误检测覆盖无效输出"
+          ],
+          "risk": "如果异常只被吞掉不被记录，系统会形成“静默失败”",
+          "motto": "韧性设计防崩溃，异常恢复保生产。"
+        },
+        {
+          "number": 13,
+          "title": "人机协同",
+          "definition": "本章强调，在很多高风险、强模糊、带伦理约束的场景里，AI 不应该被设计成完全脱离人。HITL 不是给 AI“打补丁”，而是在系统设计层承认人类判断、责任承担和细致理解仍然不可替代。",
+          "components": [
+            "升级阈值",
+            "定义何时必须转人",
+            "监督回路",
+            "让人能看到日志",
+            "上下文和关键决策"
+          ],
+          "techniques": [
+            "先从战略层解释为什么 HITL 能把人类判断力",
+            "创造力和 AI 的效率结合起来",
+            "再拆解出人类监督",
+            "干预纠正",
+            "从人类反馈学习"
+          ],
+          "risk": "人介入越多，吞吐越差、成本越高",
+          "motto": "人在环中守底线，人机协同更可信。"
+        },
+        {
+          "number": 14,
+          "title": "知识检索（RAG）",
+          "definition": "本章解决的是 LLM “知道得不够新、不够准、不够专”的根本问题。它通过先检索外部知识、再生成答案的方式，把模型从闭卷答题者变成开卷答题者，是企业知识问答、事实型客服和可追溯回答系统的核心模式。",
+          "components": [
+            "分块策略",
+            "把长文档切成可检索",
+            "可注入的知识单元",
+            "嵌入与向量检索",
+            "让系统按含义而非字面匹配找资料"
+          ],
+          "techniques": [
+            "先说明 LLM 受训练数据静态性限制",
+            "无法天然掌握实时与私有知识",
+            "再完整拆解 RAG 流程：查询进入后先做语义检索",
+            "再把相关片段增强到提示词中",
+            "最后交给 LLM 生成"
+          ],
+          "risk": "烂分块会直接毁掉检索",
+          "motto": "外部知识做增强，RAG 检索补短板。"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "协议、优化与高级智能",
+      "range": "15-21",
+      "mnemonic": "连、优、想、守、量、排、探",
+      "palette": {
+        "trunk": "#059669",
+        "branch": "#10b981",
+        "soft": "#dcfce7",
+        "softer": "#ecfdf5",
+        "border": "#6ee7b7",
+        "text": "#064e3b",
+        "accent": "#34d399"
+      },
+      "zone": {
+        "x": 2032,
+        "y": 946,
+        "width": 1520,
+        "height": 890
+      },
+      "x": 2650,
+      "y": 1480,
+      "direction": 1,
+      "chapterX": 3050,
+      "groupX": 3360,
+      "chapters": [
+        {
+          "number": 15,
+          "title": "Agent 间通信（A2A）",
+          "definition": "本章把多 Agent 协作从“同一框架内部组织”推进到“跨框架、跨服务、跨团队的互操作协作”。它关注的不是某个 Agent 如何更强，而是不同 Agent 如何通过统一协议发现彼此、交换任务、流式传递结果并保持上下文。",
+          "components": [
+            "Agent Card",
+            "把技能",
+            "端点",
+            "认证和能力以 JSON 形式标准化描述",
+            "发现机制"
+          ],
+          "techniques": [
+            "先指出单个 Agent 即使能力强",
+            "也难以独自处理复杂多面问题",
+            "因此需要跨 Agent 协作",
+            "再介绍 A2A 是一个面向不同框架的开放标准",
+            "并说明其生态支持者"
+          ],
+          "risk": "协议统一不等于质量统一，远程 Agent 卡片写得好不代表实际输出可靠",
+          "motto": "跨界 Agent 齐沟通，A2A 协议话未来。"
+        },
+        {
+          "number": 16,
+          "title": "资源感知优化",
+          "definition": "本章讨论的不是“怎么把任务拆开做”，而是“系统在运行时该把多少算力、时间、预算和工具配额投到哪一步”。它把 Agent 从静态流程执行器推进为资源调度者，核心目标是在质量、成本、延迟、能耗和服务连续性之间建立动态平衡。",
+          "components": [
+            "查询分类与复杂度识别",
+            "用于决定简单问答",
+            "强推理还是联网检索",
+            "模型路由机制",
+            "在 Gemini Flash/Pro 或不同 OpenAI 模型间按任务类型切换"
+          ],
+          "techniques": [
+            "先界定资源感知优化与普通规划的差异",
+            "再给出成本",
+            "延迟",
+            "能耗",
+            "带宽"
+          ],
+          "risk": "若分类器本身误判，系统会把复杂问题错送到便宜模型，导致低质量但表面流畅的回答",
+          "motto": "资源感知算成本，动态调度求平衡。"
+        },
+        {
+          "number": 17,
+          "title": "推理技术",
+          "definition": "本章是全书里把 Agent 从“会调用模型”推进到“会思考、会回看、会试错”的核心章节。重点不是单次回答，而是把多步推理、分支探索、代码辅助求解、工具交互和测试时计算扩展，整合成可审计、可增强、可迭代的推理体系。",
+          "components": [
+            "思维链 CoT",
+            "把复杂问题拆成一串中间步骤",
+            "思维树 ToT",
+            "把单一路径升级为多分支搜索与回溯",
+            "自我纠正"
+          ],
+          "techniques": [
+            "先从 CoT 说明逐步分解为何能提升复杂任务正确率",
+            "再引入 ToT",
+            "自我纠正与 PALM",
+            "说明模型如何探索多路径并把符号计算外包给代码",
+            "随后讲 RLVR 和新型推理模型如何通过更长“思考预算”获得更强能力"
+          ],
+          "risk": "推理更长不等于更正确，冗长链路可能只是把幻觉包装得更像“认真思考”",
+          "motto": "深度思考多路径，推理技术破难题。"
+        },
+        {
+          "number": 18,
+          "title": "Guardrails/安全模式",
+          "definition": "本章把 Agent 从“能做事”拉回到“该不该做、做到什么边界”为止。Guardrails 并非附属过滤器，而是覆盖输入、推理、工具、输出和人工介入节点的系统性安全架构，其目标是把自主性控制在可信范围内。",
+          "components": [
+            "输入清洗与提示越狱检测",
+            "先挡住明显恶意请求",
+            "内容策略执行模型",
+            "把是否合规转成结构化 JSON 判断",
+            "Pydantic/模式校验"
+          ],
+          "techniques": [
+            "先解释为什么自主系统若没有防护栏会变得不可预测且潜在危险",
+            "再列出客服",
+            "内容生成",
+            "教育",
+            "法律"
+          ],
+          "risk": "安全模型也会误判，过严会导致正常业务被拦，过松则失去意义",
+          "motto": "安全红线筑长城，防护护栏稳军心。"
+        },
+        {
+          "number": 19,
+          "title": "评估和监控",
+          "definition": "本章强调 Agent 不是“上线了就算完成”，而是必须持续被度量、被诊断、被审计。它把 Agent 系统从模型实验推进到可运营软件，关注结果质量、过程轨迹、资源消耗、漂移异常与团队协作表现。",
+          "components": [
+            "结果导向指标",
+            "直接测是否完成目标",
+            "过程/轨迹评估",
+            "检查工具选择",
+            "步骤顺序和中间决策"
+          ],
+          "techniques": [
+            "先说明生产环境需要持续测量有效性",
+            "效率与合规",
+            "再用精确匹配例子说明简单准确率指标为何常常误伤语义正确答案",
+            "随后引入延迟与 token 监控",
+            "把成本和性能纳入统一观测"
+          ],
+          "risk": "精确匹配、关键词命中等简单指标很容易把“语义正确”判成错误",
+          "motto": "全量监控看轨迹，持续评估促升级。"
+        },
+        {
+          "number": 20,
+          "title": "优先级排序",
+          "definition": "本章解决的是“Agent 手里任务太多时，下一步到底做什么”。它不是简单排个待办清单，而是把重要性、紧迫性、依赖、资源可得性和用户偏好变成实时决策规则，使 Agent 在多目标冲突环境中保持动作顺序的合理性。",
+          "components": [
+            "标准定义",
+            "把紧急性",
+            "重要性",
+            "依赖",
+            "资源"
+          ],
+          "techniques": [
+            "先说明复杂环境下若没有优先级机制",
+            "Agent 会陷入低效和目标漂移",
+            "再抽象出标准定义",
+            "任务评估",
+            "调度选择与动态重排四个基本环节"
+          ],
+          "risk": "如果标准过静态，系统会在环境变化后继续按旧规则错排",
+          "motto": "任务繁杂排先后，优先级定决胜局。"
+        },
+        {
+          "number": 21,
+          "title": "探索和发现",
+          "definition": "这是全书后段最“Agentic”的章节之一，强调 Agent 不应只在已知解空间里优化，而要主动进入未知区域，生成假设、设计实验、发现线索和扩展知识边界。它把 Agent 的角色从执行者升级为探索者与研究协作者。",
+          "components": [
+            "假设生成机制",
+            "从文献与问题定义中提出可测的新思路",
+            "辩论与排名机制",
+            "用 Elo 风格比较假设质量与前景",
+            "进化机制"
+          ],
+          "techniques": [
+            "先区分探索发现与被动响应",
+            "预定义优化的不同",
+            "再给出科学研究",
+            "博弈策略",
+            "市场研究"
+          ],
+          "risk": "探索系统极易把“新颖”误当“正确”，尤其在开放文献不完整、负结果稀缺的领域",
+          "motto": "勇闯未知拓边界，探索发现求真理。"
+        }
+      ]
+    }
+  ],
+  "appendix": [
+    "附录 A：高级提示技术 / few-shot / 结构化输出 / 上下文工程",
+    "附录 B：Agentic 交互 / GUI / 视觉接地 / 动作回路",
+    "附录 C：框架概览 / LangChain / LangGraph / ADK / CrewAI",
+    "附录 D：AgentSpace / 托管式 Agent 平台",
+    "附录 E：CLI Agent / 终端高权限执行面",
+    "附录 F：推理引擎内部 / 思考预算与控制流",
+    "附录 G：编码 Agent / 编辑 / 运行 / 验证 / 修复"
+  ]
+};
 
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const canvas = { width: 3600, height: 1900 };
     const center = { x: 1800, y: 950, rx: 210, ry: 88 };
-    const chapterCard = { width: 340, height: 142 };
-    const groupCard = { width: 320, baseHeight: 66, lineHeight: 17 };
+    const chapterCard = { width: 280, height: 110 };
+    const groupCard = { width: 260, baseHeight: 66, lineHeight: 17 };
     const chapterYRanges = {
-      1: [148, 802],
-      2: [1088, 1460],
-      3: [192, 700],
-      4: [1068, 1778]
+      1: [100, 850],
+      2: [1050, 1650],
+      3: [100, 850],
+      4: [1050, 1800]
     };
     const state = {
       query: '',
@@ -806,23 +1251,26 @@
         part.chapters = part.chapters.map((chapter, index) => {
           const y = startY + gap * index + (index % 2 === 0 ? -10 : 10);
           const tone = chapterTone(part.palette, toneSteps[index % toneSteps.length], index);
+          
+          // 核心：左右交错逻辑已在 normalizeParts 中硬核实现
+          let x;
+          if (index % 2 === 0) {
+            x = part.chapterX; // 外侧
+          } else {
+            x = part.x + (part.direction * -1 * 380); // 内侧
+          }
+
           return {
-            number: chapter[0],
-            title: chapter[1],
-            definition: chapter[2],
-            components: chapter[3],
-            techniques: chapter[4],
-            landing: chapter[5],
-            risk: chapter[6],
-            motto: chapter[7],
-            shortDefinition: shortenText(chapter[2], 28),
-            shortRisk: shortenText(chapter[6], 22),
+            ...chapter,
+            landing: chapter.landing || '',
+            shortDefinition: shortenText(chapter.definition, 54),
+            shortRisk: shortenText(chapter.risk, 26),
             part,
             index,
-            x: part.chapterX,
+            x,
             y,
-            groupX: part.groupX,
-            riskX: part.chapterX + part.direction * 220,
+            groupX: x + part.direction * 390,
+            riskX: x + part.direction * -220,
             tone
           };
         });
@@ -1154,7 +1602,7 @@
       const height = chapterCard.height;
       const x = chapter.x - width / 2;
       const y = chapter.y - height / 2;
-      const group = el('g', { class: nodeClasses({ type: 'chapter', chapter }, 'chapter-node') }, nodesLayer);
+      const group = el('g', { class: nodeClasses({ type: 'chapter', chapter }, 'chapter-node'), 'data-chapter-num': chapter.number }, nodesLayer);
       addInteractiveHandlers(group, () => selectChapter(chapter, true));
 
       el('rect', {
@@ -1227,6 +1675,7 @@
     }
 
     function leafGroups(chapter) {
+      if (!chapter.groupOffsets) chapter.groupOffsets = { component: 0, tech: 0, risk: 0 };
       const chapterWave = chapter.index % 2 === 0 ? -8 : 8;
       const visibleComponents = visibleItems(chapter.components);
       const visibleTechniques = visibleItems(chapter.techniques);
@@ -1240,7 +1689,7 @@
           items: visibleComponents,
           rawItems: chapter.components,
           x: chapter.groupX,
-          y: chapter.y - 42 + chapterWave,
+          y: chapter.y - 42 + chapterWave + chapter.groupOffsets.component,
           width: groupCard.width,
           height: groupCard.baseHeight + Math.max(0, componentLines.length - 2) * groupCard.lineHeight,
           lines: componentLines,
@@ -1256,7 +1705,7 @@
           items: visibleTechniques,
           rawItems: chapter.techniques,
           x: chapter.groupX,
-          y: chapter.y + 52 + chapterWave,
+          y: chapter.y + 52 + chapterWave + chapter.groupOffsets.tech,
           width: groupCard.width,
           height: groupCard.baseHeight + Math.max(0, techniqueLines.length - 2) * groupCard.lineHeight,
           lines: techniqueLines,
@@ -1272,7 +1721,7 @@
           items: [chapter.shortRisk],
           rawItems: [chapter.shortRisk],
           x: chapter.riskX,
-          y: chapter.y + 98,
+          y: chapter.y + 98 + chapter.groupOffsets.risk,
           width: 236,
           height: 52,
           lines: wrapText(chapter.shortRisk, 18, 2),
@@ -1286,7 +1735,7 @@
 
     function drawGroupNode(groupData, chapter) {
       const group = el('g', {
-        class: nodeClasses({ type: 'group', chapter, label: groupData.label, kind: groupData.kind, items: groupData.rawItems }, 'group-node')
+        class: nodeClasses({ type: 'group', chapter, label: groupData.label, kind: groupData.kind, items: groupData.rawItems }, 'group-node'), 'data-chapter-num': chapter.number, 'data-group-class': groupData.className
       }, nodesLayer);
       addInteractiveHandlers(group, () => selectChapter(chapter, true));
 
@@ -1604,6 +2053,73 @@
       state.viewMode = mode;
       rerender();
     }
+
+
+    let dragTarget = null;
+    let dragStartPos = { x: 0, y: 0 };
+    let isDragging = false;
+
+    function getSvgCoords(event) {
+      const CTM = svg.getScreenCTM();
+      return {
+        x: (event.clientX - CTM.e) / CTM.a,
+        y: (event.clientY - CTM.f) / CTM.d
+      };
+    }
+
+    svg.addEventListener('mousedown', e => {
+      const node = e.target.closest('.chapter-node, .group-node');
+      if (node) {
+        dragTarget = node;
+        dragStartPos = getSvgCoords(e);
+        isDragging = false;
+      }
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!dragTarget) return;
+      const coords = getSvgCoords(e);
+      const dx = coords.x - dragStartPos.x;
+      const dy = coords.y - dragStartPos.y;
+
+      if (!isDragging && Math.hypot(dx, dy) > 5) {
+        isDragging = true;
+      }
+
+      if (isDragging) {
+        const num = parseInt(dragTarget.getAttribute('data-chapter-num'));
+        const chapter = allChapters().find(c => c.number === num);
+        if (dragTarget.classList.contains('chapter-node')) {
+          chapter.x += dx;
+          chapter.y += dy;
+        } else {
+          const gClass = dragTarget.getAttribute('data-group-class');
+          if (gClass === 'risk') {
+            chapter.riskX += dx;
+          } else {
+            chapter.groupX += dx;
+          }
+          if (!chapter.groupOffsets) chapter.groupOffsets = { component: 0, tech: 0, risk: 0 };
+          if (gClass === 'component') chapter.groupOffsets.component += dy;
+          else if (gClass === 'tech') chapter.groupOffsets.tech += dy;
+          else if (gClass === 'risk') chapter.groupOffsets.risk += dy;
+        }
+        dragStartPos = coords;
+        renderSvg();
+      }
+    });
+
+    window.addEventListener('mouseup', e => {
+      if (isDragging) {
+        const captureClick = (ev) => {
+          ev.stopPropagation();
+          window.removeEventListener('click', captureClick, true);
+        };
+        window.addEventListener('click', captureClick, true);
+      }
+      dragTarget = null;
+      isDragging = false;
+    });
 
     function init() {
       normalizeParts();
