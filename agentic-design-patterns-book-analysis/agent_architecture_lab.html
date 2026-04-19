@@ -425,7 +425,7 @@
             {"id": "audit", "name": "防护栏/审计 (Guardrails)", "category": "Perception", "role": "在输入阶段强制执行安全边界与合规性检查", "case": "企业级安全网关、内容合规审计", "chapter": "18", "cost": "Low", "scores": {"iq": 82, "latency": 0.2, "cost": "Low", "robustness": "High"}, "diagram": "audit"},
             {"id": "prioritization", "name": "优先级排序智能体 (Prioritization Agent)", "category": "Input", "role": "根据紧急度和重要性动态调整任务队列", "case": "应急响应系统、项目管理调度", "chapter": "20", "cost": "Low", "scores": {"iq": 85, "latency": 0.5, "cost": "Low", "robustness": "High"}, "diagram": "prioritization"},
             {"id": "hypothesis", "name": "假设生成器 (Hypothesis Generator)", "category": "Thinking", "role": "在未知解空间中生成科学假设或创新思路", "case": "自主科学研究、新药研发", "chapter": "21", "cost": "High", "scores": {"iq": 98, "latency": 10.0, "cost": "High", "robustness": "Low"}, "diagram": "exploration"},
-            {"id": "evolution", "name": "进化引擎 (Evolution Engine)", "category": "Thinking", "role": "通过变异和组合算法不断演化和优化解决方案", "case": "方案搜索、算法自动进化", "chapter": "9, 21", "cost": "High", "scores": {"iq": 96, "latency": 15.0, "cost": "High", "robustness": "High"}, "diagram": "exploration"},
+            {"id": "evolution", "name": "进化引擎 (Evolution Engine)", "category": "Thinking", "role": "通过变异和组合算法不断演化和优化解决方案", "case": "方案搜索、算法自动进化", "chapter": "9, 21", "cost": "High", "scores": {"iq": 96, "latency": 15.0, "cost": "High", "robustness": "High"}, "diagram": "evolution-flow"},
             {"id": "meta-reviewer", "name": "元审查员 (Meta-Reviewer)", "category": "Perception", "role": "从高维度评估研究路径的创新性、可行性和伦理合规性", "case": "科研项目管理、前瞻性探索", "chapter": "21", "cost": "High", "scores": {"iq": 95, "latency": 5.0, "cost": "High", "robustness": "High"}, "diagram": "reflection"}
         ];
 
@@ -544,7 +544,25 @@
             setTimeout(() => {
                 svgContent.innerHTML = '';
                 
-                                if (type === 'full-qa') {
+                                if (type === 'evolution-flow') {
+                    drawNode(150, 300, "Population", "circle");
+                    drawNode(350, 300, "Crossover & Mutation", "rect");
+                    drawNode(550, 300, "Fitness Function", "diamond");
+                    drawNode(750, 300, "Selection", "rect");
+                    drawNode(750, 450, "Elite Survivors", "circle");
+
+                    drawFlow(215, 300, 285, 300, "Gene Exchange");
+                    drawFlow(415, 300, 485, 300, "Mutation Rate");
+                    drawFlow(615, 300, 685, 300, "Selection Pressure");
+                    drawFlow(750, 335, 750, 410);
+
+                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    loop.setAttribute("d", "M 715 450 C 150 450, 150 335, 150 335");
+                    loop.setAttribute("class", "loop-path");
+                    loop.setAttribute("style", "stroke-dasharray: 4 4;");
+                    svgContent.appendChild(loop);
+                }
+                else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
                     drawNode(220, 300, "Input Guard", "diamond", "Security");
                     drawNode(380, 300, "Router", "diamond", "Intent");
