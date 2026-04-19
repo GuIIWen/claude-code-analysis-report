@@ -584,14 +584,14 @@
                     drawNode(720, 300, "Output Guard", "diamond", "Security");
                     drawNode(720, 450, "Final Output", "circle", "Response");
 
-                    drawFlow(120, 300, 155, 300);
-                    drawFlow(285, 300, 315, 300, "Safe");
-                    drawFlow(380, 265, 380, 180, "Context");
-                    drawFlow(445, 150, 485, 150, "Query");
-                    drawFlow(550, 180, 550, 270, "Augment");
-                    drawFlow(445, 300, 485, 300, "Direct");
-                    drawFlow(615, 300, 655, 300, "Draft");
-                    drawFlow(720, 335, 720, 410, "Clean");
+                    drawFlow(115, 300, 160, 300);
+                    drawFlow(280, 300, 320, 300, "Safe");
+                    drawFlow(380, 265, 380, 175, "Context");
+                    drawFlow(440, 150, 490, 150, "Query");
+                    drawFlow(550, 175, 550, 275, "Augment");
+                    drawFlow(440, 300, 490, 300, "Direct");
+                    drawFlow(610, 300, 660, 300, "Draft");
+                    drawFlow(720, 335, 720, 415, "Clean");
                 }
                 else if (type === 'reflection') {
                     // Reasoning / ToT (Chapter 17)
@@ -628,10 +628,10 @@
                     drawNode(500, 300, "LLM Judge", "diamond", "Evaluation");
                     drawNode(750, 300, "Final Score", "circle", "Pass/Fail");
 
-                    drawFlow(165, 300, 440, 300, "Content");
-                    drawFlow(300, 205, 470, 280, "Guidelines");
-                    drawFlow(300, 395, 470, 320, "Evidence");
-                    drawFlow(560, 300, 690, 300, "Decision");
+                    drawFlow(135, 300, 440, 300, "Content");
+                    drawFlow(300, 175, 470, 280, "Guidelines");
+                    drawFlow(300, 425, 470, 320, "Evidence");
+                    drawFlow(560, 300, 715, 300, "Decision");
                 }
                 else if (type === 'full-coding') {
                     drawNode(80, 300, "Task", "circle", "Issue");
@@ -642,13 +642,13 @@
                     drawNode(600, 300, "Judge", "diamond", "Review");
                     drawNode(750, 300, "Output", "circle", "PR/Commit");
 
-                    drawFlow(120, 300, 155, 300);
-                    drawFlow(220, 270, 220, 180, "Push");
-                    drawFlow(285, 150, 420, 270, "Pop Next");
-                    drawFlow(420, 330, 420, 420, "Run test");
-                    drawFlow(380, 420, 380, 330, "Stdout");
-                    drawFlow(485, 300, 535, 300, "Submit");
-                    drawFlow(665, 300, 710, 300, "Pass", "cond");
+                    drawFlow(115, 300, 160, 300);
+                    drawFlow(220, 275, 220, 175, "Push");
+                    drawFlow(280, 150, 360, 275, "Pop Next");
+                    drawFlow(420, 325, 420, 425, "Run test");
+                    drawFlow(380, 425, 380, 325, "Stdout");
+                    drawFlow(480, 300, 540, 300, "Submit");
+                    drawFlow(660, 300, 715, 300, "Pass", "cond");
 
                     const codeLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     codeLoop.setAttribute("d", "M 600 335 C 600 400, 460 400, 460 330");
