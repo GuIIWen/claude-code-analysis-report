@@ -593,6 +593,46 @@
                     drawFlow(615, 300, 655, 300, "Draft");
                     drawFlow(720, 335, 720, 410, "Clean");
                 }
+                else if (type === 'reflection') {
+                    // Reasoning / ToT (Chapter 17)
+                    drawNode(100, 300, "Initial Task", "rect", "Problem");
+                    drawNode(300, 150, "Thought A", "rect", "Branch 1");
+                    drawNode(300, 300, "Thought B", "rect", "Branch 2");
+                    drawNode(300, 450, "Thought C", "rect", "Branch 3");
+                    drawNode(500, 300, "Evaluator", "diamond", "Self-Correction");
+                    drawNode(700, 300, "Optimal Path", "rect", "Solution");
+
+                    drawFlow(170, 300, 230, 150, "Proposal 1");
+                    drawFlow(170, 300, 230, 300, "Proposal 2");
+                    drawFlow(170, 300, 230, 450, "Proposal 3");
+                    
+                    drawFlow(370, 150, 465, 270, "Logit Score");
+                    drawFlow(370, 300, 445, 300, "Consistency");
+                    drawFlow(370, 450, 465, 330, "Heuristic");
+
+                    drawFlow(535, 300, 630, 300, "Yes (Valid)", "cond");
+                    
+                    // Backtracking Loop
+                    const backPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    backPath.setAttribute("d", "M 500 265 C 500 50, 100 50, 100 275");
+                    backPath.setAttribute("class", "loop-path");
+                    backPath.setAttribute("style", "stroke: var(--danger)");
+                    svgContent.appendChild(backPath);
+                    drawLabel(300, 60, "No (Backtrack)", "cond");
+                }
+                else if (type === 'judge') {
+                    // LLM-as-a-Judge (Chapter 11, 19)
+                    drawNode(100, 300, "Generated Content", "circle", "Input");
+                    drawNode(300, 150, "Rubric / Criteria", "rect", "Reference");
+                    drawNode(300, 450, "Ground Truth", "rect", "Context");
+                    drawNode(500, 300, "LLM Judge", "diamond", "Evaluation");
+                    drawNode(750, 300, "Final Score", "circle", "Pass/Fail");
+
+                    drawFlow(165, 300, 440, 300, "Content");
+                    drawFlow(300, 205, 470, 280, "Guidelines");
+                    drawFlow(300, 395, 470, 320, "Evidence");
+                    drawFlow(560, 300, 690, 300, "Decision");
+                }
                 else if (type === 'full-coding') {
                     drawNode(80, 300, "Task", "circle", "Issue");
                     drawNode(220, 300, "Planner", "rect", "Decompose");
@@ -697,19 +737,6 @@
                     backPath.setAttribute("style", "stroke: var(--danger)");
                     svgContent.appendChild(backPath);
                     drawLabel(300, 60, "No (Backtrack)", "cond");
-                }
-                else if (type === 'judge') {
-                    // LLM-as-a-Judge (Chapter 11, 19)
-                    drawNode(100, 300, "Generated Content", "circle", "Input");
-                    drawNode(300, 150, "Rubric / Criteria", "rect", "Reference");
-                    drawNode(300, 450, "Ground Truth", "rect", "Context");
-                    drawNode(500, 300, "LLM Judge", "diamond", "Evaluation");
-                    drawNode(750, 300, "Final Score", "circle", "Pass/Fail");
-
-                    drawFlow(165, 300, 440, 300, "Content");
-                    drawFlow(300, 205, 470, 280, "Guidelines");
-                    drawFlow(300, 395, 470, 320, "Evidence");
-                    drawFlow(560, 300, 690, 300, "Decision");
                 }
                 else if (type === 'monitoring') {
                     // Guardrails (Chapter 18)
