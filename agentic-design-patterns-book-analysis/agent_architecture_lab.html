@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -280,8 +280,8 @@
         .node-diamond { fill: var(--panel); stroke: var(--warning); stroke-width: 1.5; transition: all 0.3s; }
         .node-circle { fill: var(--panel); stroke: var(--success); stroke-width: 1.5; transition: all 0.3s; }
         
-        .node:hover .node-rect { stroke: var(--accent); filter: drop-shadow(0 0 8px var(--accent-glow)); }
-        .node:hover .node-diamond { stroke: #fff; filter: drop-shadow(0 0 8px var(--warning)); }
+        .node:hover .node-rect { stroke: var(--accent); stroke-width: 2.5; }
+        .node:hover .node-diamond { stroke: #fff; stroke-width: 2.5; }
         
         .node-text { fill: var(--text-primary); font-size: 11px; font-weight: 600; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
         .node-subtext { fill: var(--text-muted); font-size: 9px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
@@ -295,8 +295,8 @@
         }
 
         .loop-path { fill: none; stroke: var(--success); stroke-width: 1.5; stroke-dasharray: 4 2; marker-end: url(#arrowhead-success); }
-        .label-bg { fill: rgba(5, 10, 20, 0.9); }
-        .label-text { fill: var(--accent); font-size: 9px; font-weight: 500; text-anchor: middle; }
+        .label-bg { fill: transparent; }
+        .label-text { fill: var(--accent); font-size: 9px; font-weight: 500; text-anchor: middle; text-shadow: 0 0 4px var(--bg); }
         .cond-text { fill: var(--warning); font-size: 9px; font-weight: bold; text-anchor: middle; }
 
         @keyframes pulse {
@@ -401,22 +401,22 @@
             {"id": "enterprise-qa", "name": "企业级知识问答 Agent", "category": "FullArch", "role": "结合路由、记忆、安全护栏和 RAG 的完整系统", "case": "企业内部知识库问答", "chapter": "N/A", "cost": "High", "scores": {"iq": 92, "latency": 1.5, "cost": "High", "robustness": "High"}, "diagram": "full-qa"},
             {"id": "coding-agent", "name": "自主软件开发 Agent", "category": "FullArch", "role": "结合规划、工具调用、裁判和提示词链的循环系统", "case": "自动化编码助手", "chapter": "N/A", "cost": "High", "scores": {"iq": 95, "latency": 5.0, "cost": "High", "robustness": "High"}, "diagram": "full-coding"},
             {"id": "research-team", "name": "多智能体科研团队", "category": "FullArch", "role": "结合多智能体并行、ToT 推理与人机协同的宏大架构", "case": "深度科研、新药研发报告", "chapter": "N/A", "cost": "Ultra", "scores": {"iq": 98, "latency": 15.0, "cost": "Ultra", "robustness": "Ultra"}, "diagram": "full-research"},
-            {"id": "market-analyst", "name": "市场分析师 (Market Analyst)", "category": "Thinking", "role": "总结市场报告、识别趋势并提取关键数据", "case": "市场调研报告处理工作流", "chapter": "1", "cost": "Mid", "scores": {"iq": 78, "latency": 2.5, "cost": "Mid", "robustness": "Mid"}, "diagram": "market-analyst-flow"},
+            {"id": "market-analyst", "name": "市场分析师 (Market Analyst)", "category": "Thinking", "role": "总结市场报告、识别趋势并提取关键数据", "case": "市场调研报告处理工作流", "chapter": "1", "cost": "Mid", "scores": {"iq": 78, "latency": 2.5, "cost": "Mid", "robustness": "Mid"}, "diagram": "chain"},
             {"id": "reviewer", "name": "校对员/评审员 (Proofreader/Reviewer)", "category": "Thinking", "role": "检查内容质量、语气和逻辑，提供改进建议", "case": "代码审核、高质量内容创作、任务目标校验", "chapter": "1, 4, 7, 11, 19", "cost": "High", "scores": {"iq": 85, "latency": 2.0, "cost": "High", "robustness": "High"}, "diagram": "reflection"},
             {"id": "router", "name": "路由智能体 (Router Agent)", "category": "Input", "role": "根据意图、语义或资源约束分发请求", "case": "智能客服意图识别", "chapter": "2, 16", "cost": "Low", "scores": {"iq": 75, "latency": 0.3, "cost": "Low", "robustness": "High"}, "diagram": "router"},
             {"id": "state-eval", "name": "状态评估器 (State Evaluator)", "category": "Perception", "role": "监控系统累积状态并指导流程流向", "case": "复杂动态工作流决策", "chapter": "2", "cost": "Mid", "scores": {"iq": 80, "latency": 0.5, "cost": "Mid", "robustness": "High"}, "diagram": "state-eval"},
             {"id": "dispatcher", "name": "总调度器 (Main Dispatcher)", "category": "Input", "role": "在拥有多个专业工具的系统中选择最合适工具", "case": "动态工具选择场景", "chapter": "2", "cost": "Mid", "scores": {"iq": 85, "latency": 0.8, "cost": "Mid", "robustness": "Mid"}, "diagram": "dispatcher"},
             {"id": "concurrency", "name": "并发控制器 (Concurrency Controller)", "category": "Input", "role": "协调多个独立子任务的启动、执行和结果收集", "case": "多源信息搜集、多维度并行分析", "chapter": "3", "cost": "Mid", "scores": {"iq": 70, "latency": 0.2, "cost": "Mid", "robustness": "High"}, "diagram": "concurrency"},
-            {"id": "producer", "name": "生产者/生成器 (Producer/Generator)", "category": "Execution", "role": "执行初始任务（如编写代码、撰写文章）", "case": "代码生成、内容创作", "chapter": "4, 11", "cost": "Mid", "scores": {"iq": 88, "latency": 5.0, "cost": "High", "robustness": "Low"}, "diagram": "producer-flow"},
+            {"id": "producer", "name": "生产者/生成器 (Producer/Generator)", "category": "Execution", "role": "执行初始任务（如编写代码、撰写文章）", "case": "代码生成、内容创作", "chapter": "4, 11", "cost": "Mid", "scores": {"iq": 88, "latency": 5.0, "cost": "Mid", "robustness": "Low"}, "diagram": "producer-flow"},
             {"id": "researcher", "name": "深度研究助手 (Deep Research Assistant)", "category": "Thinking", "role": "自主生成研究计划、执行搜索、分析网页并动态修正", "case": "深度行业调研、学术背景搜索", "chapter": "6, 17, 21", "cost": "High", "scores": {"iq": 95, "latency": 15.0, "cost": "High", "robustness": "Mid"}, "diagram": "planning"},
             {"id": "supervisor", "name": "管理者/中心调度员 (Supervisor)", "category": "Input", "role": "决定任务委派顺序，管理专家 Agent 团队", "case": "复杂项目编排、多 Agent 协作系统", "chapter": "7, 9, 15", "cost": "High", "scores": {"iq": 92, "latency": 2.0, "cost": "High", "robustness": "High"}, "diagram": "multi-agent"},
             {"id": "tech-copywriter", "name": "专业技术文案 (Technical Copywriter)", "category": "Execution", "role": "负责专业领域的文档撰写与润色", "case": "软件开发团队、产品说明书编写", "chapter": "7", "cost": "Mid", "scores": {"iq": 82, "latency": 3.0, "cost": "Mid", "robustness": "High"}, "diagram": "copywriter-flow"},
             {"id": "scaffolding", "name": "脚手架 Agent (Scaffolding Agent)", "category": "Execution", "role": "自动生成项目基础结构和代码框架", "case": "数字化开发团队", "chapter": "7", "cost": "Mid", "scores": {"iq": 80, "latency": 4.0, "cost": "Mid", "robustness": "High"}, "diagram": "scaffolding-flow"},
             {"id": "test-agent", "name": "测试 Agent (Test Agent)", "category": "Execution", "role": "编写并运行单元测试，验证代码正确性", "case": "自动化编程与调试工作流", "chapter": "7, 11", "cost": "High", "scores": {"iq": 88, "latency": 6.0, "cost": "High", "robustness": "Mid"}, "diagram": "reflection"},
             {"id": "memory", "name": "记忆服务 Agent (Memory Service)", "category": "Perception", "role": "捕获、存储、检索并管理长期记忆与用户偏好", "case": "个性化客服、多轮任务追踪", "chapter": "8", "cost": "Mid", "scores": {"iq": 75, "latency": 0.4, "cost": "Mid", "robustness": "High"}, "diagram": "memory"},
-            {"id": "sica", "name": "自我改进编码智能体 (SICA)", "category": "Execution", "role": "能够修改自身代码并进行隔离运行验证", "case": "软件自我进化、代码优化", "chapter": "9", "cost": "Ultra", "scores": {"iq": 94, "latency": 20.0, "cost": "Ultra", "robustness": "Mid"}, "diagram": "sica-flow"},
+            {"id": "sica", "name": "自我改进编码智能体 (SICA)", "category": "Execution", "role": "能够修改自身代码并进行隔离运行验证", "case": "软件自我进化、代码优化", "chapter": "9", "cost": "Ultra", "scores": {"iq": 94, "latency": 20.0, "cost": "Ultra", "robustness": "Mid"}, "diagram": "sica"},
             {"id": "async-supervisor", "name": "异步监督者 (Asynchronous Supervisor)", "category": "Perception", "role": "监控智能体的自我改进过程，防止偏离目标", "case": "智能体学习与进化过程监控", "chapter": "9, 21", "cost": "Low", "scores": {"iq": 85, "latency": 1.0, "cost": "Low", "robustness": "High"}, "diagram": "monitoring"},
-            {"id": "judge", "name": "判定者/裁判 (Judge)", "category": "Thinking", "role": "对输出结果进行二值判定或多维评分", "case": "任务停止条件判定、LLM-as-a-Judge", "chapter": "11, 19", "cost": "Low", "scores": {"iq": 80, "latency": 1.2, "cost": "Low", "robustness": "High"}, "diagram": "reflection"},
+            {"id": "judge", "name": "判定者/裁判 (Judge)", "category": "Thinking", "role": "对输出结果进行二值判定或多维评分", "case": "任务停止条件判定、LLM-as-a-Judge", "chapter": "11, 19", "cost": "Low", "scores": {"iq": 80, "latency": 1.2, "cost": "Low", "robustness": "High"}, "diagram": "judge"},
             {"id": "primary-fallback", "name": "主/备处理器 (Primary/Fallback Handler)", "category": "Execution", "role": "负责执行核心任务及在失败时的降级方案处理", "case": "生产级系统异常处理与恢复机制", "chapter": "12", "cost": "Mid", "scores": {"iq": 75, "latency": 0.5, "cost": "Mid", "robustness": "Ultra"}, "diagram": "router"},
             {"id": "diagnosis", "name": "诊断智能体 (Diagnosis Agent)", "category": "Thinking", "role": "分析系统失败原因并生成修正提示词", "case": "自动异常恢复、系统自愈", "chapter": "12", "cost": "Mid", "scores": {"iq": 84, "latency": 2.2, "cost": "Mid", "robustness": "Mid"}, "diagram": "diagnosis"},
             {"id": "human", "name": "人类监督员 (Human Overseer)", "category": "Perception", "role": "监控 Agent 行为，在关键环节介入决策", "case": "医疗/金融 Agent、内容审核", "chapter": "13", "cost": "High", "scores": {"iq": 100, "latency": 1.0, "cost": "High", "robustness": "Ultra"}, "diagram": "hitl"},
@@ -424,12 +424,9 @@
             {"id": "resource-router", "name": "资源感知路由器 (Resource-Aware Router)", "category": "Input", "role": "预判任务复杂度并动态分配计算资源", "case": "追求性价比的商业化 Agent 应用", "chapter": "16", "cost": "Low", "scores": {"iq": 82, "latency": 0.2, "cost": "Low", "robustness": "High"}, "diagram": "resource-router"},
             {"id": "audit", "name": "防护栏/审计 (Guardrails)", "category": "Perception", "role": "在输入阶段强制执行安全边界与合规性检查", "case": "企业级安全网关、内容合规审计", "chapter": "18", "cost": "Low", "scores": {"iq": 82, "latency": 0.2, "cost": "Low", "robustness": "High"}, "diagram": "audit"},
             {"id": "prioritization", "name": "优先级排序智能体 (Prioritization Agent)", "category": "Input", "role": "根据紧急度和重要性动态调整任务队列", "case": "应急响应系统、项目管理调度", "chapter": "20", "cost": "Low", "scores": {"iq": 85, "latency": 0.5, "cost": "Low", "robustness": "High"}, "diagram": "prioritization"},
-            {"id": "hypothesis", "name": "假设生成器 (Hypothesis Generator)", "category": "Thinking", "role": "在未知解空间中生成科学假设或创新思路", "case": "自主科学研究、新药研发", "chapter": "21", "cost": "High", "scores": {"iq": 98, "latency": 10.0, "cost": "High", "robustness": "Low"}, "diagram": "exploration"},
+            {"id": "hypothesis", "name": "假设生成器 (Hypothesis Generator)", "category": "Thinking", "role": "在未知解空间中生成科学假设或创新思路", "case": "自主科学研究、新药研发", "chapter": "21", "cost": "High", "scores": {"iq": 98, "latency": 10.0, "cost": "High", "robustness": "Low"}, "diagram": "exploration-flow"},
             {"id": "evolution", "name": "进化引擎 (Evolution Engine)", "category": "Thinking", "role": "通过变异和组合算法不断演化和优化解决方案", "case": "方案搜索、算法自动进化", "chapter": "9, 21", "cost": "High", "scores": {"iq": 96, "latency": 15.0, "cost": "High", "robustness": "High"}, "diagram": "evolution-flow"},
-            {"id": "meta-reviewer", "name": "元审查员 (Meta-Reviewer)", "category": "Perception", "role": "从高维度评估研究路径的创新性、可行性和伦理合规性", "case": "科研项目管理、前瞻性探索", "chapter": "21", "cost": "High", "scores": {"iq": 95, "latency": 5.0, "cost": "High", "robustness": "High"}, "diagram": "reflection"},
-            {"id": "traffic-replayer", "name": "流量回放 Agent", "category": "Input", "role": "重放生产流量进行系统压力与功能一致性验证", "case": "流量压力测试、回归分析", "chapter": "21", "cost": "Mid", "scores": {"iq": 80, "latency": 0.5, "cost": "Mid", "robustness": "High"}, "diagram": "traffic-flow"},
-            {"id": "ethics-auditor", "name": "伦理审计 Agent", "category": "Perception", "role": "对 Agent 输出进行偏差检测与伦理合规扫描", "case": "企业内容治理", "chapter": "18", "cost": "Mid", "scores": {"iq": 85, "latency": 0.8, "cost": "Mid", "robustness": "High"}, "diagram": "ethics-flow"},
-            {"id": "state-migrator", "name": "状态迁移 Agent", "category": "Execution", "role": "执行旧版本状态到新数据库架构的自动化迁移", "case": "系统版本更新、数据库变更", "chapter": "12", "cost": "High", "scores": {"iq": 88, "latency": 2.0, "cost": "High", "robustness": "High"}, "diagram": "migration-flow"}
+            {"id": "meta-reviewer", "name": "元审查员 (Meta-Reviewer)", "category": "Perception", "role": "从高维度评估研究路径的创新性、可行性和伦理合规性", "case": "科研项目管理、前瞻性探索", "chapter": "21", "cost": "High", "scores": {"iq": 95, "latency": 5.0, "cost": "High", "robustness": "High"}, "diagram": "reflection"}
         ];
 
         const flowDescMap = {
@@ -459,9 +456,11 @@
             "resource-router": "解决在商业化Agent系统中由于一刀切调用顶级模型导致的极端成本浪费与高延迟痛点。部署在系统入口处，接收请求后首先进行计算复杂度预判与Token消耗预估；对于简单查询立即路由至本地部署的轻量级模型或缓存层，而将复杂推理任务精确分配至千亿级大模型，在保障智能水平的前提下实现极致的性价比。",
             "audit": "直击企业级应用中数据隐私泄露、Prompt注入及有害内容生成的合规性痛点。作为双向安全网关(Guardrails)，在输入端拦截越权访问与恶意注入，对输出端数据执行严格的PII脱敏与敏感词正则扫描；所有违规行为将被直接拦截并写入不可篡改的安全审计日志，确保大模型黑盒在企业安全边界内运行。",
             "prioritization": "应对突发流量洪峰与多租户环境下核心任务被饥饿阻塞的调度痛点。负责动态管理任务队列，当海量请求涌入时，它快速计算每个任务的紧急度(Urgency)和业务影响(Impact)并分配权重；通过构建动态优先队列(Priority Queue)或堆结构，确保高优指令能够无视排队顺序抢占底层计算资源，实现服务分级保障。",
-            "hypothesis": "解决在科学研究、新药研发等解空间无限大的场景下，系统缺乏创新性引导的痛点。该Agent不再依赖简单的线性生成，而是利用遗传算法思想，将一组初始假设视为种群；在每一轮迭代中，通过变异与组合操作产生新想法，并送入Elo-style Debate评估器进行胜率打分；劣质假设被淘汰，优质种子被保留并用于下轮演化，实现假设空间的自主突变与深度挖掘。",
+            "hypothesis": "探索科学研究、新药挖掘等解空间无限大的零样本启动痛点。作为创新源泉，面对完全未知的问题，它不再依赖线性搜索，而是利用启发式算法、遗传变异与丰富的底层知识网络，进行不受限的发散性思考；同时抛出多个新颖的理论假设或实验路径，将其送入下游的验证引擎进行沙盒模拟与打分筛选。",
             "evolution": "解决传统系统算法固化、无法适应动态复杂环境的痛点。这套进化引擎利用遗传算法思想，将一组初始的提示词、代码片段或模型权重视为“种群”；在每一轮迭代中，对当前最优个体执行交叉(Crossover)与变异(Mutation)操作生成新一代方案，经过环境适应度(Fitness)评估后淘汰劣质基因，实现系统的自主进化与突变。",
-            "meta-reviewer": "针对长期研究计划容易陷入认知盲区与底层方法论错误的痛点。置身于具体任务之外，以“上帝视角”审视整个Agent工作流的执行路径、中间产物与决策逻辑；它不纠结于代码层面的Bug，而是从宏观维度评估研究方向的创新性、资源分配的合理性及伦理合规性，在偏航初期及时修正顶层战略。"
+            "meta-reviewer": "针对长期研究计划容易陷入认知盲区与底层方法论错误的痛点。置身于具体任务之外，以“上帝视角”审视整个Agent工作流的执行路径、中间产物与决策逻辑；它不纠结于代码层面的Bug，而是从宏观维度评估研究方向的创新性、资源分配的合理性及伦理合规性，在偏航初期及时修正顶层战略。",
+            "mcp": "攻克大模型工具链碎片化、上下文挂载僵化的痛点。客户端Agent在运行时，通过模型上下文协议(MCP)动态发现并握手连接散布在网络中的可用MCP Server。它能在会话中无缝挂载本地文件系统、数据库查询甚至外部Web API，实现能力的即插即用与上下文空间的无限延展，极大地释放了Agent生态系统的扩展潜力。",
+            "goal-setting": "破解长周期自主任务中因目标模糊导致的行动发散与无效循环痛点。系统接收顶层战略意图后，动态运用树状分解(Tree Decomposition)算法，将宏大愿景逐层降维为可量化的OKR与具体的时间里程碑；并实时监控底层执行体进度，通过对其结果与预设指标的比对计算，实现目标的主动校准与策略的动态纠偏。"
         };
         agents.forEach(a => {
             a.flowDesc = flowDescMap[a.id] || "此架构通过动态流转处理请求并返回最佳结果。";
@@ -475,8 +474,8 @@
             agents.push({
                 "id": "goal-setting", "name": "动态目标设定器", "category": "Thinking", "role": "基于模糊意图实时计算并校准里程碑", "case": "长周期自主任务", "chapter": "21", "cost": "High", "scores": {"iq": 94, "latency": 3.0, "cost": "High", "robustness": "High"}, "diagram": "goal-setting"
             });
-            agents[agents.length-2].flowDesc = flowDescMap['mcp'] || '暂无描述';
-            agents[agents.length-1].flowDesc = flowDescMap['goal-setting'] || '暂无描述';
+            agents[agents.length-2].flowDesc = flowDescMap['mcp'];
+            agents[agents.length-1].flowDesc = flowDescMap['goal-setting'];
         }
 
         const categories = {
@@ -545,7 +544,37 @@
             setTimeout(() => {
                 svgContent.innerHTML = '';
                 
-                if (type === 'full-qa') {
+                                if (type === 'exploration-flow') {
+                    drawNode(100, 300, "Generator", "circle");
+                    drawNode(300, 300, "Debate Pool", "diamond");
+                    drawNode(500, 300, "Selection", "rect");
+                    drawNode(700, 300, "Final Hypothesis", "circle");
+                    drawFlow(135, 300, 240, 300, "Generate");
+                    drawFlow(360, 300, 440, 300, "Debate");
+                    drawFlow(560, 300, 665, 300, "Rank");
+                }
+                else if (type === 'evolution-flow') {
+                    drawNode(100, 300, "Population", "circle");
+                    drawNode(250, 300, "Crossover", "rect", "Merge");
+                    drawNode(400, 300, "Mutation", "rect", "Variance");
+                    drawNode(550, 300, "Fitness", "diamond", "Score?");
+                    drawNode(750, 300, "Survivor", "circle", "Elite");
+                    drawNode(400, 450, "Discarded", "rect", "Eliminate");
+
+                    drawFlow(135, 300, 190, 300, "Gene Exch");
+                    drawFlow(310, 300, 340, 300, "Mutate");
+                    drawFlow(460, 300, 500, 300, "Select");
+                    drawFlow(600, 300, 715, 300, "Keep", "cond");
+                    drawFlow(550, 335, 400, 450, "Drop", "cond");
+                    
+                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    loop.setAttribute("d", "M 750 335 C 750 450, 100 450, 100 335");
+                    loop.setAttribute("class", "loop-path");
+                    loop.setAttribute("style", "stroke: var(--success); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-success);");
+                    svgContent.appendChild(loop);
+                    drawLabel(400, 460, "Feedback & Iterate", "cond");
+                }
+                else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
                     drawNode(220, 300, "Input Guard", "diamond", "Security");
                     drawNode(380, 300, "Router", "diamond", "Intent");
@@ -590,58 +619,60 @@
                 }
                 else if (type === 'full-research') {
                     drawNode(60, 300, "Topic", "circle", "Research");
-                    drawNode(180, 300, "Supervisor", "rect", "Manager");
+                    drawNode(200, 300, "Supervisor", "rect", "Manager");
                     
-                    drawNode(340, 120, "Expert A", "rect", "Data");
-                    drawNode(340, 240, "Expert B", "rect", "Lit Review");
-                    drawNode(340, 360, "Expert C", "rect", "Experiment");
+                    drawNode(400, 120, "Expert A", "rect", "Data");
+                    drawNode(400, 240, "Expert B", "rect", "Lit Review");
+                    drawNode(400, 360, "Expert C", "rect", "Experiment");
                     
-                    drawNode(520, 240, "Hypothesis", "rect", "Generator");
-                    drawNode(680, 120, "ToT Evaluator", "diamond", "Self-Reflect");
-                    drawNode(680, 300, "Human", "diamond", "Overseer");
-                    drawNode(680, 450, "Final Report", "circle", "Publish");
+                    drawNode(580, 240, "Hypothesis", "rect", "Generator");
+                    drawNode(740, 120, "ToT Evaluator", "diamond", "Self-Reflect");
+                    drawNode(740, 300, "Human", "diamond", "Overseer");
+                    drawNode(740, 450, "Final Report", "circle", "Publish");
 
-                    drawFlow(100, 300, 115, 300);
-                    drawFlow(245, 290, 275, 130);
-                    drawFlow(245, 300, 275, 240);
-                    drawFlow(245, 310, 275, 360);
+                    drawFlow(95, 300, 140, 300);
+                    drawFlow(260, 300, 340, 120);
+                    drawFlow(260, 300, 340, 240);
+                    drawFlow(260, 300, 340, 360);
 
-                    drawFlow(405, 130, 455, 230);
-                    drawFlow(405, 240, 455, 240);
-                    drawFlow(405, 360, 455, 250);
+                    drawFlow(460, 120, 520, 240);
+                    drawFlow(460, 240, 520, 240);
+                    drawFlow(460, 360, 520, 240);
 
-                    drawFlow(520, 210, 620, 120, "Draft");
-                    drawFlow(620, 140, 540, 220, "Refine");
+                    drawFlow(640, 240, 710, 120, "Draft");
+                    drawFlow(670, 120, 640, 210, "Refine");
                     
-                    drawFlow(585, 250, 620, 290, "Best");
-                    drawFlow(680, 335, 680, 410, "Approve");
+                    drawFlow(640, 240, 710, 300, "Best");
+                    drawFlow(740, 335, 740, 415, "Approve");
                     
-                    drawFlow(620, 310, 560, 270, "Reject", "cond");
+                    drawFlow(640, 240, 680, 270, "Reject", "cond");
                 }
-                else if (type === 'market-analyst-flow') {
-                    drawNode(100, 300, "Reports", "circle", "Raw Data");
-                    drawNode(250, 200, "Entity", "rect", "Extractor");
-                    drawNode(250, 400, "Trends", "rect", "Analyzer");
-                    drawNode(450, 300, "Synthesizer", "diamond", "Insights");
-                    drawNode(650, 300, "Drafting", "rect", "Generator");
-                    drawNode(850, 300, "Final", "circle", "Report");
+                else if (type === 'rag') {
+                    // RAG Pipeline with Re-ranker
+                    drawNode(150, 150, "User Query", "circle", "Input");
+                    drawNode(350, 150, "Embedding", "rect", "Vectorization");
+                    drawNode(550, 150, "Vector Store", "rect", "Similarity Search");
+                    drawNode(750, 150, "Database", "rect", "External Source");
+                    
+                    drawNode(550, 300, "Re-ranker", "rect", "Score & Sort");
+                    drawNode(350, 300, "Context Injunction", "rect", "Prompt Augment");
+                    drawNode(150, 300, "LLM Gen", "rect", "Final Response");
 
-                    drawFlow(140, 300, 250, 230, "Fetch");
-                    drawFlow(140, 300, 250, 370, "Fetch");
-                    drawFlow(310, 200, 420, 285, "Entities");
-                    drawFlow(310, 400, 420, 315, "Trends");
-                    drawFlow(510, 300, 600, 300, "Yes (Valid)", "cond");
-                    drawFlow(690, 300, 810, 300);
-
-                    const refine = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    refine.setAttribute("d", "M 450 335 C 450 420, 250 420, 250 435");
-                    refine.setAttribute("class", "loop-path");
-                    refine.setAttribute("style", "stroke: var(--warning); fill: none;");
-                    refine.setAttribute("marker-end", "url(#arrowhead-warning)");
-                    svgContent.appendChild(refine);
-                    drawLabel(350, 420, "Refine Scope", "cond");
-                }
+                    // Flows
+                    drawFlow(190, 150, 280, 150, "Raw Text");
+                    drawFlow(415, 150, 480, 150, "Vector Query");
+                    
+                    drawFlow(615, 140, 680, 140, "Index Lookup");
+                    drawFlow(680, 160, 615, 160, "Raw Chunks");
+                    
+                    drawFlow(550, 180, 550, 270, "Top-N");
+                    drawFlow(485, 300, 415, 300, "Top-K");
+                    
+                    drawFlow(150, 190, 310, 270, "Raw Query");
+                    drawFlow(285, 300, 215, 300, "Rich Prompt");
+                } 
                 else if (type === 'reflection') {
+                    // Reasoning / ToT (Chapter 17)
                     drawNode(100, 300, "Initial Task", "rect", "Problem");
                     drawNode(300, 150, "Thought A", "rect", "Branch 1");
                     drawNode(300, 300, "Thought B", "rect", "Branch 2");
@@ -659,12 +690,45 @@
 
                     drawFlow(535, 300, 630, 300, "Yes (Valid)", "cond");
                     
+                    // Backtracking Loop
                     const backPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     backPath.setAttribute("d", "M 500 265 C 500 50, 100 50, 100 275");
                     backPath.setAttribute("class", "loop-path");
                     backPath.setAttribute("style", "stroke: var(--danger)");
                     svgContent.appendChild(backPath);
                     drawLabel(300, 60, "No (Backtrack)", "cond");
+                }
+                else if (type === 'judge') {
+                    // LLM-as-a-Judge (Chapter 11, 19)
+                    drawNode(100, 300, "Generated Content", "circle", "Input");
+                    drawNode(300, 150, "Rubric / Criteria", "rect", "Reference");
+                    drawNode(300, 450, "Ground Truth", "rect", "Context");
+                    drawNode(500, 300, "LLM Judge", "diamond", "Evaluation");
+                    drawNode(750, 300, "Final Score", "circle", "Pass/Fail");
+
+                    drawFlow(165, 300, 440, 300, "Content");
+                    drawFlow(300, 205, 470, 280, "Guidelines");
+                    drawFlow(300, 395, 470, 320, "Evidence");
+                    drawFlow(560, 300, 690, 300, "Decision");
+                }
+                else if (type === 'monitoring') {
+                    // Guardrails (Chapter 18)
+                    drawNode(80, 300, "User Input", "circle");
+                    drawNode(220, 300, "Input Guard", "diamond", "Policy Check");
+                    drawNode(400, 300, "Core LLM", "rect", "Agent Logic");
+                    drawNode(580, 300, "Output Guard", "diamond", "Policy Check");
+                    drawNode(780, 300, "Final Output", "rect");
+
+                    drawFlow(120, 300, 155, 300, "Raw Input");
+                    drawFlow(285, 300, 340, 300, "Safe Prompt", "cond");
+                    drawFlow(465, 300, 520, 300, "Draft Response");
+                    drawFlow(645, 300, 720, 300, "Filtered JSON", "cond");
+
+                    // Block paths
+                    drawFlow(220, 265, 220, 150, "Violations", "cond");
+                    drawNode(220, 120, "Block / Log", "rect", "Security API");
+                    drawFlow(580, 265, 580, 150, "Harmful Content", "cond");
+                    drawNode(580, 120, "Block / Log", "rect", "Security API");
                 }
                 else if (type === 'router') {
                     drawNode(100, 300, "Request", "circle");
@@ -674,83 +738,35 @@
                     drawNode(550, 450, "Specialist C", "rect", "Creative");
                     drawNode(750, 300, "Response", "rect");
 
-                    drawFlow(150, 300, 265, 300, "User Intent");
-                    drawFlow(335, 300, 480, 150, "Vector Match");
-                    drawFlow(335, 300, 480, 300, "Direct Match");
-                    drawFlow(335, 300, 480, 455, "Fallback");
+                    drawFlow(135, 300, 240, 300, "User Intent");
+                    drawFlow(360, 300, 490, 150, "Vector Match");
+                    drawFlow(360, 300, 490, 300, "Direct Match");
+                    drawFlow(360, 300, 490, 450, "Fallback");
                     
                     drawFlow(620, 150, 700, 280);
                     drawFlow(620, 300, 680, 300);
                     drawFlow(620, 450, 700, 320);
                 }
-                else if (type === 'state-eval') {
-                    drawNode(100, 300, "Workflow", "rect", "Running");
-                    drawNode(350, 150, "State Aggregator", "rect", "Log Store");
-                    drawNode(350, 300, "Evaluator", "diamond", "Rules");
-                    drawNode(600, 300, "Alert / Halt", "rect", "Action");
-                    drawNode(600, 450, "Continue", "rect", "Pass");
-                    
-                    drawFlow(170, 300, 315, 300, "Metrics");
-                    drawFlow(170, 280, 285, 160, "Log");
-                    drawFlow(350, 180, 350, 265, "History Context");
-                    drawFlow(385, 300, 535, 300, "Threshold Exceeded", "cond");
-                    drawFlow(385, 330, 535, 450, "Normal");
-                }
-                else if (type === 'dispatcher') {
-                    drawNode(100, 300, "Event Bus", "circle");
-                    drawNode(250, 300, "Dispatcher", "diamond", "Match");
-                    drawNode(500, 150, "Tool Registry", "rect", "List");
-                    drawNode(500, 300, "Worker Pool", "rect", "Idle");
-                    drawNode(750, 300, "Execution", "rect");
-                    drawFlow(140, 300, 215, 300);
-                    drawFlow(285, 265, 435, 150, "Lookup");
-                    drawFlow(435, 150, 285, 265);
-                    drawFlow(285, 300, 435, 300, "Allocate");
-                    drawFlow(565, 300, 685, 300, "Dispatch");
-                }
-                else if (type === 'concurrency') {
-                    drawNode(100, 300, "Main Thread", "circle");
-                    drawNode(250, 300, "Fork", "diamond", "Split");
-                    drawNode(450, 100, "Worker 1", "rect", "Async");
-                    drawNode(450, 230, "Worker 2", "rect", "Async");
-                    drawNode(450, 370, "Worker 3", "rect", "Async");
-                    drawNode(450, 500, "Worker 4", "rect", "Async");
-                    drawNode(650, 300, "Join", "diamond", "Sync");
-                    drawNode(750, 300, "Result", "circle");
-                    
-                    drawFlow(140, 300, 215, 300);
-                    drawFlow(285, 280, 385, 100);
-                    drawFlow(285, 290, 385, 230);
-                    drawFlow(285, 310, 385, 370);
-                    drawFlow(285, 320, 385, 500);
-                    
-                    drawFlow(515, 100, 615, 280);
-                    drawFlow(515, 230, 615, 290);
-                    drawFlow(515, 370, 615, 310);
-                    drawFlow(515, 500, 615, 320);
-                    
-                    drawFlow(685, 300, 715, 300);
-                }
-                else if (type === 'producer-flow') {
-                    drawNode(80, 300, "Task Cmd", "circle");
-                    drawNode(220, 300, "Retrieval", "rect");
-                    drawNode(360, 300, "Validation", "diamond", "Task Val");
-                    drawNode(520, 300, "Draft Buffer", "rect");
-                    drawNode(700, 300, "Gen", "rect");
-                    drawNode(860, 300, "Final", "circle");
+                else if (type === 'parallel') {
+                    drawNode(100, 300, "Task", "rect", "Decomposer");
+                    drawNode(350, 100, "Node 1", "rect", "Worker");
+                    drawNode(350, 230, "Node 2", "rect", "Worker");
+                    drawNode(350, 370, "Node 3", "rect", "Worker");
+                    drawNode(350, 500, "Node 4", "rect", "Worker");
+                    drawNode(600, 300, "Aggregator", "rect", "Reducer");
+                    drawNode(750, 300, "Final", "circle");
 
-                    drawFlow(115, 300, 160, 300);
-                    drawFlow(280, 300, 300, 300);
-                    drawFlow(420, 300, 460, 300);
-                    drawFlow(580, 300, 640, 300);
-                    drawFlow(760, 300, 825, 300);
+                    drawFlow(170, 300, 280, 100);
+                    drawFlow(170, 300, 280, 230);
+                    drawFlow(170, 300, 280, 370);
+                    drawFlow(170, 300, 280, 500);
 
-                    const back = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    back.setAttribute("d", "M 360 265 C 360 150, 220 150, 220 265");
-                    back.setAttribute("class", "loop-path");
-                    back.setAttribute("style", "stroke: var(--danger)");
-                    svgContent.appendChild(back);
-                    drawLabel(290, 150, "Fail (Re-flow)", "cond");
+                    drawFlow(420, 100, 530, 280, "Partial A");
+                    drawFlow(420, 230, 530, 295, "Partial B");
+                    drawFlow(420, 370, 530, 305, "Partial C");
+                    drawFlow(420, 500, 530, 320, "Partial D");
+                    
+                    drawFlow(670, 300, 715, 300);
                 }
                 else if (type === 'planning') {
                     drawNode(100, 300, "Objective", "rect");
@@ -765,6 +781,7 @@
                     drawFlow(500, 475, 500, 325, "Observation");
                     drawFlow(570, 300, 665, 300, "State");
                     
+                    // Re-plan loop
                     const replan = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     replan.setAttribute("d", "M 700 265 C 700 150, 300 150, 300 275");
                     replan.setAttribute("class", "loop-path");
@@ -772,49 +789,26 @@
                     drawLabel(500, 160, "No (Re-plan)", "cond");
                     drawFlow(735, 300, 780, 300, "Yes", "cond");
                 }
-                else if (type === 'copywriter-flow') {
-                    drawNode(100, 300, "Input", "circle");
-                    drawNode(280, 300, "AST Parser", "rect");
-                    drawNode(500, 300, "Term Check", "diamond", "Review");
-                    drawNode(500, 150, "Term Store", "rect", "对比库");
-                    drawNode(750, 300, "Final", "circle");
+                else if (type === 'chain') {
+                    drawNode(80, 300, "Raw Input", "circle", "Data");
+                    drawNode(220, 200, "Prompt 1", "rect", "Extract");
+                    drawNode(220, 400, "Prompt 2", "rect", "Analyze");
+                    drawNode(400, 300, "Context Buffer", "rect", "State");
+                    drawNode(550, 300, "Prompt 3", "rect", "Format");
+                    drawNode(750, 300, "Final Output", "circle", "Result");
 
-                    drawFlow(135, 300, 220, 300);
-                    drawFlow(340, 300, 440, 300);
-                    drawFlow(500, 185, 500, 265, "Compare");
-                    drawFlow(560, 300, 690, 300);
-
-                    const feedback = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    feedback.setAttribute("d", "M 560 300 C 600 380, 280 380, 280 335");
-                    feedback.setAttribute("class", "loop-path");
-                    feedback.setAttribute("style", "stroke: var(--warning)");
-                    svgContent.appendChild(feedback);
-                    drawLabel(420, 380, "AST Feedback", "cond");
-                }
-                else if (type === 'scaffolding-flow') {
-                    drawNode(100, 300, "Req", "circle");
-                    drawNode(250, 300, "Template", "rect");
-                    drawNode(400, 300, "Resolver", "rect", "Dependency");
-                    drawNode(550, 300, "Dir Tree", "rect");
-                    drawNode(750, 300, "Sandbox", "diamond", "Init");
+                    // 连线：边缘到边缘
+                    // Input -> Prompts
+                    drawFlow(115, 300, 160, 200, "Raw");
+                    drawFlow(115, 300, 160, 400, "Raw");
                     
-                    drawFlow(135, 300, 190, 300);
-                    drawFlow(310, 300, 340, 300);
-                    drawFlow(460, 300, 490, 300);
-                    drawFlow(610, 300, 690, 300);
-
-                    const fail = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    fail.setAttribute("x1", "750"); fail.setAttribute("y1", "335");
-                    fail.setAttribute("x2", "750"); fail.setAttribute("y2", "450");
-                    fail.setAttribute("style", "stroke: var(--danger); stroke-width: 2; marker-end: url(#arrowhead-warning)");
-                    svgContent.appendChild(fail);
-
-                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 750 480 C 750 550, 100 550, 100 335");
-                    loop.setAttribute("class", "loop-path");
-                    loop.setAttribute("style", "stroke: var(--danger)");
-                    svgContent.appendChild(loop);
-                    drawLabel(425, 550, "Sandbox Fail (Re-Gen)", "cond");
+                    // Prompts -> Buffer
+                    drawFlow(280, 200, 340, 300, "Extracted");
+                    drawFlow(280, 400, 340, 300, "Analyzed");
+                    
+                    // Buffer -> Prompt 3 -> Output
+                    drawFlow(460, 300, 490, 300, "Context");
+                    drawFlow(610, 300, 715, 300, "Final");
                 }
                 else if (type === 'memory') {
                     drawNode(400, 300, "Agent Core", "rect", "Processor");
@@ -830,37 +824,6 @@
 
                     drawFlow(430, 330, 560, 420, "Update");
                     drawFlow(580, 410, 450, 320, "Load");
-                }
-                else if (type === 'sica-flow') {
-                    drawNode(150, 300, "Source", "circle", "Code");
-                    drawNode(300, 300, "Sandbox", "rect", "Exec");
-                    drawNode(450, 300, "Judge", "diamond", "Test?");
-                    drawNode(600, 300, "Commit", "rect", "Apply");
-                    drawFlow(185, 300, 265, 300, "Run");
-                    drawFlow(335, 300, 415, 300, "Verify");
-                    drawFlow(485, 300, 565, 300, "Pass", "cond");
-                    const errLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    errLoop.setAttribute("d", "M 450 335 C 450 420, 150 420, 150 335");
-                    errLoop.setAttribute("class", "loop-path");
-                    svgContent.appendChild(errLoop);
-                    drawLabel(300, 420, "Fail (Error Log)", "cond");
-                }
-                else if (type === 'monitoring') {
-                    drawNode(80, 300, "User Input", "circle");
-                    drawNode(220, 300, "Input Guard", "diamond", "Policy Check");
-                    drawNode(400, 300, "Core LLM", "rect", "Agent Logic");
-                    drawNode(580, 300, "Output Guard", "diamond", "Policy Check");
-                    drawNode(720, 300, "Final Output", "rect");
-
-                    drawFlow(130, 300, 185, 300, "Raw Input");
-                    drawFlow(255, 300, 330, 300, "Safe Prompt", "cond");
-                    drawFlow(470, 300, 545, 300, "Draft Response");
-                    drawFlow(615, 300, 670, 300, "Filtered JSON", "cond");
-
-                    drawFlow(220, 265, 220, 150, "Violations", "cond");
-                    drawNode(220, 120, "Block / Log", "rect", "Security API");
-                    drawFlow(580, 265, 580, 150, "Harmful Content", "cond");
-                    drawNode(580, 120, "Block / Log", "rect", "Security API");
                 }
                 else if (type === 'hitl') {
                     drawNode(150, 300, "Agent Action", "rect", "Proposal");
@@ -887,6 +850,91 @@
                     
                     drawFlow(615, 175, 690, 270, "Result A");
                     drawFlow(615, 425, 690, 330, "Result B");
+                }
+                else if (type === 'exploration') {
+                    drawNode(150, 300, "Hypothesis Gen", "rect", "Ideas");
+                    drawNode(400, 300, "Elo-style Debate", "diamond", "Scoring");
+                    drawNode(650, 300, "Evolution", "rect", "Refine");
+
+                    drawFlow(215, 300, 335, 300, "Generate");
+                    drawFlow(465, 300, 585, 300, "Top Scored", "cond");
+
+                    const evolveLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    evolveLoop.setAttribute("d", "M 650 265 C 650 100, 150 100, 150 265");
+                    evolveLoop.setAttribute("class", "loop-path");
+                    svgContent.appendChild(evolveLoop);
+                    drawLabel(400, 110, "Mutate & Evolve", "cond");
+                }
+
+                else if (type === 'dispatcher') {
+                    drawNode(100, 300, "Event Bus", "circle");
+                    drawNode(250, 300, "Dispatcher", "diamond", "Match");
+                    drawNode(500, 150, "Tool Registry", "rect", "List");
+                    drawNode(500, 300, "Worker Pool", "rect", "Idle");
+                    drawNode(750, 300, "Execution", "rect");
+                    drawFlow(140, 300, 215, 300);
+                    drawFlow(285, 265, 435, 150, "Lookup");
+                    drawFlow(435, 150, 285, 265);
+                    drawFlow(285, 300, 435, 300, "Allocate");
+                    drawFlow(565, 300, 685, 300, "Dispatch");
+                }
+                else if (type === 'state-eval') {
+                    drawNode(100, 300, "Workflow", "rect", "Running");
+                    drawNode(350, 150, "State Aggregator", "rect", "Log Store");
+                    drawNode(350, 300, "Evaluator", "diamond", "Rules");
+                    drawNode(600, 300, "Alert / Halt", "rect", "Action");
+                    drawNode(600, 450, "Continue", "rect", "Pass");
+                    
+                    drawFlow(170, 300, 290, 300, "Metrics");
+                    drawFlow(170, 280, 300, 150, "Log");
+                    drawFlow(350, 180, 350, 265, "History Context");
+                    drawFlow(410, 300, 535, 300, "Threshold Exceeded", "cond");
+                    drawFlow(385, 330, 535, 450, "Normal");
+                }
+                else if (type === 'concurrency') {
+                    drawNode(100, 300, "Main Thread", "circle");
+                    drawNode(250, 300, "Fork", "diamond", "Split");
+                    drawNode(450, 100, "Worker 1", "rect", "Async");
+                    drawNode(450, 230, "Worker 2", "rect", "Async");
+                    drawNode(450, 370, "Worker 3", "rect", "Async");
+                    drawNode(450, 500, "Worker 4", "rect", "Async");
+                    drawNode(650, 300, "Join", "diamond", "Sync");
+                    drawNode(750, 300, "Result", "circle");
+                    
+                    drawFlow(140, 300, 215, 300);
+                    drawFlow(285, 280, 385, 100);
+                    drawFlow(285, 290, 385, 230);
+                    drawFlow(285, 310, 385, 370);
+                    drawFlow(285, 320, 385, 500);
+                    
+                    drawFlow(515, 100, 615, 280);
+                    drawFlow(515, 230, 615, 290);
+                    drawFlow(515, 370, 615, 310);
+                    drawFlow(515, 500, 615, 320);
+                    
+                    drawFlow(685, 300, 715, 300);
+                }
+                else if (type === 'sica') {
+                    drawNode(80, 300, "Source Code", "rect");
+                    drawNode(230, 300, "LLM Analyzer", "rect", "Analyze Defect");
+                    drawNode(380, 300, "Code Patcher", "rect", "Gen Patch");
+                    drawNode(530, 300, "Sandbox Env", "rect", "Test Exec");
+                    drawNode(680, 300, "Judge", "diamond", "Test Passed?");
+                    drawNode(830, 300, "Commit Update", "rect", "Apply");
+                    
+                    drawFlow(145, 300, 165, 300);
+                    drawFlow(295, 300, 315, 300);
+                    drawFlow(445, 300, 465, 300);
+                    drawFlow(595, 300, 645, 300);
+                    drawFlow(715, 300, 765, 300, "Yes");
+                    
+                    const revert = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    revert.setAttribute("d", "M 680 265 C 680 100, 230 100, 230 265");
+                    revert.setAttribute("class", "loop-path");
+                    revert.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 5,5; fill: none;");
+                    revert.setAttribute("marker-end", "url(#arrowhead)");
+                    svgContent.appendChild(revert);
+                    drawLabel(455, 150, "No (Error Log)", "cond");
                 }
                 else if (type === 'reasoning') {
                     drawNode(80, 300, "Complex Query", "circle");
@@ -940,7 +988,7 @@
                     drawNode(700, 450, "Pass", "rect", "Approve");
                     
                     drawFlow(140, 300, 235, 300);
-                    drawFlow(365, 300, 465, 300);
+                    drawFlow(360, 300, 440, 300);
                     drawFlow(535, 270, 635, 150, "Violation", "cond");
                     drawFlow(535, 330, 635, 450, "Safe");
                 }
@@ -1008,82 +1056,53 @@
                     svgContent.appendChild(align);
                     drawLabel(500, 90, "Drift? Recalibrate", "cond");
                 }
-                else if (type === 'exploration') {
-                    drawNode(120, 300, "Population", "circle", "Generator");
-                    drawNode(300, 150, "Hypothesis A", "rect");
-                    drawNode(300, 300, "Hypothesis B", "rect");
-                    drawNode(300, 450, "Hypothesis C", "rect");
-                    drawNode(500, 300, "Elo-style Debate", "diamond", "Fitness Score");
-                    drawNode(700, 200, "Survivors", "rect");
-                    drawNode(700, 400, "Discarded", "rect");
-                    drawNode(500, 500, "Evolution Engine", "rect", "Mutation, Crossover");
-
-                    drawFlow(155, 300, 240, 150);
-                    drawFlow(155, 300, 240, 300);
-                    drawFlow(155, 300, 240, 450);
+                else if (type === 'producer-flow') {
+                    drawNode(80, 300, "Task Cmd", "circle");
+                    drawNode(220, 300, "Validation", "diamond", "Quality");
+                    drawNode(360, 300, "Draft Buffer", "rect", "Storage");
+                    drawNode(500, 300, "Draft Gen", "rect", "LLM");
+                    drawNode(640, 300, "Retry", "diamond", "Failed?");
+                    drawNode(780, 300, "Delivery", "rect", "Final");
                     
-                    drawFlow(360, 150, 465, 285);
-                    drawFlow(360, 300, 465, 300);
-                    drawFlow(360, 450, 465, 315);
-
-                    drawFlow(535, 275, 670, 200, "High");
-                    drawFlow(535, 325, 670, 400, "Low");
-
-                    drawFlow(700, 235, 700, 365);
-                    drawFlow(700, 365, 560, 500);
-
-                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 500 475 C 500 50, 120 50, 120 265");
-                    loop.setAttribute("class", "loop-path");
-                    loop.setAttribute("style", "stroke-dasharray: 4 4;");
-                    svgContent.appendChild(loop);
-                    drawLabel(300, 40, "Return Hypotheses");
+                    drawFlow(115, 300, 160, 300);
+                    drawFlow(280, 300, 300, 300);
+                    drawFlow(420, 300, 440, 300);
+                    drawFlow(560, 300, 580, 300);
+                    drawFlow(700, 300, 720, 300);
+                    
+                    const retry = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    retry.setAttribute("d", "M 640 335 C 640 420, 360 420, 360 335");
+                    retry.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-danger);");
+                    svgContent.appendChild(retry);
                 }
-                else if (type === 'evolution-flow') {
-                    drawNode(150, 300, "Population", "circle");
-                    drawNode(350, 300, "Crossover & Mutation", "rect");
-                    drawNode(550, 300, "Fitness Function", "diamond");
-                    drawNode(750, 300, "Selection", "rect");
-                    drawNode(750, 450, "Elite Survivors", "circle");
+                else if (type === 'copywriter-flow') {
+                    drawNode(80, 300, "Raw Docs", "circle");
+                    drawNode(220, 300, "AST Parser", "rect");
+                    drawNode(360, 300, "Term Store", "rect", "Dictionary");
+                    drawNode(500, 300, "Check", "diamond", "Verify");
+                    drawNode(650, 300, "Polish", "rect", "Style");
+                    drawNode(800, 300, "Final", "rect", "Markdown");
+                    
+                    drawFlow(115, 300, 160, 300);
+                    drawFlow(280, 300, 300, 300);
+                    drawFlow(420, 300, 440, 300);
+                    drawFlow(560, 300, 590, 300);
+                    drawFlow(710, 300, 740, 300);
+                }
+                else if (type === 'scaffolding-flow') {
+                    drawNode(150, 300, "Req", "circle", "Input");
+                    drawNode(350, 300, "Template", "rect");
+                    drawNode(550, 200, "Resolver", "rect", "Deps");
+                    drawNode(550, 400, "Dir Tree", "rect");
+                    drawNode(750, 300, "Sandbox", "diamond", "Test");
 
-                    drawFlow(215, 300, 285, 300, "Gene Exchange");
-                    drawFlow(415, 300, 485, 300, "Mutation Rate");
-                    drawFlow(615, 300, 685, 300, "Selection Pressure");
-                    drawFlow(750, 335, 750, 410);
+                    drawFlow(210, 300, 290, 300);
+                    drawFlow(410, 300, 550, 225, "Deps");
+                    drawFlow(410, 300, 550, 375, "Tree");
+                    drawFlow(610, 225, 750, 300);
+                    drawFlow(610, 375, 750, 300);
+                }
 
-                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 715 450 C 150 450, 150 335, 150 335");
-                    loop.setAttribute("class", "loop-path");
-                    loop.setAttribute("style", "stroke-dasharray: 4 4;");
-                    svgContent.appendChild(loop);
-                }
-                else if (type === 'traffic-flow') {
-                    drawNode(100, 300, "Prod Traffic", "circle");
-                    drawNode(300, 300, "Replay Engine", "rect");
-                    drawNode(500, 300, "Agent System", "rect");
-                    drawNode(700, 300, "Discrepancy Log", "rect", "差异对比");
-                    drawFlow(140, 300, 235, 300);
-                    drawFlow(365, 300, 435, 300);
-                    drawFlow(565, 300, 635, 300);
-                }
-                else if (type === 'ethics-flow') {
-                    drawNode(100, 300, "Agent Output", "circle");
-                    drawNode(300, 300, "Bias Scan", "diamond");
-                    drawNode(500, 300, "Deep Debate", "rect");
-                    drawNode(700, 300, "Final Approval", "circle");
-                    drawFlow(140, 300, 235, 300);
-                    drawFlow(365, 300, 435, 300);
-                    drawFlow(565, 300, 635, 300);
-                }
-                else if (type === 'migration-flow') {
-                    drawNode(100, 300, "Old DB", "circle");
-                    drawNode(300, 300, "Snapshot Mgr", "rect");
-                    drawNode(500, 300, "Schema Map", "rect");
-                    drawNode(700, 300, "New DB", "circle");
-                    drawFlow(140, 300, 235, 300);
-                    drawFlow(365, 300, 435, 300);
-                    drawFlow(565, 300, 635, 300);
-                }
                 else {
                     drawNode(150, 300, "Input");
                     drawNode(400, 300, "Processing", "rect", "LLM Engine");
