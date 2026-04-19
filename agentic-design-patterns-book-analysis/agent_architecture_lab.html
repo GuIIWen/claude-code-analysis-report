@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -401,7 +401,7 @@
             {"id": "enterprise-qa", "name": "企业级知识问答 Agent", "category": "FullArch", "role": "结合路由、记忆、安全护栏和 RAG 的完整系统", "case": "企业内部知识库问答", "chapter": "N/A", "cost": "High", "scores": {"iq": 92, "latency": 1.5, "cost": "High", "robustness": "High"}, "diagram": "full-qa"},
             {"id": "coding-agent", "name": "自主软件开发 Agent", "category": "FullArch", "role": "结合规划、工具调用、裁判和提示词链的循环系统", "case": "自动化编码助手", "chapter": "N/A", "cost": "High", "scores": {"iq": 95, "latency": 5.0, "cost": "High", "robustness": "High"}, "diagram": "full-coding"},
             {"id": "research-team", "name": "多智能体科研团队", "category": "FullArch", "role": "结合多智能体并行、ToT 推理与人机协同的宏大架构", "case": "深度科研、新药研发报告", "chapter": "N/A", "cost": "Ultra", "scores": {"iq": 98, "latency": 15.0, "cost": "Ultra", "robustness": "Ultra"}, "diagram": "full-research"},
-            {"id": "market-analyst", "name": "市场分析师 (Market Analyst)", "category": "Thinking", "role": "总结市场报告、识别趋势并提取关键数据", "case": "市场调研报告处理工作流", "chapter": "1", "cost": "Mid", "scores": {"iq": 78, "latency": 2.5, "cost": "Mid", "robustness": "Mid"}, "diagram": "chain"},
+            {"id": "market-analyst", "name": "市场分析师 (Market Analyst)", "category": "Thinking", "role": "总结市场报告、识别趋势并提取关键数据", "case": "市场调研报告处理工作流", "chapter": "1", "cost": "Mid", "scores": {"iq": 78, "latency": 2.5, "cost": "Mid", "robustness": "Mid"}, "diagram": "market-analyst-flow"},
             {"id": "reviewer", "name": "校对员/评审员 (Proofreader/Reviewer)", "category": "Thinking", "role": "检查内容质量、语气和逻辑，提供改进建议", "case": "代码审核、高质量内容创作、任务目标校验", "chapter": "1, 4, 7, 11, 19", "cost": "High", "scores": {"iq": 85, "latency": 2.0, "cost": "High", "robustness": "High"}, "diagram": "reflection"},
             {"id": "router", "name": "路由智能体 (Router Agent)", "category": "Input", "role": "根据意图、语义或资源约束分发请求", "case": "智能客服意图识别", "chapter": "2, 16", "cost": "Low", "scores": {"iq": 75, "latency": 0.3, "cost": "Low", "robustness": "High"}, "diagram": "router"},
             {"id": "state-eval", "name": "状态评估器 (State Evaluator)", "category": "Perception", "role": "监控系统累积状态并指导流程流向", "case": "复杂动态工作流决策", "chapter": "2", "cost": "Mid", "scores": {"iq": 80, "latency": 0.5, "cost": "Mid", "robustness": "High"}, "diagram": "state-eval"},
@@ -456,7 +456,7 @@
             "resource-router": "解决在商业化Agent系统中由于一刀切调用顶级模型导致的极端成本浪费与高延迟痛点。部署在系统入口处，接收请求后首先进行计算复杂度预判与Token消耗预估；对于简单查询立即路由至本地部署的轻量级模型或缓存层，而将复杂推理任务精确分配至千亿级大模型，在保障智能水平的前提下实现极致的性价比。",
             "audit": "直击企业级应用中数据隐私泄露、Prompt注入及有害内容生成的合规性痛点。作为双向安全网关(Guardrails)，在输入端拦截越权访问与恶意注入，对输出端数据执行严格的PII脱敏与敏感词正则扫描；所有违规行为将被直接拦截并写入不可篡改的安全审计日志，确保大模型黑盒在企业安全边界内运行。",
             "prioritization": "应对突发流量洪峰与多租户环境下核心任务被饥饿阻塞的调度痛点。负责动态管理任务队列，当海量请求涌入时，它快速计算每个任务的紧急度(Urgency)和业务影响(Impact)并分配权重；通过构建动态优先队列(Priority Queue)或堆结构，确保高优指令能够无视排队顺序抢占底层计算资源，实现服务分级保障。",
-            "hypothesis": "探索科学研究、新药挖掘等解空间无限大的零样本启动痛点。作为创新源泉，面对完全未知的问题，它不再依赖线性搜索，而是利用启发式算法、遗传变异与丰富的底层知识网络，进行不受限的发散性思考；同时抛出多个新颖的理论假设或实验路径，将其送入下游的验证引擎进行沙盒模拟与打分筛选。",
+            "hypothesis": "解决在科学研究、新药研发等解空间无限大的场景下，系统缺乏创新性引导的痛点。该Agent不再依赖简单的线性生成，而是利用遗传算法思想，将一组初始假设视为种群；在每一轮迭代中，通过变异与组合操作产生新想法，并送入Elo-style Debate评估器进行胜率打分；劣质假设被淘汰，优质种子被保留并用于下轮演化，实现假设空间的自主突变与深度挖掘。",
             "evolution": "解决传统系统算法固化、无法适应动态复杂环境的痛点。这套进化引擎利用遗传算法思想，将一组初始的提示词、代码片段或模型权重视为“种群”；在每一轮迭代中，对当前最优个体执行交叉(Crossover)与变异(Mutation)操作生成新一代方案，经过环境适应度(Fitness)评估后淘汰劣质基因，实现系统的自主进化与突变。",
             "meta-reviewer": "针对长期研究计划容易陷入认知盲区与底层方法论错误的痛点。置身于具体任务之外，以“上帝视角”审视整个Agent工作流的执行路径、中间产物与决策逻辑；它不纠结于代码层面的Bug，而是从宏观维度评估研究方向的创新性、资源分配的合理性及伦理合规性，在偏航初期及时修正顶层战略。",
             "mcp": "攻克大模型工具链碎片化、上下文挂载僵化的痛点。客户端Agent在运行时，通过模型上下文协议(MCP)动态发现并握手连接散布在网络中的可用MCP Server。它能在会话中无缝挂载本地文件系统、数据库查询甚至外部Web API，实现能力的即插即用与上下文空间的无限延展，极大地释放了Agent生态系统的扩展潜力。",
@@ -813,18 +813,35 @@
                     drawFlow(615, 425, 690, 330, "Result B");
                 }
                 else if (type === 'exploration') {
-                    drawNode(150, 300, "Hypothesis Gen", "rect", "Ideas");
-                    drawNode(400, 300, "Elo-style Debate", "diamond", "Scoring");
-                    drawNode(650, 300, "Evolution", "rect", "Refine");
+                    drawNode(120, 300, "Population", "circle", "Generator");
+                    drawNode(300, 150, "Hypothesis A", "rect");
+                    drawNode(300, 300, "Hypothesis B", "rect");
+                    drawNode(300, 450, "Hypothesis C", "rect");
+                    drawNode(500, 300, "Elo-style Debate", "diamond", "Fitness Score");
+                    drawNode(700, 200, "Survivors", "rect");
+                    drawNode(700, 400, "Discarded", "rect");
+                    drawNode(500, 500, "Evolution Engine", "rect", "Mutation, Crossover");
 
-                    drawFlow(215, 300, 335, 300, "Generate");
-                    drawFlow(465, 300, 585, 300, "Top Scored", "cond");
+                    drawFlow(155, 300, 240, 150);
+                    drawFlow(155, 300, 240, 300);
+                    drawFlow(155, 300, 240, 450);
+                    
+                    drawFlow(360, 150, 465, 285);
+                    drawFlow(360, 300, 465, 300);
+                    drawFlow(360, 450, 465, 315);
 
-                    const evolveLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    evolveLoop.setAttribute("d", "M 650 265 C 650 100, 150 100, 150 265");
-                    evolveLoop.setAttribute("class", "loop-path");
-                    svgContent.appendChild(evolveLoop);
-                    drawLabel(400, 110, "Mutate & Evolve", "cond");
+                    drawFlow(535, 275, 670, 200, "High");
+                    drawFlow(535, 325, 670, 400, "Low");
+
+                    drawFlow(700, 235, 700, 365);
+                    drawFlow(700, 365, 560, 500);
+
+                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    loop.setAttribute("d", "M 500 475 C 500 50, 120 50, 120 265");
+                    loop.setAttribute("class", "loop-path");
+                    loop.setAttribute("style", "stroke-dasharray: 4 4;");
+                    svgContent.appendChild(loop);
+                    drawLabel(300, 40, "Return Hypotheses");
                 }
 
                 else if (type === 'dispatcher') {
@@ -874,6 +891,30 @@
                     drawFlow(515, 500, 615, 320);
                     
                     drawFlow(685, 300, 715, 300);
+                }
+                else if (type === 'market-analyst-flow') {
+                    drawNode(100, 300, "Reports", "circle", "Raw Data");
+                    drawNode(250, 200, "Entity", "rect", "Extractor");
+                    drawNode(250, 400, "Trends", "rect", "Analyzer");
+                    drawNode(450, 300, "Synthesizer", "diamond", "Insights");
+                    drawNode(650, 300, "Drafting", "rect", "Generator");
+                    drawNode(850, 300, "Final", "circle", "Report");
+
+                    drawFlow(140, 300, 250, 230, "Fetch");
+                    drawFlow(140, 300, 250, 370, "Fetch");
+                    drawFlow(310, 200, 420, 285, "Entities");
+                    drawFlow(310, 400, 420, 315, "Trends");
+                    drawFlow(510, 300, 600, 300, "Yes (Valid)", "cond");
+                    drawFlow(690, 300, 810, 300);
+
+                    // Feedback Loop
+                    const refine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    refine.setAttribute("d", "M 450 335 C 450 420, 250 420, 250 435");
+                    refine.setAttribute("class", "loop-path");
+                    refine.setAttribute("style", "stroke: var(--warning); fill: none;");
+                    refine.setAttribute("marker-end", "url(#arrowhead-warning)");
+                    svgContent.appendChild(refine);
+                    drawLabel(350, 420, "Refine Scope", "cond");
                 }
                 else if (type === 'sica') {
                     drawNode(80, 300, "Source Code", "rect");
