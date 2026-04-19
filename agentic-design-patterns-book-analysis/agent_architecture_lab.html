@@ -369,25 +369,29 @@
             </div>
 
             <div class="info-panel" id="info-panel">
-                <div class="info-header">
-                    <div class="info-title" id="info-title">Agent Name</div>
-                    <div class="info-chapter" id="info-chapter">Chapter 1</div>
-                </div>
-                <div class="info-desc" id="info-desc">
-                    Description of the agent's core responsibility and architectural role.
-                </div>
-                <div class="info-details">
-                    <div class="detail-item">
-                        <div class="detail-label">预期成本</div>
-                <div id="info-flow-desc" style="margin-top: 15px; color: var(--success); font-size: 13px; line-height: 1.6; border-top: 1px dashed var(--panel-border); padding-top: 10px;"></div>
-                        <div class="detail-value" id="info-cost">Mid</div>
+                <div class="info-header" onclick="document.getElementById('info-panel').classList.toggle('collapsed')">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="info-title" id="info-title">Agent Name</div>
+                        <div class="info-chapter" id="info-chapter">Chapter 1</div>
                     </div>
-                    <div class="detail-item">
-                        <div class="detail-label">典型场景</div>
-                        <div class="detail-value" id="info-case">Case Study</div>
-                    </div>
+                    <div class="toggle-icon">▼</div>
                 </div>
-                
+                <div class="info-body">
+                    <div class="info-desc" id="info-desc">
+                        Description of the agent's core responsibility and architectural role.
+                    </div>
+                    <div class="info-details">
+                        <div class="detail-item">
+                            <div class="detail-label">预期成本</div>
+                            <div class="detail-value" id="info-cost">Mid</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">典型场景</div>
+                            <div class="detail-value" id="info-case">Case Study</div>
+                        </div>
+                    </div>
+                    <div id="info-flow-desc" style="margin-top: 15px; color: var(--success); font-size: 13px; line-height: 1.6; border-top: 1px dashed var(--panel-border); padding-top: 10px;"></div>
+                </div>
             </div>
         </main>
     </div>
