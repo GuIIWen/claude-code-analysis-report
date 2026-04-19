@@ -1092,31 +1092,69 @@
                     drawLabel(300, 420, "Fail (Error Log)", "cond");
                 }
                 else if (type === 'producer-flow') {
-                    drawNode(150, 300, "Task Cmd", "circle");
-                    drawNode(350, 300, "Data Retrieval", "rect");
-                    drawNode(550, 300, "Draft Gen", "rect");
-                    drawNode(750, 300, "Final Delivery", "circle");
-                    drawFlow(185, 300, 315, 300, "Data");
-                    drawFlow(385, 300, 515, 300, "Template");
-                    drawFlow(585, 300, 715, 300);
+                    drawNode(80, 300, "Task Cmd", "circle");
+                    drawNode(220, 300, "Retrieval", "rect");
+                    drawNode(360, 300, "Validation", "diamond", "Task Val");
+                    drawNode(520, 300, "Draft Buffer", "rect");
+                    drawNode(700, 300, "Gen", "rect");
+                    drawNode(860, 300, "Final", "circle");
+
+                    drawFlow(115, 300, 160, 300);
+                    drawFlow(280, 300, 300, 300);
+                    drawFlow(420, 300, 460, 300);
+                    drawFlow(580, 300, 640, 300);
+                    drawFlow(760, 300, 825, 300);
+
+                    const back = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    back.setAttribute("d", "M 360 265 C 360 150, 220 150, 220 265");
+                    back.setAttribute("class", "loop-path");
+                    back.setAttribute("style", "stroke: var(--danger)");
+                    svgContent.appendChild(back);
+                    drawLabel(290, 150, "Fail (Re-flow)", "cond");
                 }
                 else if (type === 'copywriter-flow') {
-                    drawNode(150, 300, "Raw Docs", "circle");
-                    drawNode(350, 300, "AST Parser", "rect");
-                    drawNode(550, 300, "Terminology", "rect");
-                    drawNode(750, 300, "Markdown Doc", "circle");
-                    drawFlow(185, 300, 315, 300, "Parse");
-                    drawFlow(385, 300, 515, 300, "Refine");
-                    drawFlow(585, 300, 715, 300);
+                    drawNode(100, 300, "Input", "circle");
+                    drawNode(280, 300, "AST Parser", "rect");
+                    drawNode(500, 300, "Term Check", "diamond", "Review");
+                    drawNode(500, 150, "Term Store", "rect", "对比库");
+                    drawNode(750, 300, "Final", "circle");
+
+                    drawFlow(135, 300, 220, 300);
+                    drawFlow(340, 300, 440, 300);
+                    drawFlow(500, 185, 500, 265, "Compare");
+                    drawFlow(560, 300, 690, 300);
+
+                    const feedback = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    feedback.setAttribute("d", "M 560 300 C 600 380, 280 380, 280 335");
+                    feedback.setAttribute("class", "loop-path");
+                    feedback.setAttribute("style", "stroke: var(--warning)");
+                    svgContent.appendChild(feedback);
+                    drawLabel(420, 380, "AST Feedback", "cond");
                 }
                 else if (type === 'scaffolding-flow') {
-                    drawNode(150, 300, "Req", "circle");
-                    drawNode(350, 300, "Match", "rect");
+                    drawNode(100, 300, "Req", "circle");
+                    drawNode(250, 300, "Template", "rect");
+                    drawNode(400, 300, "Resolver", "rect", "Dependency");
                     drawNode(550, 300, "Dir Tree", "rect");
-                    drawNode(750, 300, "Sandbox", "circle");
-                    drawFlow(185, 300, 315, 300, "Config");
-                    drawFlow(385, 300, 515, 300, "Build");
-                    drawFlow(585, 300, 715, 300);
+                    drawNode(750, 300, "Sandbox", "diamond", "Init");
+                    
+                    drawFlow(135, 300, 190, 300);
+                    drawFlow(310, 300, 340, 300);
+                    drawFlow(460, 300, 490, 300);
+                    drawFlow(610, 300, 690, 300);
+
+                    const fail = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    fail.setAttribute("x1", "750"); fail.setAttribute("y1", "335");
+                    fail.setAttribute("x2", "750"); fail.setAttribute("y2", "450");
+                    fail.setAttribute("style", "stroke: var(--danger); stroke-width: 2; marker-end: url(#arrowhead-warning)");
+                    svgContent.appendChild(fail);
+
+                    const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    loop.setAttribute("d", "M 750 480 C 750 550, 100 550, 100 335");
+                    loop.setAttribute("class", "loop-path");
+                    loop.setAttribute("style", "stroke: var(--danger)");
+                    svgContent.appendChild(loop);
+                    drawLabel(425, 550, "Sandbox Fail (Re-Gen)", "cond");
                 }
 
                 else {
