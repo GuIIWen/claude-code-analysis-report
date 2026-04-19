@@ -407,14 +407,14 @@
             {"id": "state-eval", "name": "状态评估器 (State Evaluator)", "category": "Perception", "role": "监控系统累积状态并指导流程流向", "case": "复杂动态工作流决策", "chapter": "2", "cost": "Mid", "scores": {"iq": 80, "latency": 0.5, "cost": "Mid", "robustness": "High"}, "diagram": "state-eval"},
             {"id": "dispatcher", "name": "总调度器 (Main Dispatcher)", "category": "Input", "role": "在拥有多个专业工具的系统中选择最合适工具", "case": "动态工具选择场景", "chapter": "2", "cost": "Mid", "scores": {"iq": 85, "latency": 0.8, "cost": "Mid", "robustness": "Mid"}, "diagram": "dispatcher"},
             {"id": "concurrency", "name": "并发控制器 (Concurrency Controller)", "category": "Input", "role": "协调多个独立子任务的启动、执行和结果收集", "case": "多源信息搜集、多维度并行分析", "chapter": "3", "cost": "Mid", "scores": {"iq": 70, "latency": 0.2, "cost": "Mid", "robustness": "High"}, "diagram": "concurrency"},
-            {"id": "producer", "name": "生产者/生成器 (Producer/Generator)", "category": "Execution", "role": "执行初始任务（如编写代码、撰写文章）", "case": "代码生成、内容创作", "chapter": "4, 11", "cost": "Mid", "scores": {"iq": 88, "latency": 5.0, "cost": "High", "robustness": "Low"}, "diagram": "chain"},
+            {"id": "producer", "name": "生产者/生成器 (Producer/Generator)", "category": "Execution", "role": "执行初始任务（如编写代码、撰写文章）", "case": "代码生成、内容创作", "chapter": "4, 11", "cost": "Mid", "scores": {"iq": 88, "latency": 5.0, "cost": "High", "robustness": "Low"}, "diagram": "producer-flow"},
             {"id": "researcher", "name": "深度研究助手 (Deep Research Assistant)", "category": "Thinking", "role": "自主生成研究计划、执行搜索、分析网页并动态修正", "case": "深度行业调研、学术背景搜索", "chapter": "6, 17, 21", "cost": "High", "scores": {"iq": 95, "latency": 15.0, "cost": "High", "robustness": "Mid"}, "diagram": "planning"},
             {"id": "supervisor", "name": "管理者/中心调度员 (Supervisor)", "category": "Input", "role": "决定任务委派顺序，管理专家 Agent 团队", "case": "复杂项目编排、多 Agent 协作系统", "chapter": "7, 9, 15", "cost": "High", "scores": {"iq": 92, "latency": 2.0, "cost": "High", "robustness": "High"}, "diagram": "multi-agent"},
-            {"id": "tech-copywriter", "name": "专业技术文案 (Technical Copywriter)", "category": "Execution", "role": "负责专业领域的文档撰写与润色", "case": "软件开发团队、产品说明书编写", "chapter": "7", "cost": "Mid", "scores": {"iq": 82, "latency": 3.0, "cost": "Mid", "robustness": "High"}, "diagram": "chain"},
-            {"id": "scaffolding", "name": "脚手架 Agent (Scaffolding Agent)", "category": "Execution", "role": "自动生成项目基础结构和代码框架", "case": "数字化开发团队", "chapter": "7", "cost": "Mid", "scores": {"iq": 80, "latency": 4.0, "cost": "Mid", "robustness": "High"}, "diagram": "chain"},
+            {"id": "tech-copywriter", "name": "专业技术文案 (Technical Copywriter)", "category": "Execution", "role": "负责专业领域的文档撰写与润色", "case": "软件开发团队、产品说明书编写", "chapter": "7", "cost": "Mid", "scores": {"iq": 82, "latency": 3.0, "cost": "Mid", "robustness": "High"}, "diagram": "copywriter-flow"},
+            {"id": "scaffolding", "name": "脚手架 Agent (Scaffolding Agent)", "category": "Execution", "role": "自动生成项目基础结构和代码框架", "case": "数字化开发团队", "chapter": "7", "cost": "Mid", "scores": {"iq": 80, "latency": 4.0, "cost": "Mid", "robustness": "High"}, "diagram": "scaffolding-flow"},
             {"id": "test-agent", "name": "测试 Agent (Test Agent)", "category": "Execution", "role": "编写并运行单元测试，验证代码正确性", "case": "自动化编程与调试工作流", "chapter": "7, 11", "cost": "High", "scores": {"iq": 88, "latency": 6.0, "cost": "High", "robustness": "Mid"}, "diagram": "reflection"},
             {"id": "memory", "name": "记忆服务 Agent (Memory Service)", "category": "Perception", "role": "捕获、存储、检索并管理长期记忆与用户偏好", "case": "个性化客服、多轮任务追踪", "chapter": "8", "cost": "Mid", "scores": {"iq": 75, "latency": 0.4, "cost": "Mid", "robustness": "High"}, "diagram": "memory"},
-            {"id": "sica", "name": "自我改进编码智能体 (SICA)", "category": "Execution", "role": "能够修改自身代码并进行隔离运行验证", "case": "软件自我进化、代码优化", "chapter": "9", "cost": "Ultra", "scores": {"iq": 94, "latency": 20.0, "cost": "Ultra", "robustness": "Mid"}, "diagram": "sica"},
+            {"id": "sica", "name": "自我改进编码智能体 (SICA)", "category": "Execution", "role": "能够修改自身代码并进行隔离运行验证", "case": "软件自我进化、代码优化", "chapter": "9", "cost": "Ultra", "scores": {"iq": 94, "latency": 20.0, "cost": "Ultra", "robustness": "Mid"}, "diagram": "sica-flow"},
             {"id": "async-supervisor", "name": "异步监督者 (Asynchronous Supervisor)", "category": "Perception", "role": "监控智能体的自我改进过程，防止偏离目标", "case": "智能体学习与进化过程监控", "chapter": "9, 21", "cost": "Low", "scores": {"iq": 85, "latency": 1.0, "cost": "Low", "robustness": "High"}, "diagram": "monitoring"},
             {"id": "judge", "name": "判定者/裁判 (Judge)", "category": "Thinking", "role": "对输出结果进行二值判定或多维评分", "case": "任务停止条件判定、LLM-as-a-Judge", "chapter": "11, 19", "cost": "Low", "scores": {"iq": 80, "latency": 1.2, "cost": "Low", "robustness": "High"}, "diagram": "reflection"},
             {"id": "primary-fallback", "name": "主/备处理器 (Primary/Fallback Handler)", "category": "Execution", "role": "负责执行核心任务及在失败时的降级方案处理", "case": "生产级系统异常处理与恢复机制", "chapter": "12", "cost": "Mid", "scores": {"iq": 75, "latency": 0.5, "cost": "Mid", "robustness": "Ultra"}, "diagram": "router"},
@@ -1016,6 +1016,48 @@
                     align.setAttribute("class", "loop-path");
                     svgContent.appendChild(align);
                     drawLabel(500, 90, "Drift? Recalibrate", "cond");
+                }
+
+                else if (type === 'sica-flow') {
+                    drawNode(150, 300, "Source", "circle", "Code");
+                    drawNode(300, 300, "Sandbox", "rect", "Exec");
+                    drawNode(450, 300, "Judge", "diamond", "Test?");
+                    drawNode(600, 300, "Commit", "rect", "Apply");
+                    drawFlow(185, 300, 265, 300, "Run");
+                    drawFlow(335, 300, 415, 300, "Verify");
+                    drawFlow(485, 300, 565, 300, "Pass", "cond");
+                    const errLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    errLoop.setAttribute("d", "M 450 335 C 450 420, 150 420, 150 335");
+                    errLoop.setAttribute("class", "loop-path");
+                    svgContent.appendChild(errLoop);
+                    drawLabel(300, 420, "Fail (Error Log)", "cond");
+                }
+                else if (type === 'producer-flow') {
+                    drawNode(150, 300, "Task Cmd", "circle");
+                    drawNode(350, 300, "Data Retrieval", "rect");
+                    drawNode(550, 300, "Draft Gen", "rect");
+                    drawNode(750, 300, "Final Delivery", "circle");
+                    drawFlow(185, 300, 315, 300, "Data");
+                    drawFlow(385, 300, 515, 300, "Template");
+                    drawFlow(585, 300, 715, 300);
+                }
+                else if (type === 'copywriter-flow') {
+                    drawNode(150, 300, "Raw Docs", "circle");
+                    drawNode(350, 300, "AST Parser", "rect");
+                    drawNode(550, 300, "Terminology", "rect");
+                    drawNode(750, 300, "Markdown Doc", "circle");
+                    drawFlow(185, 300, 315, 300, "Parse");
+                    drawFlow(385, 300, 515, 300, "Refine");
+                    drawFlow(585, 300, 715, 300);
+                }
+                else if (type === 'scaffolding-flow') {
+                    drawNode(150, 300, "Req", "circle");
+                    drawNode(350, 300, "Match", "rect");
+                    drawNode(550, 300, "Dir Tree", "rect");
+                    drawNode(750, 300, "Sandbox", "circle");
+                    drawFlow(185, 300, 315, 300, "Config");
+                    drawFlow(385, 300, 515, 300, "Build");
+                    drawFlow(585, 300, 715, 300);
                 }
 
                 else {
