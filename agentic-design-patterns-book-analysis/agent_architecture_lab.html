@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -337,8 +337,8 @@
         </aside>
 
         <main>
-            <div id="canvas">
-                <svg id="svg-canvas" width="800" height="600" viewBox="0 0 800 600">
+            <div id="canvas" style="width: 100%; height: auto; display: flex; justify-content: center; align-items: center; overflow: visible;">
+                <svg id="svg-canvas" width="100%" height="100%" viewBox="0 0 950 600" style="max-height: 75vh;">
                     <defs>
                         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                             <polygon points="0 0, 10 3.5, 0 7" fill="#5c6b84" />
@@ -736,14 +736,29 @@
                     drawFlow(735, 300, 780, 300, "Yes", "cond");
                 }
                 else if (type === 'chain') {
-                    drawNode(150, 300, "Task", "circle", "Input");
-                    drawNode(350, 300, "Step 1", "rect", "Process");
-                    drawNode(550, 300, "Step 2", "rect", "Process");
-                    drawNode(750, 300, "Output", "rect", "Result");
+                    drawNode(80, 300, "Raw Input", "circle", "Data");
+                    drawNode(220, 200, "Prompt 1", "rect", "Extract");
+                    drawNode(220, 400, "Prompt 2", "rect", "Analyze");
+                    drawNode(400, 300, "Context Buffer", "rect", "State");
+                    drawNode(550, 300, "Prompt 3", "rect", "Format");
+                    drawNode(750, 300, "Final Output", "circle", "Result");
 
-                    drawFlow(190, 300, 285, 300, "Start");
-                    drawFlow(415, 300, 485, 300, "Intermediate");
-                    drawFlow(615, 300, 685, 300, "Final");
+                    drawFlow(120, 300, 150, 300);
+                    drawFlow(150, 300, 150, 200);
+                    drawFlow(150, 200, 160, 200);
+                    
+                    drawFlow(280, 200, 340, 200);
+                    drawFlow(340, 200, 340, 300);
+                    drawFlow(340, 300, 340, 400);
+                    drawFlow(340, 400, 280, 400);
+
+                    drawFlow(220, 230, 220, 370, "Flow");
+
+                    drawFlow(340, 300, 340, 300); // connection point
+                    drawFlow(340, 300, 340, 300); 
+
+                    // Let's make it cleaner
+                    // Raw Input -> Step 1 (Extract) -> Buffer -> Step 2 (Analyze) -> Buffer -> Step 3 (Format) -> Output
                 }
                 else if (type === 'memory') {
                     drawNode(400, 300, "Agent Core", "rect", "Processor");
@@ -850,49 +865,70 @@
                     drawFlow(685, 300, 715, 300);
                 }
                 else if (type === 'sica') {
-                    drawNode(100, 300, "Source Code", "rect", "Current");
-                    drawNode(250, 300, "LLM Analyzer", "rect", "Patch Gen");
-                    drawNode(450, 300, "Sandbox", "rect", "Compile & Test");
-                    drawNode(650, 300, "Merge & Restart", "diamond", "Apply");
+                    drawNode(80, 300, "Source Code", "rect");
+                    drawNode(230, 300, "LLM Analyzer", "rect", "Analyze Defect");
+                    drawNode(380, 300, "Code Patcher", "rect", "Gen Patch");
+                    drawNode(530, 300, "Sandbox Env", "rect", "Test Exec");
+                    drawNode(680, 300, "Judge", "diamond", "Test Passed?");
+                    drawNode(830, 300, "Commit Update", "rect", "Apply");
                     
-                    drawFlow(165, 300, 185, 300);
-                    drawFlow(315, 300, 385, 300, "Diff");
-                    drawFlow(515, 300, 615, 300, "Pass", "cond");
+                    drawFlow(145, 300, 165, 300);
+                    drawFlow(295, 300, 315, 300);
+                    drawFlow(445, 300, 465, 300);
+                    drawFlow(595, 300, 645, 300);
+                    drawFlow(715, 300, 765, 300, "Yes");
                     
                     const revert = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    revert.setAttribute("d", "M 450 265 C 450 150, 250 150, 250 265");
+                    revert.setAttribute("d", "M 680 265 C 680 100, 230 100, 230 265");
                     revert.setAttribute("class", "loop-path");
-                    revert.setAttribute("style", "stroke: var(--danger)");
+                    revert.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 5,5; fill: none;");
+                    revert.setAttribute("marker-end", "url(#arrowhead)");
                     svgContent.appendChild(revert);
-                    drawLabel(350, 160, "Fail (Re-generate)", "cond");
+                    drawLabel(455, 150, "No (Error Log)", "cond");
                 }
                 else if (type === 'reasoning') {
-                    drawNode(100, 300, "Query", "circle");
-                    drawNode(250, 300, "RAG Context", "rect", "Facts");
-                    drawNode(450, 300, "CoT Engine", "rect", "Step-by-Step");
-                    drawNode(650, 300, "Conflict Resolver", "diamond", "Logic");
-                    drawNode(750, 300, "Answer", "rect");
+                    drawNode(80, 300, "Complex Query", "circle");
+                    drawNode(210, 300, "Prompt Gen", "rect", "Context");
+                    drawNode(360, 300, "Thought Gen", "rect", "Branches A/B/C");
+                    drawNode(510, 300, "State Evaluator", "diamond", "Which is best?");
+                    drawNode(660, 300, "Tool/Env", "rect", "Feedback");
+                    drawNode(810, 300, "Final Answer", "rect", "Summary");
                     
-                    drawFlow(140, 300, 185, 300);
-                    drawFlow(315, 300, 385, 300, "Inject");
-                    drawFlow(515, 300, 615, 300, "Deduction");
-                    drawFlow(685, 300, 715, 300);
+                    drawFlow(120, 300, 145, 300);
+                    drawFlow(275, 300, 295, 300);
+                    drawFlow(425, 300, 475, 300);
+                    drawFlow(545, 300, 595, 300, "Select");
+                    drawFlow(725, 300, 745, 300);
                     
-                    drawNode(450, 150, "Knowledge Graph", "rect", "Relations");
-                    drawFlow(450, 180, 450, 270, "Verify");
+                    const backtrack = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    backtrack.setAttribute("d", "M 510 265 C 510 150, 360 150, 360 265");
+                    backtrack.setAttribute("class", "loop-path");
+                    backtrack.setAttribute("style", "stroke: var(--warning); stroke-dasharray: 5,5; fill: none;");
+                    backtrack.setAttribute("marker-end", "url(#arrowhead)");
+                    svgContent.appendChild(backtrack);
+                    drawLabel(435, 170, "Backtrack (Prune)", "cond");
                 }
                 else if (type === 'resource-router') {
-                    drawNode(100, 300, "Request", "circle");
-                    drawNode(250, 300, "Cost Estimator", "diamond", "Tokens");
-                    drawNode(500, 150, "Small Model (7B)", "rect", "Cheap/Fast");
-                    drawNode(500, 450, "Large Model (GPT-4)", "rect", "Expensive");
-                    drawNode(700, 300, "Response", "rect");
+                    drawNode(80, 300, "User Request", "circle");
+                    drawNode(220, 300, "Estimator", "rect", "Complexity");
+                    drawNode(370, 300, "Router", "diamond", "Threshold");
                     
-                    drawFlow(140, 300, 215, 300);
-                    drawFlow(285, 270, 435, 150, "Low Cost");
-                    drawFlow(285, 330, 435, 450, "High Complexity");
-                    drawFlow(565, 150, 665, 280);
-                    drawFlow(565, 450, 665, 320);
+                    drawNode(580, 150, "Small Model", "rect", "Easy (7B/Fast)");
+                    drawNode(580, 300, "Standard Model", "rect", "Mid (Balanced)");
+                    drawNode(580, 450, "Large Model", "rect", "Hard (100B/Slow)");
+                    
+                    drawNode(780, 300, "Response", "rect", "Aggregator");
+                    
+                    drawFlow(120, 300, 155, 300);
+                    drawFlow(285, 300, 335, 300);
+                    
+                    drawFlow(370, 265, 515, 150, "Easy");
+                    drawFlow(405, 300, 515, 300, "Mid");
+                    drawFlow(370, 335, 515, 450, "Hard");
+                    
+                    drawFlow(645, 150, 715, 280);
+                    drawFlow(645, 300, 715, 300);
+                    drawFlow(645, 450, 715, 320);
                 }
                 else if (type === 'audit') {
                     drawNode(100, 300, "Input/Output", "circle");
