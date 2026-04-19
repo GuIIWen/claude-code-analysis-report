@@ -597,43 +597,63 @@
                     drawLabel(610, 117, "Data Conflict", "cond");
                 }
                 else if (type === 'robot-arch') {
-                    // Detailed Embodied AI Architecture
-                    drawNode(60, 150, "Vision / LiDAR", "circle", "Perception");
-                    drawNode(60, 450, "User Command", "circle", "High-level Goal");
+                    // Industrial Grade Embodied AI Architecture (Ultra Detailed)
+                    // Sensory Layer
+                    drawNode(60, 80, "RGB-D/Vision", "circle", "Camera");
+                    drawNode(60, 180, "LiDAR/Sonar", "circle", "Spatial");
+                    drawNode(60, 280, "IMU/Tactile", "circle", "Force/Bal");
+                    drawNode(60, 450, "User Command", "circle", "Goal");
                     
-                    drawNode(220, 150, "VLM / SLAM", "rect", "Scene Graph");
-                    drawNode(220, 300, "State Estimator", "rect", "Proprioception");
+                    // Cognition Layer
+                    drawNode(220, 180, "Sensor Fusion", "rect", "Semantic Graph");
+                    drawNode(220, 330, "State Estimator", "rect", "Proprioception");
                     
+                    // Planning & Validation
                     drawNode(420, 225, "Strategic Planner", "diamond", "LLM Task Tree");
-                    drawNode(620, 225, "Trajectory Opt", "rect", "Motion Planning");
-                    drawNode(820, 225, "IK Controller", "rect", "Servo Control");
-                    drawNode(930, 225, "Actuators", "circle", "Motors");
-
-                    drawNode(620, 50, "Collision Guard", "diamond", "Obstacle Avoidance");
+                    drawNode(420, 60, "Tool Hub", "rect", "Pathfinding/Calc");
                     drawNode(420, 450, "World Model", "rect", "Digital Twin");
+                    
+                    // Control Layer
+                    drawNode(620, 225, "Trajectory Opt", "rect", "Motion Plan");
+                    drawNode(620, 60, "Collision Guard", "diamond", "Hard Safety");
+                    drawNode(820, 225, "IK Controller", "rect", "Servo Logic");
+                    
+                    // Execution Layer
+                    drawNode(940, 150, "End-Effectors", "circle", "Gripper/Tools");
+                    drawNode(940, 300, "Actuators", "circle", "Joint Motors");
 
-                    // Connect Perception
-                    drawFlow(95, 150, 160, 150);
+                    // Flows: Sensors to Fusion
+                    drawFlow(95, 80, 160, 160);
+                    drawFlow(95, 180, 160, 180);
+                    drawFlow(95, 280, 160, 200);
+                    
+                    // Commands & State
                     drawFlow(95, 450, 360, 250, "Intent");
-                    drawFlow(220, 175, 220, 275, "Update");
+                    drawFlow(220, 210, 220, 305, "Update");
                     
-                    // Core Chain
-                    drawFlow(280, 150, 360, 210);
-                    drawFlow(280, 300, 360, 240);
-                    drawFlow(480, 225, 560, 225);
-                    drawFlow(680, 225, 760, 225);
-                    drawFlow(880, 225, 895, 225);
+                    // Fusion to Planner & World Model
+                    drawFlow(280, 180, 360, 215);
+                    drawFlow(280, 180, 360, 430, "Sync");
+                    drawFlow(280, 330, 360, 235);
 
-                    // Safety & Loop
-                    drawFlow(620, 85, 620, 200, "Safety Kill", "cond");
-                    drawFlow(760, 240, 480, 435, "Torque Feedback");
-                    
+                    // Planner interactions
+                    drawFlow(420, 85, 420, 190, "Verification");
+                    drawFlow(420, 260, 420, 425, "Simulate");
+                    drawFlow(480, 225, 560, 225);
+
+                    // Control to Execution
+                    drawFlow(680, 225, 760, 225);
+                    drawFlow(620, 95, 620, 190, "Kill-switch", "cond");
+                    drawFlow(880, 210, 910, 160);
+                    drawFlow(880, 240, 910, 290);
+
+                    // Global Feedback Loop
                     const robotBack = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    robotBack.setAttribute("d", "M 930 260 C 930 510, 220 510, 220 335");
+                    robotBack.setAttribute("d", "M 940 335 C 940 550, 220 550, 220 365");
                     robotBack.setAttribute("class", "loop-path");
                     robotBack.setAttribute("style", "stroke: var(--success)");
                     svgContent.appendChild(robotBack);
-                    drawLabel(575, 458, "Continuous Environmental Feedback", "cond");
+                    drawLabel(575, 488, "Continuous Environmental Feedback", "cond");
                 }
                 else if (type === 'exploration-flow') {
                     drawNode(100, 300, "Generator", "circle");
