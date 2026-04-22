@@ -936,7 +936,7 @@
                     drawFlow(470, 325, 470, 475, "Action");
                     drawFlow(530, 475, 530, 325, "Observation");
                     
-                    drawFlow(570, 300, 665, 300, "State");
+                    drawFlow(560, 300, 640, 300, "State");
                     
                     // Re-plan loop
                     const replan = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -944,7 +944,7 @@
                     replan.setAttribute("class", "loop-path");
                     svgContent.appendChild(replan);
                     drawLabel(500, 160, "No (Re-plan)", "cond");
-                    drawFlow(735, 300, 845, 300, "Yes", "cond");
+                    drawFlow(760, 300, 845, 300, "Yes", "cond");
                 }
                 else if (type === 'chain') {
                     drawNode(80, 300, "Raw Input", "circle", "Data");
