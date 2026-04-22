@@ -373,7 +373,7 @@
             </div>
 
             <div class="info-panel" id="info-panel">
-                <div class="info-header" onclick="document.getElementById('info-panel').classList.toggle('collapsed')">
+                <div class="info-header" onclick="toggleInfoPanel()">
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <div class="info-title" id="info-title">Agent Name</div>
                         <div class="info-chapter" id="info-chapter">Chapter 1</div>
@@ -509,6 +509,7 @@
             catAgents.forEach(agent => {
                 const item = document.createElement('div');
                 item.className = 'agent-item';
+                item.dataset.id = agent.id;
                 item.innerHTML = `
                     <div class="agent-name">${globalIndex}. ${agent.name}</div>
                     <div class="agent-meta">
@@ -523,9 +524,18 @@
             listContainer.appendChild(catDiv);
         });
 
+        function toggleInfoPanel() {
+            const panel = document.getElementById('info-panel');
+            panel.classList.toggle('collapsed');
+            localStorage.setItem('infoPanelCollapsed', panel.classList.contains('collapsed'));
+        }
+
         function selectAgent(agent, element) {
             document.querySelectorAll('.agent-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
+            
+            // Cache selected agent
+            localStorage.setItem('selectedAgentId', agent.id);
 
             // Update Scores
             document.getElementById('score-iq').innerHTML = `${agent.scores.iq}<span class="unit">pts</span>`;
@@ -1366,8 +1376,25 @@
 
         // Initial state
         window.onload = () => {
-            const firstAgent = document.querySelector('.agent-item');
-            if (firstAgent) firstAgent.click();
+            const panel = document.getElementById('info-panel');
+            // Restore info-panel state (default to collapsed if not set)
+            const isCollapsed = localStorage.getItem('infoPanelCollapsed') !== 'false';
+            if (isCollapsed) {
+                panel.classList.add('collapsed');
+            } else {
+                panel.classList.remove('collapsed');
+            }
+
+            // Restore selected agent
+            const savedAgentId = localStorage.getItem('selectedAgentId');
+            let targetAgent = null;
+            if (savedAgentId) {
+                targetAgent = document.querySelector(`.agent-item[data-id="${savedAgentId}"]`);
+            }
+            if (!targetAgent) {
+                targetAgent = document.querySelector('.agent-item');
+            }
+            if (targetAgent) targetAgent.click();
         };
 
     </script>
