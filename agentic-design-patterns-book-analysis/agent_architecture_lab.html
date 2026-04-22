@@ -1406,6 +1406,18 @@
                 targetAgent = document.querySelector('.agent-item');
             }
             if (targetAgent) targetAgent.click();
+
+            // Restore scroll position
+            const listContainer = document.getElementById('agent-list');
+            const savedScroll = localStorage.getItem('agentListScroll');
+            if (savedScroll) {
+                listContainer.scrollTop = parseInt(savedScroll, 10);
+            }
+            
+            // Save scroll position on scroll
+            listContainer.addEventListener('scroll', () => {
+                localStorage.setItem('agentListScroll', listContainer.scrollTop);
+            });
         };
 
     </script>
