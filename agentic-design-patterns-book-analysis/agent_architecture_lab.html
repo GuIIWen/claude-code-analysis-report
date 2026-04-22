@@ -915,6 +915,7 @@
                     drawNode(500, 300, "Executor", "rect", "Tool Use");
                     drawNode(500, 500, "Environment", "rect", "External API");
                     drawNode(700, 300, "Goal Met?", "diamond");
+                    drawNode(880, 300, "Task Complete", "circle", "Done");
 
                     drawFlow(170, 300, 230, 300, "Task Desc");
                     drawFlow(370, 300, 430, 300, "Step [i]");
@@ -928,7 +929,7 @@
                     replan.setAttribute("class", "loop-path");
                     svgContent.appendChild(replan);
                     drawLabel(500, 160, "No (Re-plan)", "cond");
-                    drawFlow(735, 300, 780, 300, "Yes", "cond");
+                    drawFlow(735, 300, 845, 300, "Yes", "cond");
                 }
                 else if (type === 'chain') {
                     drawNode(80, 300, "Raw Input", "circle", "Data");
