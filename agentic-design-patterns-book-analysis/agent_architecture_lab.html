@@ -1238,17 +1238,27 @@
                     drawLabel(455, 140, "Fail (Fix)", "cond");
                 }
                 else if (type === 'scaffolding-flow') {
-                    drawNode(150, 300, "Req", "circle", "Input");
-                    drawNode(350, 300, "Template", "rect");
-                    drawNode(550, 200, "Resolver", "rect", "Deps");
-                    drawNode(550, 400, "Dir Tree", "rect");
-                    drawNode(750, 300, "Sandbox", "diamond", "Test");
+                    drawNode(100, 300, "Req", "circle", "Input");
+                    drawNode(280, 300, "Template", "rect", "Parser");
+                    drawNode(480, 180, "Resolver", "rect", "Deps");
+                    drawNode(480, 420, "Dir Tree", "rect", "Structure");
+                    drawNode(680, 300, "Sandbox", "diamond", "Test");
+                    drawNode(850, 300, "Repository", "circle", "Output");
 
-                    drawFlow(210, 300, 290, 300);
-                    drawFlow(410, 300, 550, 225, "Deps");
-                    drawFlow(410, 300, 550, 375, "Tree");
-                    drawFlow(610, 225, 750, 300);
-                    drawFlow(610, 375, 750, 300);
+                    drawFlow(135, 300, 220, 300);
+                    drawFlow(340, 280, 420, 200, "Extract");
+                    drawFlow(340, 320, 420, 400, "Generate");
+                    drawFlow(540, 200, 630, 280);
+                    drawFlow(540, 400, 630, 320);
+                    
+                    drawFlow(740, 300, 815, 300, "Pass", "cond");
+
+                    const retryLoop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    retryLoop.setAttribute("d", "M 680 265 C 680 50, 280 50, 280 275");
+                    retryLoop.setAttribute("class", "loop-path");
+                    retryLoop.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-warning);");
+                    svgContent.appendChild(retryLoop);
+                    drawLabel(480, 80, "Fail (Re-gen)", "cond");
                 }
 
                 else {
