@@ -679,13 +679,32 @@
                     drawLabel(575, 488, "Continuous Environmental Feedback", "cond");
                 }
                 else if (type === 'exploration-flow') {
-                    drawNode(100, 300, "Generator", "circle");
-                    drawNode(300, 300, "Debate Pool", "diamond");
-                    drawNode(500, 300, "Selection", "rect");
-                    drawNode(700, 300, "Final Hypothesis", "circle");
-                    drawFlow(135, 300, 240, 300, "Generate");
-                    drawFlow(360, 300, 440, 300, "Debate");
-                    drawFlow(560, 300, 665, 300, "Rank");
+                    drawNode(80, 300, "Open Problem", "circle", "Goal");
+                    drawNode(260, 300, "Lit Reviewer", "rect", "Context");
+                    drawNode(460, 150, "Expert A", "rect", "Divergent");
+                    drawNode(460, 300, "Expert B", "rect", "Lateral");
+                    drawNode(460, 450, "Expert C", "rect", "Analogical");
+                    drawNode(660, 300, "Debate Arena", "diamond", "Elo Scoring");
+                    drawNode(850, 300, "Hypothesis", "circle", "Novel Idea");
+                    
+                    drawFlow(115, 300, 200, 300);
+                    
+                    drawFlow(320, 280, 400, 175, "Prompt");
+                    drawFlow(320, 300, 400, 300, "Prompt");
+                    drawFlow(320, 320, 400, 425, "Prompt");
+                    
+                    drawFlow(520, 175, 600, 280, "Proposal");
+                    drawFlow(520, 300, 600, 300, "Proposal");
+                    drawFlow(520, 425, 600, 320, "Proposal");
+                    
+                    drawFlow(720, 300, 815, 300, "Winner", "cond");
+                    
+                    const regen = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    regen.setAttribute("d", "M 660 265 C 660 60, 260 60, 260 275");
+                    regen.setAttribute("class", "loop-path");
+                    regen.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-warning);");
+                    svgContent.appendChild(regen);
+                    drawLabel(460, 70, "Flawed (Mutate & Regen)", "cond");
                 }
                 else if (type === 'evolution-flow') {
                     drawNode(100, 300, "Population", "circle");
