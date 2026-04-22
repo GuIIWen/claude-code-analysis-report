@@ -1058,18 +1058,18 @@
                     drawFlow(710, 300, 765, 300);
                 }
                 else if (type === 'sica') {
-                    drawNode(80, 300, "Source Code", "rect");
+                    drawNode(80, 300, "Source Code", "circle", "Input");
                     drawNode(230, 300, "LLM Analyzer", "rect", "Analyze Defect");
                     drawNode(380, 300, "Code Patcher", "rect", "Gen Patch");
                     drawNode(530, 300, "Sandbox Env", "rect", "Test Exec");
                     drawNode(680, 300, "Judge", "diamond", "Test Passed?");
-                    drawNode(830, 300, "Commit Update", "rect", "Apply");
+                    drawNode(830, 300, "Commit Update", "circle", "Apply");
                     
-                    drawFlow(145, 300, 165, 300);
-                    drawFlow(295, 300, 315, 300);
-                    drawFlow(445, 300, 465, 300);
-                    drawFlow(595, 300, 645, 300);
-                    drawFlow(715, 300, 765, 300, "Yes");
+                    drawFlow(115, 300, 170, 300);
+                    drawFlow(290, 300, 320, 300);
+                    drawFlow(440, 300, 470, 300);
+                    drawFlow(590, 300, 620, 300);
+                    drawFlow(740, 300, 795, 300, "Yes", "cond");
                     
                     const revert = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     revert.setAttribute("d", "M 680 265 C 680 100, 230 100, 230 265");
@@ -1217,18 +1217,25 @@
                     svgContent.appendChild(retry);
                 }
                 else if (type === 'copywriter-flow') {
-                    drawNode(80, 300, "Raw Docs", "circle");
-                    drawNode(220, 300, "AST Parser", "rect");
-                    drawNode(360, 300, "Term Store", "rect", "Dictionary");
-                    drawNode(500, 300, "Check", "diamond", "Verify");
-                    drawNode(650, 300, "Polish", "rect", "Style");
-                    drawNode(800, 300, "Final", "rect", "Markdown");
+                    drawNode(80, 300, "Raw Docs", "circle", "Input");
+                    drawNode(230, 300, "AST Parser", "rect", "Parse");
+                    drawNode(380, 300, "Term Store", "rect", "Dictionary");
+                    drawNode(530, 300, "Check", "diamond", "Verify");
+                    drawNode(680, 300, "Polish", "rect", "Style");
+                    drawNode(830, 300, "Final", "circle", "Markdown");
                     
-                    drawFlow(115, 300, 160, 300);
-                    drawFlow(280, 300, 300, 300);
-                    drawFlow(420, 300, 440, 300);
-                    drawFlow(560, 300, 590, 300);
-                    drawFlow(710, 300, 740, 300);
+                    drawFlow(115, 300, 170, 300);
+                    drawFlow(290, 300, 320, 300);
+                    drawFlow(440, 300, 470, 300);
+                    drawFlow(590, 300, 620, 300, "Pass", "cond");
+                    drawFlow(740, 300, 795, 300);
+
+                    const retry = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    retry.setAttribute("d", "M 530 265 C 530 150, 380 150, 380 275");
+                    retry.setAttribute("class", "loop-path");
+                    retry.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-warning);");
+                    svgContent.appendChild(retry);
+                    drawLabel(455, 140, "Fail (Fix)", "cond");
                 }
                 else if (type === 'scaffolding-flow') {
                     drawNode(150, 300, "Req", "circle", "Input");
