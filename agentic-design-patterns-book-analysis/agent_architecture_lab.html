@@ -688,29 +688,25 @@
                     drawFlow(560, 300, 665, 300, "Rank");
                 }
                 else if (type === 'evolution-flow') {
-                    // Zoom in specifically for this wide linear flow
-                    canvas.setAttribute("viewBox", "0 100 950 400");
-                    
-                    drawNode(60, 300, "Population", "circle");
-                    drawNode(270, 300, "Crossover", "rect", "Merge");
-                    drawNode(480, 300, "Mutation", "rect", "Variance");
-                    drawNode(690, 300, "Fitness", "diamond", "Score?");
-                    drawNode(900, 300, "Survivor", "circle", "Elite");
-                    
-                    drawNode(690, 160, "Discarded", "rect", "Eliminate");
+                    drawNode(100, 300, "Population", "circle");
+                    drawNode(260, 300, "Crossover", "rect", "Merge");
+                    drawNode(420, 300, "Mutation", "rect", "Variance");
+                    drawNode(580, 300, "Fitness", "diamond", "Score?");
+                    drawNode(740, 300, "Survivor", "circle", "Elite");
+                    drawNode(580, 450, "Discarded", "rect", "Eliminate");
 
-                    drawFlow(95, 300, 210, 300, "Gene Exch");
-                    drawFlow(330, 300, 420, 300, "Mutate");
-                    drawFlow(540, 300, 630, 300, "Select");
-                    drawFlow(750, 300, 865, 300, "Keep", "cond");
-                    drawFlow(690, 265, 690, 185, "Drop", "cond");
+                    drawFlow(135, 300, 200, 300, "Gene Exch");
+                    drawFlow(320, 300, 360, 300, "Mutate");
+                    drawFlow(480, 300, 520, 300, "Select");
+                    drawFlow(640, 300, 705, 300, "Keep", "cond");
+                    drawFlow(580, 335, 580, 425, "Drop", "cond");
                     
                     const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 900 335 C 900 480, 60 480, 60 335");
+                    loop.setAttribute("d", "M 740 335 C 740 520, 100 520, 100 335");
                     loop.setAttribute("class", "loop-path");
                     loop.setAttribute("style", "stroke: var(--success); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-success);");
                     svgContent.appendChild(loop);
-                    drawLabel(480, 430, "Feedback & Iterate", "cond");
+                    drawLabel(420, 510, "Feedback & Iterate", "cond");
                 }
                 else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
@@ -1221,23 +1217,25 @@
                     drawLabel(440, 70, "Drift (Recalibrate)", "cond");
                 }
                 else if (type === 'producer-flow') {
-                    drawNode(80, 300, "Task Cmd", "circle");
-                    drawNode(220, 300, "Validation", "diamond", "Quality");
-                    drawNode(360, 300, "Draft Buffer", "rect", "Storage");
-                    drawNode(500, 300, "Draft Gen", "rect", "LLM");
-                    drawNode(640, 300, "Retry", "diamond", "Failed?");
-                    drawNode(780, 300, "Delivery", "rect", "Final");
+                    drawNode(100, 300, "Task Cmd", "circle", "Input");
+                    drawNode(250, 300, "Validation", "diamond", "Quality");
+                    drawNode(400, 300, "Draft Buffer", "rect", "Storage");
+                    drawNode(550, 300, "Draft Gen", "rect", "LLM");
+                    drawNode(700, 300, "Retry", "diamond", "Failed?");
+                    drawNode(850, 300, "Delivery", "circle", "Final");
                     
-                    drawFlow(115, 300, 160, 300);
-                    drawFlow(280, 300, 300, 300);
-                    drawFlow(420, 300, 440, 300);
-                    drawFlow(560, 300, 580, 300);
-                    drawFlow(700, 300, 720, 300);
+                    drawFlow(135, 300, 190, 300, "Cmd");
+                    drawFlow(310, 300, 340, 300, "Valid");
+                    drawFlow(460, 300, 490, 300, "Context");
+                    drawFlow(610, 300, 640, 300, "Draft");
+                    drawFlow(760, 300, 815, 300, "Pass", "cond");
                     
                     const retry = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    retry.setAttribute("d", "M 640 335 C 640 420, 360 420, 360 335");
-                    retry.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-danger);");
+                    retry.setAttribute("d", "M 700 335 C 700 450, 400 450, 400 335");
+                    retry.setAttribute("class", "loop-path");
+                    retry.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-warning);");
                     svgContent.appendChild(retry);
+                    drawLabel(550, 430, "Fail (Re-gen)", "cond");
                 }
                 else if (type === 'copywriter-flow') {
                     drawNode(80, 300, "Raw Docs", "circle", "Input");
