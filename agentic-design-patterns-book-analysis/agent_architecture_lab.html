@@ -686,25 +686,25 @@
                     drawFlow(560, 300, 665, 300, "Rank");
                 }
                 else if (type === 'evolution-flow') {
-                    drawNode(100, 300, "Population", "circle");
-                    drawNode(260, 300, "Crossover", "rect", "Merge");
-                    drawNode(420, 300, "Mutation", "rect", "Variance");
-                    drawNode(580, 300, "Fitness", "diamond", "Score?");
-                    drawNode(740, 300, "Survivor", "circle", "Elite");
-                    drawNode(580, 450, "Discarded", "rect", "Eliminate");
+                    drawNode(80, 300, "Population", "circle");
+                    drawNode(270, 300, "Crossover", "rect", "Merge");
+                    drawNode(460, 300, "Mutation", "rect", "Variance");
+                    drawNode(650, 300, "Fitness", "diamond", "Score?");
+                    drawNode(840, 300, "Survivor", "circle", "Elite");
+                    drawNode(650, 450, "Discarded", "rect", "Eliminate");
 
-                    drawFlow(135, 300, 200, 300, "Gene Exch");
-                    drawFlow(320, 300, 360, 300, "Mutate");
-                    drawFlow(480, 300, 520, 300, "Select");
-                    drawFlow(640, 300, 705, 300, "Keep", "cond");
-                    drawFlow(580, 335, 580, 425, "Drop", "cond");
+                    drawFlow(115, 300, 210, 300, "Gene Exch");
+                    drawFlow(330, 300, 400, 300, "Mutate");
+                    drawFlow(520, 300, 590, 300, "Select");
+                    drawFlow(710, 300, 805, 300, "Keep", "cond");
+                    drawFlow(650, 335, 650, 425, "Drop", "cond");
                     
                     const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 740 335 C 740 520, 100 520, 100 335");
+                    loop.setAttribute("d", "M 840 335 C 840 550, 80 550, 80 335");
                     loop.setAttribute("class", "loop-path");
                     loop.setAttribute("style", "stroke: var(--success); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-success);");
                     svgContent.appendChild(loop);
-                    drawLabel(420, 510, "Feedback & Iterate", "cond");
+                    drawLabel(460, 540, "Feedback & Iterate", "cond");
                 }
                 else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
