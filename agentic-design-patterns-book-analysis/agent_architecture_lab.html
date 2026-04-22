@@ -687,24 +687,24 @@
                 }
                 else if (type === 'evolution-flow') {
                     drawNode(100, 300, "Population", "circle");
-                    drawNode(250, 300, "Crossover", "rect", "Merge");
-                    drawNode(400, 300, "Mutation", "rect", "Variance");
-                    drawNode(550, 300, "Fitness", "diamond", "Score?");
-                    drawNode(750, 300, "Survivor", "circle", "Elite");
-                    drawNode(400, 450, "Discarded", "rect", "Eliminate");
+                    drawNode(260, 300, "Crossover", "rect", "Merge");
+                    drawNode(420, 300, "Mutation", "rect", "Variance");
+                    drawNode(580, 300, "Fitness", "diamond", "Score?");
+                    drawNode(740, 300, "Survivor", "circle", "Elite");
+                    drawNode(580, 450, "Discarded", "rect", "Eliminate");
 
-                    drawFlow(135, 300, 190, 300, "Gene Exch");
-                    drawFlow(310, 300, 340, 300, "Mutate");
-                    drawFlow(460, 300, 500, 300, "Select");
-                    drawFlow(600, 300, 715, 300, "Keep", "cond");
-                    drawFlow(550, 335, 400, 425, "Drop", "cond");
+                    drawFlow(135, 300, 200, 300, "Gene Exch");
+                    drawFlow(320, 300, 360, 300, "Mutate");
+                    drawFlow(480, 300, 520, 300, "Select");
+                    drawFlow(640, 300, 705, 300, "Keep", "cond");
+                    drawFlow(580, 335, 580, 425, "Drop", "cond");
                     
                     const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 750 335 C 750 450, 100 450, 100 335");
+                    loop.setAttribute("d", "M 740 335 C 740 520, 100 520, 100 335");
                     loop.setAttribute("class", "loop-path");
                     loop.setAttribute("style", "stroke: var(--success); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-success);");
                     svgContent.appendChild(loop);
-                    drawLabel(400, 430, "Feedback & Iterate", "cond");
+                    drawLabel(420, 510, "Feedback & Iterate", "cond");
                 }
                 else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
@@ -1185,27 +1185,31 @@
                     drawFlow(610, 450, 715, 320);
                 }
                 else if (type === 'goal-setting') {
-                    drawNode(100, 300, "Vague Goal", "circle", "Ambition");
-                    drawNode(300, 300, "Decomposer", "diamond", "Tree");
-                    drawNode(500, 150, "Milestone 1", "rect", "Short-term");
-                    drawNode(500, 300, "Milestone 2", "rect", "Mid-term");
-                    drawNode(500, 450, "Milestone 3", "rect", "Long-term");
-                    drawNode(700, 300, "Align Engine", "rect", "Check");
+                    drawNode(80, 300, "Vague Goal", "circle", "Ambition");
+                    drawNode(240, 300, "Decomposer", "diamond", "Tree");
+                    drawNode(440, 150, "Milestone 1", "rect", "Short-term");
+                    drawNode(440, 300, "Milestone 2", "rect", "Mid-term");
+                    drawNode(440, 450, "Milestone 3", "rect", "Long-term");
+                    drawNode(640, 300, "Align Engine", "diamond", "Check");
+                    drawNode(820, 300, "Goal Met", "circle", "Done");
                     
-                    drawFlow(135, 300, 240, 300);
-                    drawFlow(300, 265, 440, 150);
-                    drawFlow(360, 300, 440, 300);
-                    drawFlow(300, 335, 440, 450);
+                    drawFlow(115, 300, 180, 300);
+                    drawFlow(240, 265, 380, 150);
+                    drawFlow(300, 300, 380, 300);
+                    drawFlow(240, 335, 380, 450);
                     
-                    drawFlow(560, 150, 640, 275, "Done");
-                    drawFlow(560, 300, 640, 300);
-                    drawFlow(560, 450, 640, 325);
+                    drawFlow(500, 150, 640, 265);
+                    drawFlow(500, 300, 580, 300, "Done");
+                    drawFlow(500, 450, 640, 335);
+                    
+                    drawFlow(700, 300, 785, 300, "Yes", "cond");
                     
                     const align = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    align.setAttribute("d", "M 700 275 C 700 80, 300 80, 300 265");
-                    align.setAttribute("class", "logic-loop");
+                    align.setAttribute("d", "M 640 265 C 640 80, 240 80, 240 265");
+                    align.setAttribute("class", "loop-path");
+                    align.setAttribute("style", "stroke: var(--danger); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-warning);");
                     svgContent.appendChild(align);
-                    drawLabel(500, 70, "Drift? Recalibrate", "cond");
+                    drawLabel(440, 70, "Drift (Recalibrate)", "cond");
                 }
                 else if (type === 'producer-flow') {
                     drawNode(80, 300, "Task Cmd", "circle");
