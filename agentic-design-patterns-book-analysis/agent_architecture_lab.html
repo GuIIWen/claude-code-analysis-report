@@ -561,8 +561,10 @@
             
             setTimeout(() => {
                 svgContent.innerHTML = '';
+                // Reset viewBox to default
+                canvas.setAttribute("viewBox", "0 0 950 600");
                 
-                                if (type === 'finance-arch') {
+                if (type === 'finance-arch') {
                     // Industrial Grade Finance & Compliance Agent
                     drawNode(50, 300, "Investor Query", "circle", "Input");
                     drawNode(160, 300, "Compliance Gate", "diamond", "KYC/AML");
@@ -686,25 +688,29 @@
                     drawFlow(560, 300, 665, 300, "Rank");
                 }
                 else if (type === 'evolution-flow') {
+                    // Zoom in specifically for this wide linear flow
+                    canvas.setAttribute("viewBox", "0 100 950 400");
+                    
                     drawNode(60, 300, "Population", "circle");
                     drawNode(270, 300, "Crossover", "rect", "Merge");
                     drawNode(480, 300, "Mutation", "rect", "Variance");
                     drawNode(690, 300, "Fitness", "diamond", "Score?");
                     drawNode(900, 300, "Survivor", "circle", "Elite");
-                    drawNode(690, 450, "Discarded", "rect", "Eliminate");
+                    
+                    drawNode(690, 160, "Discarded", "rect", "Eliminate");
 
                     drawFlow(95, 300, 210, 300, "Gene Exch");
                     drawFlow(330, 300, 420, 300, "Mutate");
                     drawFlow(540, 300, 630, 300, "Select");
                     drawFlow(750, 300, 865, 300, "Keep", "cond");
-                    drawFlow(690, 335, 690, 425, "Drop", "cond");
+                    drawFlow(690, 265, 690, 185, "Drop", "cond");
                     
                     const loop = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    loop.setAttribute("d", "M 900 335 C 900 650, 60 650, 60 335");
+                    loop.setAttribute("d", "M 900 335 C 900 480, 60 480, 60 335");
                     loop.setAttribute("class", "loop-path");
                     loop.setAttribute("style", "stroke: var(--success); stroke-dasharray: 4 2; fill: none; marker-end: url(#arrowhead-success);");
                     svgContent.appendChild(loop);
-                    drawLabel(480, 580, "Feedback & Iterate", "cond");
+                    drawLabel(480, 430, "Feedback & Iterate", "cond");
                 }
                 else if (type === 'full-qa') {
                     drawNode(80, 300, "User Input", "circle", "Query");
