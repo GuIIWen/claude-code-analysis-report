@@ -967,24 +967,24 @@
                 }
                 else if (type === 'chain') {
                     drawNode(80, 300, "Raw Input", "circle", "Data");
-                    drawNode(220, 200, "Prompt 1", "rect", "Extract");
-                    drawNode(220, 400, "Prompt 2", "rect", "Analyze");
-                    drawNode(400, 300, "Context Buffer", "rect", "State");
-                    drawNode(550, 300, "Prompt 3", "rect", "Format");
-                    drawNode(750, 300, "Final Output", "circle", "Result");
+                    drawNode(240, 200, "Prompt 1", "rect", "Extract");
+                    drawNode(240, 400, "Prompt 2", "rect", "Analyze");
+                    drawNode(440, 300, "Context Buffer", "rect", "State");
+                    drawNode(640, 300, "Prompt 3", "rect", "Format");
+                    drawNode(840, 300, "Final Output", "circle", "Result");
 
                     // 连线：边缘到边缘
                     // Input -> Prompts
-                    drawFlow(115, 300, 160, 200, "Raw");
-                    drawFlow(115, 300, 160, 400, "Raw");
+                    drawFlow(115, 300, 180, 200, "Raw");
+                    drawFlow(115, 300, 180, 400, "Raw");
                     
                     // Prompts -> Buffer
-                    drawFlow(280, 200, 340, 300, "Extracted");
-                    drawFlow(280, 400, 340, 300, "Analyzed");
+                    drawFlow(300, 200, 380, 300, "Extracted");
+                    drawFlow(300, 400, 380, 300, "Analyzed");
                     
                     // Buffer -> Prompt 3 -> Output
-                    drawFlow(460, 300, 490, 300, "Context");
-                    drawFlow(610, 300, 715, 300, "Final");
+                    drawFlow(500, 300, 580, 300, "Context");
+                    drawFlow(700, 300, 805, 300, "Final");
                 }
                 else if (type === 'memory') {
                     drawNode(400, 300, "Agent Core", "rect", "Processor");
